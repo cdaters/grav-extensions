@@ -1,48 +1,65 @@
-# Changelog
+# v0.3.11
+## 05/17/2026
 
-## 0.3.10
-- Fixed the Admin2 page editor launch URL for Grav page Markdown files. It now targets `/pages/edit/...` and strips numeric folder prefixes from page-route segments.
-- Hardened Open/Edit Raw button handling so it behaves like double-clicking a file instead of risking route navigation weirdness.
+1. [](#new)
+    * Added a backup details/info modal showing notes and non-inline backup metadata.
+    * Added public roadmap documentation.
+2. [](#improved)
+    * Persisted Backup Profile and Scheduled Backup expanded/collapsed state in localStorage.
+    * Improved public documentation and plugin metadata for a Grav/GPM-readiness pass.
+3. [](#bugfix)
+    * Fixed backup downloads in Admin2 by fetching tokenized downloads with authentication headers instead of opening a protected API route directly.
 
-## 0.3.10
+# v0.3.10
+## 05/16/2026
 
-- Reworks Backup Profiles into expandable/collapsible item cards with Add, Expand all, Collapse all, Delete, and Save controls.
-- Reworks Scheduled Backups into expandable/collapsible item cards with summary rows, generated Grav scheduler job previews, scheduler status cards, and cleaner inline editing.
-- Adds an Open in Grav Editor action for Markdown files that live under the Pages root, while keeping raw text editing available for power users.
-- Auto-generates default scheduler output log paths from the schedule key to avoid stale daily/weekly log names.
-- Documents the next editor path: Grav page files should open in Grav's page editor; arbitrary text-ish files will move toward an embedded CodeMirror-style editor.
+1. [](#new)
+    * Added expandable/collapsible Backup Profile cards with Add, Expand all, Collapse all, Delete, and Save controls.
+    * Added expandable/collapsible Scheduled Backup cards with summary rows, scheduler status cards, generated Grav scheduler job previews, and cleaner inline editing.
+    * Added an Open in Grav Editor action for Markdown files under the Pages root while keeping raw text editing available.
+2. [](#improved)
+    * Auto-generates default scheduler output log paths from the schedule key.
+    * Corrected the Admin2 page editor launch URL for Grav page Markdown files by targeting `/pages/edit/...` and stripping numeric folder prefixes.
+    * Hardened Open/Edit Raw button handling so it behaves like double-clicking a file instead of risking route navigation.
 
-## 0.3.8
+# v0.3.8
+## 05/16/2026
 
-- Tightens notice spacing beneath the Admin2-style tab bar.
-- Fixes success/error notices that could stick around after long-running backup operations.
-- Reduces duplicate "Working…" indicators so long operations use the central overlay instead of also showing small header notices.
-- Clarifies backup download status messaging for larger archives.
+1. [](#new)
+    * Added temporary token-based backup download links so backup ZIP downloads can start as normal browser downloads.
+2. [](#improved)
+    * Separated the file manager and backup tools into Files and Backups tabs.
+    * Tightened notice spacing beneath the Admin2-style tab bar.
+    * Auto-expires success and error notices.
+    * Reduces duplicate working indicators so long operations use the central overlay.
+    * Clarifies backup download status messaging for larger archives.
+    * Bumped internal backup metadata and status version reporting to 0.3.8.
 
+# v0.3.6
+## 05/16/2026
 
-- Adds temporary token-based backup download links so backup ZIP downloads can start as normal browser downloads instead of being pulled into a JavaScript blob first.
-- Success/error notices now auto-expire and have better spacing below the Admin2-style tab bar.
-- Bumps internal backup metadata and status version reporting to 0.3.8.
+1. [](#new)
+    * Added a query-string backup download endpoint (`GET /backup/download?name=...`) to avoid filename and route edge cases.
+    * Added a one-click "Use suggested path" action for moving backup storage outside the site root.
+2. [](#improved)
+    * Changed download responses to authenticated direct chunk streaming to avoid 500 errors and memory spikes with larger ZIPs.
+    * Made the Backup Storage card visually reflect writable and inside-root status.
+    * Updated the default backup storage path to `../gcmdr_backups` for safer new installs where the host allows it.
 
-## 0.3.6
+# v0.3.3
+## 05/16/2026
 
-- Adds a query-string backup download endpoint (`GET /backup/download?name=...`) to avoid filename/route edge cases.
-- Changes download responses to authenticated direct chunk streaming to avoid 500 errors and memory spikes with larger ZIPs.
-- Adds a one-click “Use suggested path” action for moving backup storage outside the site root.
-- Makes the Backup Storage card visually green/warning/error based on writable and inside-root status.
-- Updates the default backup storage path to `../gcmdr_backups` for safer new installs where the host allows it.
-- Keeps Admin2-style Files / Backups tabs and theme-aware confirm modals from the previous test build.
-- Keeps plugin metadata author as Craig Daters, with no PixelWizard author reference.
+1. [](#new)
+    * Moved file browsing and backup controls into separate Grav Commander tabs.
+    * Added a larger visible busy/progress panel for long-running backup operations.
+    * Added backup storage health details, including a warning when backups are inside the Grav/site root.
+2. [](#bugfix)
+    * Fixed backup profile and schedule save routes by adding route aliases used by the Admin2 component.
+    * Allowed configured backup paths to live outside the Grav root, including absolute paths or relative paths such as `../grav-commander-backups`.
 
-## 0.3.3
+# v0.3.2
+## 05/16/2026
 
-- Moves file browsing and backup controls into separate Grav Commander tabs.
-- Fixes backup profile/schedule save routes by adding route aliases used by the Admin2 component.
-- Adds a larger visible busy/progress panel for long-running backup operations.
-- Adds backup storage health details, including a warning when backups are inside the Grav/site root.
-- Allows configured backup paths to live outside the Grav root, including absolute paths or relative paths such as `../grav-commander-backups`.
-
-## 0.3.2
-
-- Added ZIP creation and extraction actions.
-- Added archive safety controls and extraction guardrails.
+1. [](#new)
+    * Added ZIP creation and extraction actions.
+    * Added archive safety controls and extraction guardrails.

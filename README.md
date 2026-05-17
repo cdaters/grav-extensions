@@ -1,187 +1,160 @@
 # Grav Commander
 
-**Grav Commander** is an Admin2-first Commander-style file manager and backup playground for Grav 2.
+Grav Commander is an Admin2-first file manager, archive toolkit, and guarded Backup Center for Grav 2.
 
-It is intentionally opinionated and guarded. This is not meant to be a reckless cPanel clone inside your CMS. It exposes configured Grav roots, blocks risky executable extensions by default, and creates safety backups before destructive operations when `auto_backup_on_write` is enabled.
+It is intentionally cautious. Grav Commander is meant to help trusted administrators handle common file, ZIP, and backup work from inside Admin2 without turning Grav into an unchecked hosting control panel.
 
-## Status
+## Status / Alpha Notice
 
-Prototype / alpha. Drop it into a local or staging Grav 2 site first.
+Grav Commander is alpha software for Grav 2 and Admin2. Use it locally or on staging first, review the configured roots and permissions, and keep independent server backups for production sites.
+
+## Features
+
+- Admin2 sidebar page with Files and Backups sections.
+- Configured root browser for pages, themes, plugins, config, data, and logs.
+- Text file viewing and editing with extension allow/block lists.
+- Upload, download, rename, copy, move, delete, and folder creation actions.
+- ZIP creation and guarded ZIP extraction.
+- Backup profiles with friendly and expert editing modes.
+- Manual site, file, and folder backups.
+- Safety backups before destructive file operations when enabled.
+- Backup notes, manifests, health checks, details modal, download, delete, and guarded restore.
+- Scheduled backup definitions mirrored into Grav scheduler custom jobs.
+- CLI backup command for cron, SSH, or scheduled workflows.
 
 ## Requirements
 
-- Grav 2.0+
-- Grav API plugin 1.0+
-- Admin2 / admin-next
-- PHP 8.3+
-- PHP `zip` extension for backup, restore, and ZIP archive tools
-- Server cron calling `bin/grav scheduler` if you want scheduled backups to run automatically
+- Grav 2.0 or newer.
+- Grav API plugin 1.0 or newer.
+- Admin2 / admin-next.
+- PHP 8.3 or newer.
+- PHP `zip` extension for archive, backup, and restore tools.
+- Server cron running `bin/grav scheduler` if scheduled backups should run automatically.
 
-## Install
+## Installation
 
-1. Unzip this folder into:
-
-   ```bash
-   user/plugins/grav-commander
-   ```
-
-2. Confirm the folder contains:
-
-   ```text
-   user/plugins/grav-commander/grav-commander.php
-   user/plugins/grav-commander/blueprints.yaml
-   user/plugins/grav-commander/admin-next/pages/grav-commander.js
-   user/plugins/grav-commander/cli/BackupCommand.php
-   ```
-
-3. Enable it in `user/config/plugins/grav-commander.yaml` or through Admin2:
-
-   ```yaml
-   enabled: true
-   ```
-
-4. Give your admin user the permissions listed below if they are not a super admin.
-
-5. Open Admin2 and look for **Grav Commander** in the sidebar.
-
-
-## Backup storage location
-
-The default backup path is now outside the Grav root when your host permits it:
-
-```yaml
-backup:
-  path: ../gcmdr_backups
-```
-
-For production, prefer a folder outside the public site tree. On a cPanel-style account where the Grav site is under `/home/retrorealm/public_html`, a safer absolute path would be:
-
-```yaml
-backup:
-  path: /home/retrorealm/gcmdr_backups
-```
-
-You may also use a relative path from the Grav root:
-
-```yaml
-backup:
-  path: ../gcmdr_backups
-```
-
-Grav Commander will try to create the folder and adds basic `.htaccess` / `index.html` protection, but outside-the-site-root storage is still the better default for real sites.
-
-
-## Backup archive naming
-
-Version 0.3.6 added a tokenized archive name template, rebuilt for Grav Commander. Version 0.3.8 added short-lived token-based backup download links and auto-expiring Admin2 notices. Version 0.3.10 adds collapsible Backup Profile / Schedule editors plus a corrected Open in Grav Editor action for page Markdown files. The `.zip` extension is added automatically.
-
-Default:
-
-```yaml
-backup:
-  archive_name_template: gcmdr-[HOST]-[PROFILE]-[DATE]-[TIME_TZ]
-  add_random_if_inside_site_root: true
-```
-
-Example result:
+Install the plugin into:
 
 ```text
-gcmdr-retrorealm-org-full-site-20260517-001555GMT-0700.zip
+user/plugins/grav-commander
 ```
 
-Supported tokens:
+The plugin folder should contain at least:
 
 ```text
-[PREFIX]        gcmdr
-[HOST]          current host name, filename-safe
-[SITE]          site title, filename-safe
-[SITENAME]      alias of [SITE]
-[PROFILE]       backup profile key
-[PROFILE_LABEL] backup profile label
-[SCOPE]         file or site
-[TYPE]          alias of [SCOPE]
-[REASON]        manual, scheduled, pre-delete, etc.
-[ROOT]          file-manager root key for file backups
-[PATH]          source path for file backups
-[DATE]          YYYYMMDD
-[YEAR]          YYYY
-[MONTH]         MM
-[DAY]           DD
-[WEEK]          ISO week number
-[WEEKDAY]       English day name, filename-safe
-[TIME]          HHMMSS
-[TIME_TZ]       HHMMSSGMT±0000
-[TZ]            timezone name, filename-safe
-[GMT_OFFSET]    plus0000 / minus0700 style offset
-[VERSION]       Grav Commander version
-[RANDOM]        16-character random hex string
+grav-commander.php
+blueprints.yaml
+grav-commander.yaml
+permissions.yaml
+admin-next/pages/grav-commander.js
+cli/BackupCommand.php
+classes/
 ```
 
-If backups are stored inside the Grav/site root and `[RANDOM]` is not already present, Grav Commander can append a random suffix automatically as a security guardrail.
+Enable the plugin through Admin2 or in `user/config/plugins/grav-commander.yaml`:
+
+```yaml
+enabled: true
+```
+
+Clear the Grav cache after installing or updating:
+
+```bash
+bin/grav clearcache
+```
+
+Open Admin2 and look for **Grav Commander** in the sidebar.
+
+## Configuration
+
+Default configuration lives in `grav-commander.yaml`. Site-specific overrides belong in:
+
+```text
+user/config/plugins/grav-commander.yaml
+```
+
+Important settings include:
+
+```yaml
+admin:
+  show_sidebar: true
+
+max_upload_size: 10485760
+max_edit_size: 1048576
+allow_php_editing: false
+allow_recursive_delete: false
+auto_backup_on_write: true
+
+backup:
+  enabled: true
+  path: ../gcmdr_backups
+  max_backups: 25
+  allow_site_restore: false
+```
+
+The default backup path is `../gcmdr_backups`, resolved relative to the Grav root. On many hosts this places backups beside the public site directory rather than inside it. For production, prefer an absolute or relative path outside the public web tree when your host allows it.
+
+Grav Commander creates the backup folder when needed and writes basic `.htaccess` and `index.html` protection files, but outside-root storage is still preferred.
 
 ## Permissions
 
-The API endpoints check these permissions:
+The plugin declares these permissions in `permissions.yaml`:
 
 ```yaml
-access:
-  admin:
-    login: true
-  grav-commander:
-    browse: true
-    write: true
-    backup: true
-    restore: true
+grav-commander:
+  browse: true
+  write: true
+  backup: true
+  restore: true
 ```
 
-Super admin users should inherit access automatically. For non-super users, add only the capabilities they need.
+Super admin users should have access automatically. For non-super users, grant only the capabilities they need:
 
+- `browse`: list, view, and download allowed files.
+- `write`: create, edit, upload, rename, copy, move, delete, zip, and extract inside writable roots.
+- `backup`: create, list, download, configure, run, and delete backups.
+- `restore`: restore file/folder backups and, only if enabled, full-site backups.
 
-## File viewing, editing, and downloads
+## File Manager Behavior
 
-Grav Commander separates file behavior into three buckets:
+Configured roots are defined under `roots` in `grav-commander.yaml`. Each root has a label, path, and writable flag. Paths are resolved from the Grav root unless they are absolute.
 
-- **Editable**: listed in `editable_extensions`, allowed by `blocked_extensions`, under the edit size limit, writable on disk, and inside a writable root. These can be opened and saved.
-- **View/read-only**: listed in `viewable_extensions`, allowed by `blocked_extensions`, and text-like. These can be opened for preview and downloaded, but not saved.
-- **Binary/read-only**: everything else. These can be selected, downloaded, moved/copied/deleted if permissions allow, and backed up.
+Files are handled in three broad modes:
 
-Open the plugin configuration from **Admin2 → Plugins → Grav Commander**, or from the **Settings** button in the Grav Commander page. The important file controls are:
+- Editable: allowed by `editable_extensions`, not blocked, inside a writable root, writable on disk, and below `max_edit_size`.
+- View/read-only: allowed by `viewable_extensions`, not blocked, and text-like.
+- Binary/read-only: selectable and downloadable, but not opened in the editor.
+
+Executable and server-side script extensions are blocked by default:
 
 ```yaml
-editable_extensions:
-  - md
-  - yaml
-  - twig
-  - css
-  - js
-
-viewable_extensions:
-  - md
-  - yaml
-  - log
-  - rev
-  - csv
-
 blocked_extensions:
   - php
+  - phtml
+  - phar
   - sh
+  - bash
+  - zsh
   - exe
 ```
 
-Do not remove risky executable/script extensions from `blocked_extensions` on a production site unless you truly trust every Admin user.
+Do not remove risky extensions from `blocked_extensions` on production sites unless every Admin user with access is fully trusted.
 
-## Archive tools
+Markdown files under the Pages root can be opened in Grav's page editor. Raw text editing remains available for power users.
 
-Version 0.3.2 added first-pass ZIP handling for common Grav housekeeping jobs:
+## Archive Tools
 
-- Upload a `.zip` file into a writable root, then select it and choose **Extract ZIP**
-- Select a file or folder and choose **Zip** to create a standard ZIP archive beside it
-- Extract into the ZIP's current folder or another folder under the selected root
-- Optional overwrite mode, locked behind plugin configuration
-- Traversal guardrails against absolute paths and `../` entries
-- Optional skipping of macOS ZIP clutter such as `__MACOSX`, `.DS_Store`, and `._filename`
+Archive tools currently focus on ZIP files:
 
-Relevant configuration:
+- Create a ZIP from a selected file or folder.
+- Upload a `.zip` file and extract it under the selected root.
+- Extract to the ZIP's current folder or another path under the same root.
+- Keep no-overwrite extraction by default.
+- Optionally allow overwrite through plugin configuration.
+- Guard against absolute paths and parent-directory traversal in ZIP entries.
+- Optionally skip common macOS ZIP clutter such as `__MACOSX`, `.DS_Store`, and `._filename`.
+
+Relevant defaults:
 
 ```yaml
 archive:
@@ -195,88 +168,28 @@ archive:
   skip_macos_junk: true
 ```
 
-The default no-overwrite behavior is intentional. For plugin updates or page bundles that replace existing files, enable overwrite only when you trust the ZIP and have a backup.
-
 ## Backup Center
 
-Grav Commander includes a Grav-native Backup Center:
-
-- Backup profiles with a friendly form editor
-- Optional Expert JSON mode for raw profile editing
-- Site backup manifests
-- Backup notes
-- Backup health checks
-- Manual file/folder backups
-- Auto safety backups before destructive file operations
-- Download, delete, and guarded restore
-- Scheduled backup definitions tied to backup profiles
-- CLI command for scheduled or SSH-driven backups
+The Backup Center provides profile-driven site backups and safety backups for file operations.
 
 Default profiles:
 
-- `full_site`: everything under the Grav root, minus cache/log/temp/backup folders
-- `user_folder`: everything under `user/`
-- `pages_media`: `user/pages` only
-- `config_data`: `user/config`, `user/accounts`, and `user/data`
+- `full_site`: the Grav root, excluding cache/log/temp/backup folders.
+- `user_folder`: the `user/` folder.
+- `pages_media`: `user/pages` only.
+- `config_data`: `user/config`, `user/accounts`, and `user/data`.
 
-Profiles are edited in **Backup Center → Edit profiles**. They are saved to:
+Backups include `backup-info.json`, and site backups also include a manifest. Backup notes and metadata can be reviewed from the backup row info button.
 
-```text
-user/config/plugins/grav-commander.yaml
+Backup file names use a configurable token template:
+
+```yaml
+backup:
+  archive_name_template: gcmdr-[HOST]-[PROFILE]-[DATE]-[TIME_TZ]
+  add_random_if_inside_site_root: true
 ```
 
-Profile keys may contain letters, numbers, hyphens, and underscores. Include and exclude paths are relative to the Grav root. Use `.` only when the profile should include the whole site.
-
-### Scheduled backups
-
-Schedules are edited in the **Scheduled backups** section of the Backup Center. Each schedule selects a profile and a cron expression.
-
-Examples:
-
-```text
-0 * * * *      hourly at minute 0
-0 3 * * *      daily at 3:00 AM
-0 3 * * 1      weekly on Monday at 3:00 AM
-0 3 1 * *      monthly on the 1st at 3:00 AM
-```
-
-When schedules are saved, Grav Commander writes managed custom jobs to:
-
-```text
-user/config/scheduler.yaml
-```
-
-Those jobs call the plugin CLI command:
-
-```bash
-bin/plugin grav-commander backup --profile=pages_media --reason=scheduled-daily_backup
-```
-
-Important: the host must still run Grav's scheduler from system cron, for example:
-
-```bash
-* * * * * cd /path/to/grav && bin/grav scheduler 1>> /dev/null 2>&1
-```
-
-Without that server cron job, schedules will be saved but will not fire automatically.
-
-### Manual CLI backup
-
-You can run a profile backup over SSH:
-
-```bash
-bin/plugin grav-commander backup --profile=pages_media --reason=manual-cli --note="Before editing content"
-```
-
-## Backup storage
-
-Backups are stored by default in:
-
-```text
-user/data/grav-commander/backups
-```
-
-A `.htaccess` and `index.html` are written into that folder as a basic web-access guard.
+The `.zip` extension is added automatically. If backups are configured inside the site root and `[RANDOM]` is not in the template, Grav Commander can add a random suffix as a guardrail.
 
 Full-site restore is disabled by default:
 
@@ -285,85 +198,87 @@ backup:
   allow_site_restore: false
 ```
 
-File/folder restores are intended for staging and careful production use. Full-site restore is a sledgehammer. Keep it locked until you truly need it.
+Leave full-site restore disabled unless you are intentionally testing or recovering a site.
 
-## Security notes
+## Scheduled Backups
 
-- PHP and executable-style file editing/uploading is blocked by default.
-- Configured roots prevent path traversal outside allowed areas.
-- Backup files are stored outside public pages by default.
-- Full-site restore is locked behind explicit configuration.
-- Scheduled jobs are written only under a managed `grav-commander-backup-` prefix.
-- Test on staging before trusting this with production.
-
-## Routes
-
-The plugin registers API routes under:
+Schedules are edited in the Backup Center and saved to the plugin configuration. When schedules are saved, Grav Commander mirrors managed jobs into:
 
 ```text
-/api/v1/grav-commander
+user/config/scheduler.yaml
 ```
 
-Main endpoints include:
+Managed job IDs use the `grav-commander-backup-` prefix.
 
-- `GET /status`
-- `GET /roots`
-- `GET /list`
-- `GET /read`
-- `PATCH /write`
-- `POST /upload`
-- `POST /archive/zip`
-- `POST /archive/extract`
-- `POST /backup/file`
-- `POST /backup/site`
-- `GET /backups`
-- `GET /backup/download?name=backup-name.zip`
-- `GET /backup/profiles`
-- `POST /backup/profiles`
-- `GET /backup/schedules`
-- `POST /backup/schedules`
-- `POST /backup/schedules/{key}/run`
-- `POST /restore`
+Example cron expressions:
 
-
-## Notes for 0.3.8
-
-Grav Commander now separates the file manager and backup tools into two tabs: **Files** and **Backups**. Backup profiles and schedules are still stored in `user/config/plugins/grav-commander.yaml`, but normal editing is handled through form fields. The raw JSON editor is intended as an expert/debugging escape hatch only.
-
-For safer backup storage, point `backup.path` outside the public site root where your host allows it. Examples:
-
-```yaml
-backup:
-  path: ../gcmdr_backups
+```text
+0 * * * *      hourly at minute 0
+0 3 * * *      daily at 3:00 AM
+0 3 * * 1      weekly Monday at 3:00 AM
+0 3 1 * *      monthly on the 1st at 3:00 AM
 ```
 
-or an absolute server path:
+The server must still run Grav's scheduler from system cron, for example:
 
-```yaml
-backup:
-  path: /home/CPANELUSER/gcmdr_backups
+```bash
+* * * * * cd /path/to/grav && bin/grav scheduler 1>> /dev/null 2>&1
 ```
 
-The backup health panel will warn when the backup folder is still inside the Grav/site root, and the Backup Storage card can now offer a one-click suggested outside-root path when available. Existing backups remain in their original folder if you change the path; new backups go to the new location.
+Without that host-level cron entry, schedules can be saved but will not run automatically.
 
+## CLI Usage
 
-### Temporary download links
+Create a backup with a configured profile:
 
-Backup downloads use short-lived one-time tokens. The Admin2 UI asks the authenticated API for a token, then opens a direct download URL so the browser can handle the ZIP as a normal attachment. Tokens expire quickly and are consumed after use.
+```bash
+bin/plugin grav-commander backup --profile=pages_media --reason=manual-cli --note="Before content edits"
+```
 
+Options:
 
-## Notes for 0.3.8
+```text
+--profile, -p   Backup profile key. Default: full_site
+--reason, -r    Reason stored in metadata. Default: cli
+--note          Optional note stored in metadata.
+```
 
-This release tightens the Admin2 notice area, prevents post-operation notices from sticking around after long backup jobs, and leaves long-running work to the central overlay instead of showing multiple competing "Working…" indicators. Large backup downloads still stream through PHP because the archive folder is intentionally kept outside the public web root; that is safer, but the browser may take a moment to display the save dialog for larger ZIP files.
+Scheduled backup jobs use the same command internally.
 
+## Security Notes
 
-## Notes for 0.3.10
+- Treat file management, archive extraction, backup download, and restore as trusted-admin features.
+- Keep `blocked_extensions` conservative.
+- Keep backups outside the public site root when possible.
+- Use dedicated permissions for non-super users.
+- Keep full-site restore disabled unless actively needed.
+- Test restores on staging before relying on production recovery.
+- Backup download links use short-lived, one-time tokens requested by an authenticated Admin2 session.
+- Basic `.htaccess` protection helps Apache, but Nginx, Caddy, and other servers need server-level rules if backups are exposed under the web root.
 
-The Open in Grav Editor action uses Admin2's `/pages/edit/...` route and converts on-disk page folders like `05.typography_quark2` to the route segment `typography_quark2`.
+## Known Limitations
 
+- Grav 2 and Admin2 are still moving targets.
+- The editor is intentionally simple and is not yet a full code editor.
+- ZIP support is currently limited to ZIP archives.
+- Long-running large backups depend on PHP and hosting limits.
+- Scheduler jobs require host cron; saving a schedule alone is not enough.
+- Full-site restore is intentionally guarded and should be considered a recovery tool, not a deployment system.
 
-- Backup Profiles and Scheduled Backups now use expandable/collapsible item cards, similar in spirit to Grav list fields.
-- Schedule cards include scheduler status cards plus a generated Grav scheduler job preview so it is clearer what will be mirrored into `user/config/scheduler.yaml`.
-- Scheduler output logs are auto-derived from the schedule key when the default Grav Commander log pattern is used.
-- Markdown files under the Pages root now offer an **Open in Grav Editor** action. Raw editing remains available.
-- The longer-term editor path is to use Grav's page editor for real page files and an embedded code editor, likely CodeMirror, for arbitrary text-ish files.
+## Roadmap Link
+
+See [ROADMAP.md](ROADMAP.md) for directional plans.
+
+## Contributing / Feedback
+
+Issues, testing notes, and focused pull requests are welcome at:
+
+```text
+https://github.com/cdaters/grav-plugin-grav-commander/issues
+```
+
+Grav Commander is maintained by Craig Daters. PixelWizard may appear in community context, but project metadata uses the professional author name.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -1,8 +1,8 @@
 name: Grav Commander
 slug: grav-commander
 type: plugin
-version: 0.3.10
-description: Admin2-first Commander-style file manager with guarded backup and restore tools for Grav.
+version: 0.3.11
+description: Admin2-first file manager, archive toolkit, and guarded Backup Center for Grav 2.
 icon: folder-tree
 author:
   name: Craig Daters

@@ -904,7 +904,7 @@ class GravCommanderPage extends HTMLElement {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(objectUrl);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       const size = res.size ? ` (${this.formatSize(res.size)})` : '';
       this.setState({ message: `Downloaded ${res.name || name}${size}.` });
     } catch (err) {
