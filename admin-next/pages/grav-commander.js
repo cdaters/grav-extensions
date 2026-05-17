@@ -30,8 +30,8 @@ class GravCommanderPage extends HTMLElement {
       profileDraftError: '',
       scheduleRows: [],
       scheduleDraftError: '',
-      profileExpanded: {},
-      scheduleExpanded: {},
+      profileExpanded: this.loadStoredExpansion('gravCommander.profileExpanded'),
+      scheduleExpanded: this.loadStoredExpansion('gravCommander.scheduleExpanded'),
       busy: false,
       theme: 'dark',
       modal: null,
@@ -118,6 +118,30 @@ class GravCommanderPage extends HTMLElement {
     if (!match) return null;
     if (match[4] !== undefined && Number(match[4]) === 0) return null;
     return [Number(match[1]), Number(match[2]), Number(match[3])];
+  }
+
+  loadStoredExpansion(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  saveStoredExpansion(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value || {}));
+    } catch (_) {}
+  }
+
+  saveProfileExpanded(value) {
+    this.saveStoredExpansion('gravCommander.profileExpanded', value);
+  }
+
+  saveScheduleExpanded(value) {
+    this.saveStoredExpansion('gravCommander.scheduleExpanded', value);
   }
 
   getAuthHeaders(json = true) {
@@ -495,11 +519,13 @@ class GravCommanderPage extends HTMLElement {
     let key = base;
     let i = 2;
     while (used.has(key)) key = `${base}_${i++}`;
+    const profileExpanded = { ...this.state.profileExpanded, [currentRows.length]: true };
     this.setState({
       profileRows: [...currentRows, { key, label: 'Custom profile', description: '', include_paths: 'user/pages', exclude_prefixes: '' }],
-      profileExpanded: { ...this.state.profileExpanded, [currentRows.length]: true },
+      profileExpanded,
       profileDraftError: '',
     });
+    this.saveProfileExpanded(profileExpanded);
   }
 
   async deleteProfileRow(index) {
@@ -577,23 +603,27 @@ class GravCommanderPage extends HTMLElement {
 
 
   profileIsExpanded(index) {
-    return this.state.profileExpanded[index] !== false;
+    return this.state.profileExpanded[index] === true;
   }
 
   scheduleIsExpanded(index) {
-    return this.state.scheduleExpanded[index] !== false;
+    return this.state.scheduleExpanded[index] === true;
   }
 
   toggleProfileRow(index) {
     const profiles = this.rowsToProfiles(false);
     const profileRows = profiles ? this.profilesToRows(profiles) : this.state.profileRows;
-    this.setState({ profileRows, profileExpanded: { ...this.state.profileExpanded, [index]: !this.profileIsExpanded(index) } });
+    const profileExpanded = { ...this.state.profileExpanded, [index]: !this.profileIsExpanded(index) };
+    this.setState({ profileRows, profileExpanded });
+    this.saveProfileExpanded(profileExpanded);
   }
 
   toggleScheduleRow(index) {
     const schedules = this.rowsToSchedules(false);
     const scheduleRows = schedules ? this.schedulesToRows(schedules) : this.state.scheduleRows;
-    this.setState({ scheduleRows, scheduleExpanded: { ...this.state.scheduleExpanded, [index]: !this.scheduleIsExpanded(index) } });
+    const scheduleExpanded = { ...this.state.scheduleExpanded, [index]: !this.scheduleIsExpanded(index) };
+    this.setState({ scheduleRows, scheduleExpanded });
+    this.saveScheduleExpanded(scheduleExpanded);
   }
 
   setAllProfileRows(expanded) {
@@ -602,6 +632,7 @@ class GravCommanderPage extends HTMLElement {
     const next = {};
     profileRows.forEach((_, idx) => { next[idx] = !!expanded; });
     this.setState({ profileRows, profileExpanded: next });
+    this.saveProfileExpanded(next);
   }
 
   setAllScheduleRows(expanded) {
@@ -610,6 +641,7 @@ class GravCommanderPage extends HTMLElement {
     const next = {};
     scheduleRows.forEach((_, idx) => { next[idx] = !!expanded; });
     this.setState({ scheduleRows, scheduleExpanded: next });
+    this.saveScheduleExpanded(next);
   }
 
   scheduleOutputForKey(key) {
@@ -666,6 +698,7 @@ class GravCommanderPage extends HTMLElement {
     let key = base;
     let i = 2;
     while (used.has(key)) key = `${base}_${i++}`;
+    const scheduleExpanded = { ...this.state.scheduleExpanded, [currentRows.length]: true };
     this.setState({
       scheduleRows: [...currentRows, {
         key,
@@ -676,9 +709,10 @@ class GravCommanderPage extends HTMLElement {
         note: '',
         output: this.scheduleOutputForKey(key),
       }],
-      scheduleExpanded: { ...this.state.scheduleExpanded, [currentRows.length]: true },
+      scheduleExpanded,
       scheduleDraftError: '',
     });
+    this.saveScheduleExpanded(scheduleExpanded);
   }
 
   async deleteScheduleRow(index) {
