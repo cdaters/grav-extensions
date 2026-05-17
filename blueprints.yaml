@@ -1,0 +1,281 @@
+name: Grav Commander
+slug: grav-commander
+type: plugin
+version: 0.3.10
+description: Admin2-first Commander-style file manager with guarded backup and restore tools for Grav.
+icon: folder-tree
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-plugin-grav-commander
+keywords: grav, plugin, admin2, file manager, backup, commander
+bugs: https://github.com/cdaters/grav-plugin-grav-commander/issues
+docs: https://github.com/cdaters/grav-plugin-grav-commander/blob/main/README.md
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav:
+    - '2.0'
+  api:
+    - '1.0'
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      help: Adds Grav Commander to the Admin2 sidebar.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    max_upload_size:
+      type: number
+      label: Max upload size in bytes
+      default: 10485760
+      validate:
+        type: int
+        min: 1024
+
+    max_edit_size:
+      type: number
+      label: Max editable file size in bytes
+      default: 1048576
+      validate:
+        type: int
+        min: 1024
+
+    allow_php_editing:
+      type: toggle
+      label: Allow PHP editing
+      help: Dangerous. Leave disabled unless you are working locally or fully trust all Admin users.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    allow_recursive_delete:
+      type: toggle
+      label: Allow deleting non-empty folders
+      help: Dangerous. When disabled, only files and empty folders can be deleted.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    auto_backup_on_write:
+      type: toggle
+      label: Auto-backup before save, rename, move, copy, or delete
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.enabled:
+      type: toggle
+      label: Archive tools enabled
+      help: Enables creating ZIP files and extracting uploaded ZIP archives from Grav Commander.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.allow_create:
+      type: toggle
+      label: Allow creating ZIP archives
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.allow_extract:
+      type: toggle
+      label: Allow extracting ZIP archives
+      help: Extraction is guarded against parent-directory traversal and absolute paths, but only enable this for trusted Admin users.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.allow_overwrite:
+      type: toggle
+      label: Allow ZIP extraction to overwrite existing files
+      help: Disabled by default. When enabled, existing files are safety-backed-up before they are overwritten if backup_before_extract is enabled.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.backup_before_extract:
+      type: toggle
+      label: Back up existing files before ZIP extraction overwrites them
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    archive.max_extract_files:
+      type: number
+      label: Max files per ZIP extraction
+      default: 5000
+      validate:
+        type: int
+        min: 1
+
+    archive.max_extract_bytes:
+      type: number
+      label: Max uncompressed bytes per ZIP extraction
+      default: 209715200
+      validate:
+        type: int
+        min: 1024
+
+    archive.skip_macos_junk:
+      type: toggle
+      label: Skip macOS junk files during ZIP extraction
+      help: Skips __MACOSX, .DS_Store, and AppleDouble files such as ._filename.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+
+    editable_extensions:
+      type: array
+      label: Editable file extensions / filenames
+      help: Extensions or exact filenames Grav Commander may edit. Do not include the leading dot. PHP remains blocked unless Allow PHP editing is enabled and php is removed from blocked extensions.
+      value_only: true
+
+    viewable_extensions:
+      type: array
+      label: Viewable file extensions / filenames
+      help: Extensions or exact filenames Grav Commander may open read-only for preview. Keep executable/script types out of this list.
+      value_only: true
+
+    blocked_extensions:
+      type: array
+      label: Blocked file extensions
+      help: Extensions Grav Commander will not open/edit/upload through the browser. These guardrails should stay conservative on production sites.
+      value_only: true
+
+    backup.enabled:
+      type: toggle
+      label: Backup tools enabled
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    backup.path:
+      type: text
+      label: Backup storage path
+      help: Absolute paths are allowed, e.g. /home/retrorealm/gcmdr_backups. Relative paths are resolved from the Grav root, so ../gcmdr_backups points one level above the site root. Recommended: keep backups outside the public site tree. On typical cPanel hosting, ../gcmdr_backups resolves beside public_html, e.g. /home/retrorealm/gcmdr_backups.
+      default: ../gcmdr_backups
+
+    backup.max_backups:
+      type: number
+      label: Max backups to keep
+      default: 25
+      validate:
+        type: int
+        min: 1
+
+    backup.archive_name_template:
+      type: text
+      label: Backup archive name template
+      help: The .zip extension is added automatically. Useful tokens: [PREFIX], [HOST], [SITENAME], [PROFILE], [PROFILE_LABEL], [DATE], [TIME], [TIME_TZ], [TZ], [GMT_OFFSET], [SCOPE], [REASON], [ROOT], [PATH], [VERSION], [RANDOM]. Default keeps names short and uses gcmdr instead of grav-commander.
+      default: gcmdr-[HOST]-[PROFILE]-[DATE]-[TIME_TZ]
+
+    backup.add_random_if_inside_site_root:
+      type: toggle
+      label: Add random suffix when backup path is inside site root
+      help: Recommended. Makes archive names harder to guess if backups are accidentally stored under the public site tree and [RANDOM] is not already used in the name template.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    backup.allow_site_restore:
+      type: toggle
+      label: Allow full-site restore
+      help: Disabled by default. File restores are allowed, but full-site restore is intentionally locked behind this switch.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+
+    backup.site_include_paths:
+      type: array
+      label: Default site backup include paths
+      help: Used by the default/manual site backup fallback. Backup profiles can override this.
+      value_only: true
+
+    backup.site_exclude_prefixes:
+      type: array
+      label: Site backup exclude path prefixes
+      help: Relative paths under Grav root that should be skipped by site backups.
+      value_only: true
+
+
+    backup.schedules:
+      type: array
+      label: Scheduled backup definitions
+      help: Advanced/expert view only. Use Grav Commander → Backup Center for the friendly schedule editor. Saved schedules are also mirrored into user/config/scheduler.yaml as Grav custom jobs.
+      value_only: false

@@ -1,0 +1,13 @@
+actions:
+  grav-commander:
+    label: Grav Commander
+    type: access
+    actions:
+      browse:
+        label: Browse files
+      write:
+        label: Create/Edit/Delete files
+      backup:
+        label: Create/Download backups
+      restore:
+        label: Restore backups
