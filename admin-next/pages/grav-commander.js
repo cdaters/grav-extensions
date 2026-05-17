@@ -873,7 +873,7 @@ class GravCommanderPage extends HTMLElement {
   }
 
   async downloadBackup(name) {
-    this.setState({ error: '', message: `Preparing download link for ${name}…` });
+    this.setState({ error: '', message: `Preparing backup download for ${name}… Large archives may take a moment before your browser shows the save dialog.` });
     try {
       const res = await this.api('/grav-commander/backup/download-token', {
         method: 'POST',
@@ -906,7 +906,7 @@ class GravCommanderPage extends HTMLElement {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       const size = res.size ? ` (${this.formatSize(res.size)})` : '';
-      this.setState({ message: `Downloaded ${res.name || name}${size}.` });
+      this.setState({ message: `Download prepared for ${res.name || name}${size}. If your browser asks where to save it, choose a location to continue.` });
     } catch (err) {
       this.setState({ error: err.message || String(err) });
     }

@@ -264,6 +264,7 @@ Scheduled backup jobs use the same command internally.
 - Long-running large backups depend on PHP and hosting limits.
 - Scheduler jobs require host cron; saving a schedule alone is not enough.
 - Full-site restore is intentionally guarded and should be considered a recovery tool, not a deployment system.
+  Large backup downloads may take a few seconds before the browser save dialog appears because Admin2 fetches authenticated backup archives before handing them to the browser.
 
 ## Roadmap Link
 

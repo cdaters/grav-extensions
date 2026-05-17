@@ -7,6 +7,7 @@
 2. [](#improved)
     * Persisted Backup Profile and Scheduled Backup expanded/collapsed state in localStorage.
     * Improved public documentation and plugin metadata for a Grav/GPM-readiness pass.
+    * Improved large backup download messaging so users know the browser save dialog may take a moment to appear.
 3. [](#bugfix)
     * Fixed backup downloads in Admin2 by fetching tokenized downloads with authentication headers instead of opening a protected API route directly.
 
