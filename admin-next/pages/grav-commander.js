@@ -856,6 +856,22 @@ class GravCommanderPage extends HTMLElement {
     });
   }
 
+  showBackupInfo(name) {
+    const backup = this.state.backups.find(item => item.name === name);
+    if (!backup) return;
+
+    this.setState({
+      modal: {
+        title: 'Backup details',
+        message: this.backupDetailsText(backup),
+        okText: 'Close',
+        cancelText: '',
+        danger: false,
+        resolve: null,
+      }
+    });
+  }
+
   async downloadBackup(name) {
     this.setState({ error: '', message: `Preparing download link for ${name}…` });
     try {
@@ -867,15 +883,30 @@ class GravCommanderPage extends HTMLElement {
       if (!url || !res.token) {
         throw new Error('Download token was not returned by the server.');
       }
+      const response = await fetch(url, {
+        headers: this.getAuthHeaders(false),
+      });
+      if (!response.ok) {
+        let detail = response.statusText;
+        try {
+          const json = await response.json();
+          detail = json.detail || json.message || json.title || detail;
+        } catch (_) {}
+        throw new Error(`${response.status} ${detail}`);
+      }
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = objectUrl;
+      a.download = res.name || name;
       a.rel = 'noopener';
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(objectUrl);
       const size = res.size ? ` (${this.formatSize(res.size)})` : '';
-      this.setState({ message: `Download requested for ${name}${size}. Your browser may take a moment to show the save dialog for larger archives.` });
+      this.setState({ message: `Downloaded ${res.name || name}${size}.` });
     } catch (err) {
       this.setState({ error: err.message || String(err) });
     }
@@ -1026,6 +1057,45 @@ class GravCommanderPage extends HTMLElement {
   formatDate(ts) {
     if (!ts) return '—';
     return new Date(ts * 1000).toLocaleString();
+  }
+
+  backupDetailsText(backup) {
+    const meta = backup?.meta || {};
+    const lines = [
+      `Name: ${backup?.name || 'Unknown'}`,
+      `Note: ${meta.note || 'No note stored.'}`,
+    ];
+
+    const entries = [
+      ['Scope', meta.scope],
+      ['Reason', meta.reason],
+      ['Profile', meta.profile],
+      ['Profile label', meta.profile_label],
+      ['Original root', meta.root],
+      ['Original path', meta.path],
+      ['Payload base', meta.payload_base],
+      ['Is folder backup', meta.is_dir === undefined ? undefined : (meta.is_dir ? 'yes' : 'no')],
+      ['Created', meta.created],
+      ['Plugin', meta.plugin],
+      ['Version', meta.version],
+      ['Include paths', Array.isArray(meta.include_paths) ? meta.include_paths.join(', ') : undefined],
+      ['Exclude prefixes', Array.isArray(meta.exclude_prefixes) ? meta.exclude_prefixes.join(', ') : undefined],
+    ];
+
+    if (meta.stats && typeof meta.stats === 'object') {
+      entries.push(['Files', meta.stats.files]);
+      entries.push(['Folders', meta.stats.dirs]);
+      entries.push(['Bytes', meta.stats.bytes]);
+      entries.push(['Skipped', meta.stats.skipped]);
+    }
+
+    entries.forEach(([label, value]) => {
+      if (value !== undefined && value !== null && String(value) !== '') {
+        lines.push(`${label}: ${value}`);
+      }
+    });
+
+    return lines.join('\n');
   }
 
   iconFor(item) {
@@ -1221,7 +1291,7 @@ class GravCommanderPage extends HTMLElement {
         .gc-modal { width:min(520px, calc(100vw - 40px)); background:var(--gc-card); color:var(--gc-text); border:1px solid var(--gc-border); border-radius:16px; box-shadow:0 18px 60px rgba(0,0,0,.35); overflow:hidden; }
         .gc-modal-head { padding:16px 18px; background:var(--gc-card-soft); border-bottom:1px solid var(--gc-border-soft); }
         .gc-modal-head h3 { margin:0; font-size:18px; }
-        .gc-modal-body { padding:18px; color:var(--gc-muted); line-height:1.45; }
+        .gc-modal-body { padding:18px; color:var(--gc-muted); line-height:1.45; white-space:pre-wrap; }
         .gc-modal-actions { display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid var(--gc-border-soft); background:var(--gc-card-soft); }
         .gc-busy-overlay { position:fixed; inset:0; z-index:9998; display:grid; place-items:center; background:rgba(0,0,0,.36); backdrop-filter:blur(1px); }
         .gc-busy-box { display:flex; align-items:center; gap:12px; max-width:min(560px, calc(100vw - 40px)); padding:18px 20px; border:1px solid var(--gc-border); border-radius:16px; background:var(--gc-card); color:var(--gc-text); box-shadow:0 18px 60px rgba(0,0,0,.35); }
@@ -1458,6 +1528,7 @@ class GravCommanderPage extends HTMLElement {
                       <td>${this.escape(this.formatSize(b.size))}</td>
                       <td>${this.escape(meta.created || this.formatDate(b.modified))}</td>
                       <td>
+                        <button data-backup-info="${this.escape(b.name)}" title="Show backup notes and metadata">Info</button>
                         <button data-backup-download="${this.escape(b.name)}">Download</button>
                         <button data-backup-restore="${this.escape(b.name)}" data-scope="${this.escape(scope)}">Restore</button>
                         <button class="danger" data-backup-delete="${this.escape(b.name)}">Delete</button>
@@ -1477,7 +1548,7 @@ class GravCommanderPage extends HTMLElement {
             <div class="gc-modal-head"><h3>${this.escape(modal.title)}</h3></div>
             <div class="gc-modal-body">${this.escape(modal.message)}</div>
             <div class="gc-modal-actions">
-              <button id="gc-modal-cancel">${this.escape(modal.cancelText || 'Cancel')}</button>
+              ${modal.cancelText === '' ? '' : `<button id="gc-modal-cancel">${this.escape(modal.cancelText || 'Cancel')}</button>`}
               <button id="gc-modal-ok" class="${modal.danger ? 'danger' : 'primary'}">${this.escape(modal.okText || 'OK')}</button>
             </div>
           </div>
@@ -1590,6 +1661,9 @@ class GravCommanderPage extends HTMLElement {
     this.shadowRoot.querySelector('#gc-site-backup')?.addEventListener('click', () => this.backupSite());
     this.shadowRoot.querySelector('#gc-refresh-backups')?.addEventListener('click', () => this.guard(() => this.loadBackups(true)));
 
+    this.shadowRoot.querySelectorAll('[data-backup-info]').forEach(btn => {
+      btn.addEventListener('click', () => this.showBackupInfo(btn.dataset.backupInfo));
+    });
     this.shadowRoot.querySelectorAll('[data-backup-download]').forEach(btn => {
       btn.addEventListener('click', () => this.downloadBackup(btn.dataset.backupDownload));
     });
