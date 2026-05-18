@@ -7,9 +7,9 @@
 2. [](#improved)
     * Persisted Backup Profile and Scheduled Backup expanded/collapsed state in localStorage.
     * Improved public documentation and plugin metadata for a Grav/GPM-readiness pass.
-    * Improved large backup download messaging so users know the browser save dialog may take a moment to appear.
+    * Backup downloads now use a true tokenized browser-streaming route for large ZIP archives.
 3. [](#bugfix)
-    * Fixed backup downloads in Admin2 by fetching tokenized downloads with authentication headers instead of opening a protected API route directly.
+    * Fixed backup downloads in Admin2 by opening a non-API tokenized route instead of fetching full ZIP archives into JavaScript Blob memory.
 
 # v0.3.10
 ## 05/16/2026

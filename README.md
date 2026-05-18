@@ -253,7 +253,7 @@ Scheduled backup jobs use the same command internally.
 - Use dedicated permissions for non-super users.
 - Keep full-site restore disabled unless actively needed.
 - Test restores on staging before relying on production recovery.
-- Backup download links use short-lived, one-time tokens requested by an authenticated Admin2 session.
+- Backup download links use short-lived, one-time tokens requested by an authenticated Admin2 session, then stream through a token-only browser download route.
 - Basic `.htaccess` protection helps Apache, but Nginx, Caddy, and other servers need server-level rules if backups are exposed under the web root.
 
 ## Known Limitations
@@ -264,7 +264,7 @@ Scheduled backup jobs use the same command internally.
 - Long-running large backups depend on PHP and hosting limits.
 - Scheduler jobs require host cron; saving a schedule alone is not enough.
 - Full-site restore is intentionally guarded and should be considered a recovery tool, not a deployment system.
-  Large backup downloads may take a few seconds before the browser save dialog appears because Admin2 fetches authenticated backup archives before handing them to the browser.
+  Large backup downloads stream through a tokenized browser route so the browser can handle the ZIP directly without loading the full archive into Admin2 JavaScript memory.
 
 ## Roadmap Link
 

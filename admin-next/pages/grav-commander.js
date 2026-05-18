@@ -873,42 +873,30 @@ class GravCommanderPage extends HTMLElement {
   }
 
   async downloadBackup(name) {
-    this.setState({ error: '', message: `Preparing backup download for ${name}… Large archives may take a moment before your browser shows the save dialog.` });
+    const label = `Preparing backup download for ${name}… Large archives may take a moment before your browser shows the save dialog.`;
+    this.setState({ busy: true, busyLabel: label, error: '', message: label });
     try {
       const res = await this.api('/grav-commander/backup/download-token', {
         method: 'POST',
         body: JSON.stringify({ name }),
       });
-      const url = res.url || this.apiUrl(`/grav-commander/backup/direct-download?token=${encodeURIComponent(res.token || '')}`);
-      if (!url || !res.token) {
+      if (!res.token) {
         throw new Error('Download token was not returned by the server.');
       }
-      const response = await fetch(url, {
-        headers: this.getAuthHeaders(false),
-      });
-      if (!response.ok) {
-        let detail = response.statusText;
-        try {
-          const json = await response.json();
-          detail = json.detail || json.message || json.title || detail;
-        } catch (_) {}
-        throw new Error(`${response.status} ${detail}`);
-      }
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      const server = (window.__GRAV_API_SERVER_URL || '').replace(/\/$/, '');
+      const downloadUrl = `${server}/grav-commander/download?token=${encodeURIComponent(res.token)}`;
       const a = document.createElement('a');
-      a.href = objectUrl;
+      a.href = downloadUrl;
       a.download = res.name || name;
       a.rel = 'noopener';
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       const size = res.size ? ` (${this.formatSize(res.size)})` : '';
-      this.setState({ message: `Download prepared for ${res.name || name}${size}. If your browser asks where to save it, choose a location to continue.` });
+      this.setState({ busy: false, busyLabel: '', message: `Download prepared for ${res.name || name}${size}. If your browser asks where to save it, choose a location to continue.` });
     } catch (err) {
-      this.setState({ error: err.message || String(err) });
+      this.setState({ busy: false, busyLabel: '', error: err.message || String(err) });
     }
   }
 

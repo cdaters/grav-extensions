@@ -19,6 +19,7 @@ class GravCommanderPlugin extends Plugin
     public static function getSubscribedEvents(): array
     {
         return [
+            'onPluginsInitialized' => ['onPluginsInitialized', 0],
             'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
@@ -39,6 +40,43 @@ class GravCommanderPlugin extends Plugin
                 require_once $file;
             }
         });
+    }
+
+    public function onPluginsInitialized(): void
+    {
+        $uri = $this->grav['uri'] ?? null;
+        if (!$uri || !method_exists($uri, 'path')) {
+            return;
+        }
+
+        $path = '/' . trim((string) $uri->path(), '/');
+        if ($path !== '/grav-commander/download') {
+            return;
+        }
+
+        $this->enable([
+            'onPageInitialized' => ['onPageInitialized', 0],
+        ]);
+    }
+
+    public function onPageInitialized(): void
+    {
+        require_once __DIR__ . '/classes/Service/FileService.php';
+
+        $token = (string) ($_GET['token'] ?? '');
+        try {
+            $file = (new \Grav\Plugin\GravCommander\Service\FileService())->consumeBackupDownloadToken($token);
+        } catch (\Throwable $e) {
+            header('HTTP/1.1 403 Forbidden');
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Pragma: no-cache');
+            header('X-Content-Type-Options: nosniff');
+            header('Referrer-Policy: no-referrer');
+            echo 'Invalid or expired download token.';
+            exit;
+        }
+
+        $this->streamFileAndExit((string) $file['absolute'], (string) $file['name'], 'application/zip');
     }
 
     public function onApiRegisterRoutes(Event $event): void
@@ -123,6 +161,50 @@ class GravCommanderPlugin extends Plugin
         }
 
         return false;
+    }
+
+    private function streamFileAndExit(string $path, string $name, string $mime): void
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            header('HTTP/1.1 404 Not Found');
+            echo 'Unable to open file for download.';
+            exit;
+        }
+
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        while (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+
+        if (headers_sent()) {
+            exit;
+        }
+
+        $asciiName = preg_replace('/[^A-Za-z0-9._-]+/', '_', $name) ?: 'download.zip';
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . (string) filesize($path));
+        header("Content-Disposition: attachment; filename=\"" . $asciiName . "\"; filename*=UTF-8''" . rawurlencode($name));
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('X-Content-Type-Options: nosniff');
+        header('Referrer-Policy: no-referrer');
+
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            header('HTTP/1.1 500 Internal Server Error');
+            echo 'Unable to open file for download.';
+            exit;
+        }
+
+        while (!feof($handle)) {
+            echo fread($handle, 1024 * 1024);
+            flush();
+        }
+        fclose($handle);
+        exit;
     }
 
     public function onApiPluginPageInfo(Event $event): void

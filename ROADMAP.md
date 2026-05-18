@@ -22,7 +22,7 @@ This roadmap is directional, not a promise list. Priorities may shift as Grav 2,
 - Make restore workflows more explicit and harder to trigger accidentally.
 - Explore optional remote/cloud backup targets after local backup behavior is boring and reliable.
 - Add better reporting around large backup failures caused by hosting limits.
-- Explore a true tokenized browser-download route for large backups that avoids loading full archives through the Admin2 JavaScript Blob path.
+- Continue testing the tokenized browser-download route for large backups across common hosting environments.
 
 ## Code Quality Direction
 
