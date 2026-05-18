@@ -8,6 +8,36 @@ It is intentionally cautious. Grav Commander is meant to help trusted administra
 
 Grav Commander is alpha software for Grav 2 and Admin2. Use it locally or on staging first, review the configured roots and permissions, and keep independent server backups for production sites.
 
+## Screenshots
+
+### Dark Mode
+
+| Plugin Settings | Plugin Settings, continued |
+|:---:|:---:|
+| <img src="docs/screenshots/grav-commander-dm-plugin.png" alt="Grav Commander plugin settings in dark mode" width="100%" /> | <img src="docs/screenshots/grav-commander-dm-plugin2.png" alt="Additional Grav Commander plugin settings in dark mode" width="100%" /> |
+
+| Files | Backup Center |
+|:---:|:---:|
+| <img src="docs/screenshots/grav-commander-dm-files.png" alt="Grav Commander Files screen in dark mode" width="100%" /> | <img src="docs/screenshots/grav-commander-dm-backup.png" alt="Grav Commander Backup Center in dark mode" width="100%" /> |
+
+| Backup Center, continued |
+|:---:|
+| <img src="docs/screenshots/grav-commander-dm-backup2.png" alt="Additional Grav Commander Backup Center view in dark mode" width="100%" /> |
+
+### Light Mode
+
+| Plugin Settings | Plugin Settings, continued |
+|:---:|:---:|
+| <img src="docs/screenshots/grav-commander-lm-plugin.png" alt="Grav Commander plugin settings in light mode" width="100%" /> | <img src="docs/screenshots/grav-commander-lm-plugin2.png" alt="Additional Grav Commander plugin settings in light mode" width="100%" /> |
+
+| Files | Backup Center |
+|:---:|:---:|
+| <img src="docs/screenshots/grav-commander-lm-files.png" alt="Grav Commander Files screen in light mode" width="100%" /> | <img src="docs/screenshots/grav-commander-lm-backup.png" alt="Grav Commander Backup Center in light mode" width="100%" /> |
+
+| Backup Center, continued |
+|:---:|
+| <img src="docs/screenshots/grav-commander-lm-backup2.png" alt="Additional Grav Commander Backup Center view in light mode" width="100%" /> |
+
 ## Features
 
 - Admin2 sidebar page with Files and Backups sections.
