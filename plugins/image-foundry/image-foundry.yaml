@@ -1,0 +1,37 @@
+enabled: true
+
+admin:
+  show_sidebar: true
+
+source_roots:
+  - user/pages
+  - user/themes
+
+source_extensions:
+  - jpg
+  - jpeg
+  - png
+  - webp
+  - avif
+
+widths:
+  - 480
+  - 960
+  - 1440
+  - 1920
+
+formats:
+  webp:
+    enabled: true
+    quality: 82
+  avif:
+    enabled: true
+    quality: 56
+
+storage_path: ../image-foundry-data
+route: /image-foundry/asset
+max_source_bytes: 52428800
+max_source_pixels: 20000000
+build_limit: 50
+preserve_transparency: true
+auto_orient_jpeg: true

@@ -32,7 +32,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 
 ## Integration boundaries
 
-- **Image Foundry → Prism Gallery:** Prism requests ordinary Grav media URLs. Optimized variants may be supplied by Grav's media pipeline; Prism never depends on Image Foundry.
+- **Image Foundry → Prism Gallery:** Prism requests ordinary Grav media URLs and never depends on Image Foundry. Themes and media plugins may opt into Image Foundry's public Twig/service interface; the ordinary original URL remains the fallback.
 - **Meta Pilot → all public plugins:** Meta Pilot reads the final page and registered structured-data fragments. It does not rewrite another plugin's markup.
 - **Lantern Search → content providers:** Plugins can expose indexable records through an event. ACL-protected and unpublished records are excluded at indexing and query time.
 - **Revision Ledger → writers:** Page Studio and Site Workshop can ask Revision Ledger to checkpoint a page before a write. If Revision Ledger is absent, they still work.
@@ -65,7 +65,12 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Site Safeguard 0.2.2:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
   rollback-first, CLI-only full-site restore with fresh-process boot checks.
+- **Image Foundry 0.1.0:** working development release with original-preserving
+  WebP/AVIF sets, source/policy invalidation, protected generated storage,
+  opaque immutable delivery, Admin2 operations, CLI parity, and an opt-in Twig
+  `<picture>` helper.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.1.0:** working Quark 2 child theme, intentionally site-specific.
-- **All others:** named and bounded, not yet represented as finished packages.
+- **Meta Pilot and later roadmap plugins:** named and bounded, not yet represented
+  as finished packages.

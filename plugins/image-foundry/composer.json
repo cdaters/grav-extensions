@@ -1,0 +1,23 @@
+{
+  "name": "cdaters/grav-plugin-image-foundry",
+  "type": "grav-plugin",
+  "description": "Original-preserving, self-hosted responsive image derivatives for Grav.",
+  "keywords": ["grav", "plugin", "image", "webp", "avif", "responsive"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Craig Daters",
+      "email": "craig@daters.net"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ext-gd": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\ImageFoundry\\": "classes/"
+    }
+  }
+}
+

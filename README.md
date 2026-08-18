@@ -22,6 +22,7 @@ GitHub and filesystem readers can begin with the
 | File Vault | Plugin | Development release | `user/plugins/file-vault` |
 | Prism Gallery | Plugin | Development release | `user/plugins/prism-gallery` |
 | Site Safeguard | Plugin | Development release | `user/plugins/site-safeguard` |
+| Image Foundry | Plugin | 0.1 development release | `user/plugins/image-foundry` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
@@ -35,6 +36,7 @@ travels with release ZIPs:
 - [File Vault manual](plugins/file-vault/README.md)
 - [Prism Gallery manual](plugins/prism-gallery/README.md)
 - [Site Safeguard manual](plugins/site-safeguard/README.md)
+- [Image Foundry manual](plugins/image-foundry/README.md)
 - [Grav Commander manual](plugins/grav-commander/README.md)
 - [Spitfire child-theme manual](themes/spitfire/README.md)
 
@@ -87,6 +89,7 @@ Create an installable ZIP containing the required top-level extension folder:
 ./scripts/package-extension.sh plugin file-vault
 ./scripts/package-extension.sh plugin prism-gallery
 ./scripts/package-extension.sh plugin site-safeguard
+./scripts/package-extension.sh plugin image-foundry
 ./scripts/package-extension.sh plugin grav-commander
 ./scripts/package-extension.sh theme spitfire
 ```

@@ -31,6 +31,8 @@ For a meaningful release candidate, also test in a clean Grav installation:
 - Range and HEAD requests do not inflate analytics.
 - Remote URLs are validated and redirect with a restrictive referrer policy.
 - User-controlled paths cannot escape configured roots.
+- Generated image derivatives live outside the public root; only opaque plugin
+  routes can deliver them, and building/purging never changes source hashes.
 - Logs redact secrets and collection failures never weaken access checks.
 - Disabled JavaScript leaves useful public HTML and no unauthorized URL.
 

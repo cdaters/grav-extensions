@@ -19,6 +19,8 @@
   galleries and protected local originals
 - [[plugins/site-safeguard/README|Site Safeguard]] — checksummed portable
   packages and isolated restore staging
+- [[plugins/image-foundry/README|Image Foundry]] — original-preserving WebP and
+  AVIF responsive derivatives
 - [[plugins/grav-commander/README|Grav Commander]] — file, archive, and guarded
   backup tools
 - [[themes/spitfire/README|Spitfire]] — update-safe Quark 2 child theme
@@ -34,7 +36,7 @@
 ## Planned work
 
 - [[docs/planned/README|Planned extension briefs]]
-- [[docs/planned/image-foundry|Image Foundry]]
+- [[docs/planned/image-foundry|Image Foundry 0.1 scope record]]
 - [[docs/planned/meta-pilot|Meta Pilot]]
 - [[docs/planned/revision-ledger|Revision Ledger]]
 - [[docs/planned/lantern-search|Lantern Search]]

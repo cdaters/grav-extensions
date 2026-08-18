@@ -8,6 +8,7 @@ The repository is not a single Grav plugin. Install only the package you need:
 plugins/file-vault       -> user/plugins/file-vault
 plugins/prism-gallery    -> user/plugins/prism-gallery
 plugins/site-safeguard   -> user/plugins/site-safeguard
+plugins/image-foundry    -> user/plugins/image-foundry
 plugins/grav-commander   -> user/plugins/grav-commander
 themes/spitfire          -> user/themes/spitfire
 ```
@@ -43,5 +44,5 @@ can be extracted into `user/plugins`. Themes use `theme` and `user/themes`.
 
 Plugin code can be replaced during an upgrade. Site configuration, catalog
 data, activity records, protected downloads, page content, and user accounts
-must remain outside the plugin folder. File Vault's manual describes its exact
-data boundary and backup requirements.
+must remain outside the plugin folder. Each extension manual describes its
+exact data boundary and backup/rebuild requirements.

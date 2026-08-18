@@ -8,7 +8,7 @@ can never be mistaken for an installable Grav package.
 | ---: | --- | --- | --- |
 | 1 | Prism Gallery | Accessible mixed-media galleries and protected local-media delivery | Development release |
 | 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.2.2 development release; guarded CLI restore available |
-| 3 | Image Foundry | Original-preserving optimization and modern derivatives | Specification queued |
+| 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.1.0 development release |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | Specification queued |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | Specification queued |
 | 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | Specification queued |
@@ -47,3 +47,13 @@ The recovery work that follows is intentionally incremental:
    integrity verification, and remote retention.
 4. **External data sets** — explicit companion backup definitions for File
    Vault binaries and other protected data stored outside the Grav root.
+
+## Image Foundry roadmap
+
+Image Foundry 0.1 provides the safe derivative foundation: bounded local GD
+processing, source hashes, responsive WebP/AVIF sets, opaque delivery, Admin2
+operations, CLI parity, and an opt-in Twig `<picture>` helper.
+
+Later milestones can add background/Scheduler queues, additional image engines,
+visual before/after comparisons, Grav media-event adapters, and a reversible
+replacement workflow. Originals remain authoritative throughout.

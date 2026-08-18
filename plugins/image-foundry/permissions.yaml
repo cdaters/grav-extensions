@@ -1,0 +1,8 @@
+actions:
+  image-foundry:
+    label: Image Foundry
+    type: access
+    actions:
+      manage:
+        label: Scan sources, build derivatives, and purge generated files
+
