@@ -1,0 +1,158 @@
+enabled: true
+
+admin:
+  show_sidebar: true
+
+max_upload_size: 10485760
+max_edit_size: 1048576
+allow_php_editing: false
+allow_recursive_delete: false
+auto_backup_on_write: true
+
+archive:
+  enabled: true
+  allow_create: true
+  allow_extract: true
+  allow_overwrite: false
+  backup_before_extract: true
+  max_extract_files: 5000
+  max_extract_bytes: 209715200
+  skip_macos_junk: true
+
+roots:
+  pages:
+    label: Pages
+    path: user/pages
+    writable: true
+  themes:
+    label: Themes
+    path: user/themes
+    writable: true
+  plugins:
+    label: Plugins
+    path: user/plugins
+    writable: true
+  config:
+    label: Config
+    path: user/config
+    writable: true
+  data:
+    label: Data
+    path: user/data
+    writable: true
+  logs:
+    label: Logs
+    path: logs
+    writable: false
+
+editable_extensions:
+  - md
+  - markdown
+  - yaml
+  - yml
+  - txt
+  - twig
+  - css
+  - scss
+  - js
+  - mjs
+  - json
+  - html
+  - htm
+  - xml
+  - svg
+  - ini
+  - env.example
+
+viewable_extensions:
+  - md
+  - markdown
+  - yaml
+  - yml
+  - txt
+  - twig
+  - css
+  - scss
+  - js
+  - mjs
+  - json
+  - html
+  - htm
+  - xml
+  - svg
+  - ini
+  - env.example
+  - log
+  - rev
+  - csv
+
+blocked_extensions:
+  - php
+  - phtml
+  - phar
+  - cgi
+  - pl
+  - py
+  - rb
+  - sh
+  - bash
+  - zsh
+  - fish
+  - bat
+  - cmd
+  - exe
+  - dll
+  - so
+  - dylib
+
+backup:
+  enabled: true
+  path: ../gcmdr_backups
+  max_backups: 25
+  archive_name_template: gcmdr-[HOST]-[PROFILE]-[DATE]-[TIME_TZ]
+  add_random_if_inside_site_root: true
+  allow_site_restore: false
+  site_include_paths:
+    - user
+  site_exclude_prefixes:
+    - user/data/grav-commander/backups
+    - cache
+    - logs
+    - tmp
+    - backup
+  profiles:
+    full_site:
+      label: Full site
+      description: Everything under the Grav root, minus cache/log/temp/backup folders. Use on staging first.
+      include_paths:
+        - .
+      exclude_prefixes:
+        - user/data/grav-commander/backups
+        - cache
+        - logs
+        - tmp
+        - backup
+    user_folder:
+      label: User folder
+      description: Content, accounts, config, themes, plugins, and data under user/.
+      include_paths:
+        - user
+      exclude_prefixes:
+        - user/data/grav-commander/backups
+    pages_media:
+      label: Pages & media
+      description: The user/pages tree only. Good for content-only safety snapshots.
+      include_paths:
+        - user/pages
+      exclude_prefixes: []
+    config_data:
+      label: Config & data
+      description: Configuration, accounts, and data without page content.
+      include_paths:
+        - user/config
+        - user/accounts
+        - user/data
+      exclude_prefixes:
+        - user/data/grav-commander/backups
+
+  schedules: []

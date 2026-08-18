@@ -1,0 +1,3 @@
+PLUGIN_GRAV_COMMANDER:
+  TITLE: Grav Commander
+  DESCRIPTION: Admin2-first Commander-style file manager with guarded backup and restore tools for Grav.
