@@ -1,0 +1,108 @@
+name: Site Safeguard
+slug: site-safeguard
+type: plugin
+version: 0.1.0
+description: Verified, portable Grav backup packages and isolated restore staging for Grav 2.
+icon: shield-halved
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/site-safeguard
+keywords: grav, plugin, admin2, backup, restore, deployment, manifest, checksum
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav: ['2.0']
+  api: ['1.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    package_path:
+      type: text
+      label: Protected package directory
+      help: Relative paths resolve from the Grav root. This directory must resolve outside the public Grav root.
+      default: ../site-safeguard-packages
+
+    stage_path:
+      type: text
+      label: Isolated staging directory
+      help: Validated packages are extracted here and never over the running site. This directory must resolve outside the Grav root.
+      default: ../site-safeguard-stage
+
+    max_package_bytes:
+      type: number
+      label: Maximum package size in bytes
+      default: 2147483648
+      validate:
+        type: int
+        min: 1048576
+
+    max_archive_entries:
+      type: number
+      label: Maximum ZIP entries
+      default: 100000
+      validate:
+        type: int
+        min: 100
+
+    max_uncompressed_bytes:
+      type: number
+      label: Maximum uncompressed package size
+      default: 5368709120
+      validate:
+        type: int
+        min: 1048576
+
+    allow_uploads:
+      type: toggle
+      label: Allow package imports in Admin2
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    max_packages:
+      type: number
+      label: Maximum retained packages
+      help: Creation and import stop at this limit. Site Safeguard never auto-deletes a recovery package; an operator must explicitly remove an obsolete package.
+      default: 12
+      validate:
+        type: int
+        min: 1
+        max: 100
+
+    exclude_paths:
+      type: array
+      label: Paths excluded from every package
+      help: Paths are relative to the Grav root. Security-critical exclusions such as the package/stage directories and macOS metadata are also enforced in code.
+      value_only: true

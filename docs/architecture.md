@@ -62,8 +62,10 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Prism Gallery 0.2.1:** working development release with Quark 2 modular
   integration, shortcodes, mixed media, and opaque just-in-time local-media
   delivery.
+- **Site Safeguard 0.1.0:** working development release for checksummed portable
+  packages, hostile-archive validation, and isolated verified staging. Live
+  promotion remains deliberately unavailable.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.1.0:** working Quark 2 child theme, intentionally site-specific.
-- **Site Safeguard:** requirements and safety model defined; implementation is the next plugin.
 - **All others:** named and bounded, not yet represented as finished packages.

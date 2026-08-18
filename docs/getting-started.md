@@ -7,6 +7,7 @@ The repository is not a single Grav plugin. Install only the package you need:
 ```text
 plugins/file-vault       -> user/plugins/file-vault
 plugins/prism-gallery    -> user/plugins/prism-gallery
+plugins/site-safeguard   -> user/plugins/site-safeguard
 plugins/grav-commander   -> user/plugins/grav-commander
 themes/spitfire          -> user/themes/spitfire
 ```

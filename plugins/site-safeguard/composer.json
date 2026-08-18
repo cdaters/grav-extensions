@@ -1,0 +1,22 @@
+{
+  "name": "cdaters/grav-plugin-site-safeguard",
+  "type": "grav-plugin",
+  "description": "Verified portable Grav packages and isolated restore staging.",
+  "keywords": ["grav", "plugin", "backup", "restore", "deployment"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Craig Daters",
+      "email": "craig@daters.net"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ext-zip": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\SiteSafeguard\\": "classes/"
+    }
+  }
+}

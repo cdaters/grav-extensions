@@ -9,6 +9,7 @@ belong in that extension's own README.
 - [Getting started](getting-started.md)
 - [File Vault](../plugins/file-vault/README.md)
 - [Prism Gallery](../plugins/prism-gallery/README.md)
+- [Site Safeguard](../plugins/site-safeguard/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 

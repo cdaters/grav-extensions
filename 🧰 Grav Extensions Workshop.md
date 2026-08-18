@@ -17,6 +17,8 @@
   one-off downloads
 - [[plugins/prism-gallery/README|Prism Gallery]] — accessible mixed-media
   galleries and protected local originals
+- [[plugins/site-safeguard/README|Site Safeguard]] — checksummed portable
+  packages and isolated restore staging
 - [[plugins/grav-commander/README|Grav Commander]] — file, archive, and guarded
   backup tools
 - [[themes/spitfire/README|Spitfire]] — update-safe Quark 2 child theme
@@ -32,7 +34,6 @@
 ## Planned work
 
 - [[docs/planned/README|Planned extension briefs]]
-- [[docs/planned/site-safeguard|Site Safeguard]]
 - [[docs/planned/image-foundry|Image Foundry]]
 - [[docs/planned/meta-pilot|Meta Pilot]]
 - [[docs/planned/revision-ledger|Revision Ledger]]

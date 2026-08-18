@@ -27,6 +27,10 @@ user/config/security.yaml
 user/config/secrets.yaml
 file-vault-files/
 **/file-vault-files/
+site-safeguard-packages/
+site-safeguard-stage/
+**/site-safeguard-packages/
+**/site-safeguard-stage/
 
 # Environment files and credentials
 .env

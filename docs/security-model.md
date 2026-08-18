@@ -32,4 +32,9 @@ File mutation, extraction, restore, derivative replacement, and batch editing
 require explicit scope, path validation, and recoverability. A web request must
 not erase the running site before a staged replacement has been validated.
 
+Site Safeguard applies this boundary to recovery packages: archive structure is
+validated before deep hashing, complete packages are extracted only to a unique
+directory outside the running Grav root, and extracted files are hashed again.
+Version 0.1 deliberately exposes no live-promotion operation.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

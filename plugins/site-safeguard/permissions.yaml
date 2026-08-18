@@ -1,0 +1,11 @@
+actions:
+  site-safeguard:
+    label: Site Safeguard
+    type: access
+    actions:
+      manage:
+        label: Create, import, inspect, download, and delete packages
+      stage:
+        label: Extract a verified package into isolated staging
+      promote:
+        label: Promote a staged package (reserved; unavailable in 0.1)

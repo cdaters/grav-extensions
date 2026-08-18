@@ -13,3 +13,7 @@ and must never be committed or included in a release archive.
 
 The packaging script refuses to package known runtime and secret paths. Always
 inspect a generated archive before publishing it.
+
+Site Safeguard packages and isolated stages can contain the entire installed
+site, including account hashes and service configuration. They are runtime
+secrets and must remain outside this source repository and the public webroot.

@@ -1,0 +1,52 @@
+enabled: true
+
+admin:
+  show_sidebar: true
+
+package_path: ../site-safeguard-packages
+stage_path: ../site-safeguard-stage
+max_package_bytes: 2147483648
+max_archive_entries: 100000
+max_uncompressed_bytes: 5368709120
+download_token_ttl: 180
+allow_uploads: true
+max_packages: 12
+
+exclude_paths:
+  - .ddev
+  - .git
+  - .github
+  - .idea
+  - .vscode
+  - cache
+  - logs
+  - tmp
+  - backup
+  - backups
+  - node_modules
+  - __MACOSX
+  - .env
+  - .env.local
+
+profiles:
+  portable_site:
+    label: Portable site
+    description: Complete Grav site without caches, logs, local development metadata, generated backups, or environment secrets.
+    deployable: true
+    include_paths:
+      - .
+    exclude_paths: []
+  user_folder:
+    label: User folder
+    description: Content, configuration, accounts, plugins, themes, and plugin data under user/.
+    deployable: false
+    include_paths:
+      - user
+    exclude_paths: []
+  pages_media:
+    label: Pages and media
+    description: Content-only package containing user/pages.
+    deployable: false
+    include_paths:
+      - user/pages
+    exclude_paths: []
