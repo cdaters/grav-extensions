@@ -1,0 +1,178 @@
+name: Spitfire
+slug: spitfire
+type: theme
+version: 1.1.0
+description: The update-safe SpitfireBBS.com presentation theme, inherited from Quark 2.
+icon: fire
+author:
+  name: PixelWizard
+homepage: https://spitfirebbs.com
+keywords: spitfire, quark2, child-theme, inherited-theme, responsive, dark-mode
+license: MIT
+compatibility:
+  grav: ['1.7', '1.8', '2.0']
+dependencies:
+  - { name: grav, version: '>=1.7.0' }
+  - { name: quark2, version: '>=1.1.11' }
+
+form:
+  validation: loose
+
+  fields:
+
+    theme-mode:
+      type: select
+      label: Theme Mode Default
+      help: Default appearance before a user makes a choice. Users can still toggle in the UI.
+      size: small
+      default: auto
+      options:
+        auto: Auto (follows OS)
+        light: Light
+        dark: Dark
+
+    accent-color:
+      type: colorpicker
+      label: Accent Color
+      help: Tints links and focus rings. Leave blank for the pure monochrome palette.
+      default: '#242424'
+
+    header_section:
+      type: section
+      title: Header
+      underline: true
+
+    custom_logo:
+      type: file
+      label: Custom Logo
+      help: Saved to the Spitfire child theme so Quark 2 updates cannot replace it.
+      size: large
+      destination: 'theme://images/logo'
+      multiple: false
+      markdown: true
+      accept:
+        - image/*
+
+    custom_logo_mobile:
+      type: file
+      label: Custom Logo (Mobile)
+      help: Saved to the Spitfire child theme so Quark 2 updates cannot replace it.
+      size: large
+      destination: 'theme://images/logo'
+      multiple: false
+      accept:
+        - image/*
+
+    header-fixed:
+      type: toggle
+      label: Header Fixed
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    header-animated:
+      type: toggle
+      label: Header Animated
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    header-transparent:
+      type: toggle
+      label: Header Transparent (hero pages)
+      help: Lets the hero show through the header until the visitor scrolls.
+      highlight: 0
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    header-dark:
+      type: toggle
+      label: Header Text Light
+      help: Draws the header text in white while it sits over a dark hero image.
+      highlight: 0
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    header-light:
+      type: toggle
+      label: Header Text Dark
+      help: Draws the header text in near-black while it sits over a light hero image.
+      highlight: 0
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    footer_section:
+      type: section
+      title: Footer
+      underline: true
+
+    sticky-footer:
+      type: toggle
+      label: Sticky Footer
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    blog_section:
+      type: section
+      title: Blog
+      underline: true
+
+    blog-page:
+      type: text
+      label: Blog Page Route
+      size: medium
+      default: '/blog'
+
+    icons_section:
+      type: section
+      title: Icons
+      underline: true
+
+    fontawesome.enabled:
+      type: toggle
+      label: Font Awesome 7
+      help: Load Font Awesome 7 free icon set.
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    fontawesome.local:
+      type: toggle
+      label: Serve Font Awesome locally
+      help: When enabled, expects `css/fontawesome/all.min.css` to exist in the theme. Otherwise uses the official CDN.
+      highlight: 0
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool

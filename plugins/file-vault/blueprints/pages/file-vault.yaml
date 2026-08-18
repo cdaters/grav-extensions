@@ -1,0 +1,19 @@
+title: File Vault
+extends@: default
+
+form:
+  fields:
+    tabs:
+      fields:
+        content:
+          fields:
+            header.file_vault.enabled:
+              type: toggle
+              label: Render the File Vault catalog
+              highlight: 1
+              default: 1
+              options:
+                1: Yes
+                0: No
+              validate:
+                type: bool

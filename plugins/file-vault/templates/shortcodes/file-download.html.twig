@@ -1,0 +1,14 @@
+{% set title = label|default('') ?: item.display_name %}
+{% if layout == 'card' %}
+  <div class="file-vault fv-inline-vault">
+    <article class="fv-shortcode-card">
+      <div class="fv-type" aria-hidden="true"><span>{{ item.source_type == 'url' ? 'URL' : item.filename|split('.')|last|upper|e }}</span></div>
+      <div><strong>{{ item.display_name|e }}</strong><p>{{ item.description|e }}</p><small>{{ item.size|e }}{% if item.version %} · {{ item.version|e }}{% endif %}</small></div>
+      {% if item.download_url %}<a class="fv-download" href="{{ item.download_url|e('html_attr') }}" rel="nofollow"><span>{{ title|e }}</span><i aria-hidden="true">↓</i></a>{% else %}<span class="fv-locked">Sign in required</span>{% endif %}
+    </article>
+  </div>
+{% else %}
+  <span class="file-vault fv-inline-vault">
+    {% if item.download_url %}<a class="fv-download fv-shortcode-button" href="{{ item.download_url|e('html_attr') }}" rel="nofollow"><span>{{ title|e }}</span><i aria-hidden="true">↓</i></a>{% else %}<span class="fv-locked fv-shortcode-button">Sign in required</span>{% endif %}
+  </span>
+{% endif %}

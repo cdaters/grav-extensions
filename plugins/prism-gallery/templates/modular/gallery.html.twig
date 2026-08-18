@@ -1,0 +1,32 @@
+{% do assets.addCss('plugin://prism-gallery/assets/css/prism-gallery.css?v=0.2.1', 85) %}
+{% do assets.addJs('plugin://prism-gallery/assets/js/prism-gallery.js?v=0.2.1', {group: 'bottom', priority: 85}) %}
+{% set data = page.header.gallery %}
+{% set gallery_id = 'gallery-' ~ md5(page.route) %}
+<section class="section modular-gallery {{ page.header.class|default('') }}">
+    <div class="container">
+        {% if content %}<div class="prism-gallery-intro">{{ content|raw }}</div>{% endif %}
+        <div class="prism-gallery-grid" aria-label="{{ page.title|default('Media gallery')|e('html_attr') }}">
+            {% for item in data.items %}
+                {% set item_image = item.image ? page.media[item.image] : null %}
+                {% set item_thumb = item.thumb ? page.media[item.thumb] : item_image %}
+                {% set source = item_image ? item_image.url : item.video|default(item.url) %}
+                {% set type = item_image ? 'image' : (item.type|default('video')) %}
+                {% set title = item.title|default('') %}
+                {% set desc = item.desc ? '#prism-description-' ~ md5(page.route ~ loop.index) : '' %}
+                {% set content %}
+                    {% if item_thumb %}
+                        <span class="prism-thumb">
+                            {{ item_thumb.cropZoom(data.thumb.width|default(600), data.thumb.height|default(450)).html(title, title, 'loading="lazy" decoding="async"')|raw }}
+                            {% if type != 'image' %}<span class="prism-play" aria-hidden="true"></span>{% endif %}
+                        </span>
+                    {% else %}
+                        <span class="prism-media-card"><span class="prism-play" aria-hidden="true"></span><strong>{{ title|default('Open media') }}</strong></span>
+                    {% endif %}
+                {% endset %}
+                {% set gallery = gallery_id %}
+                {% include 'partials/lightbox.html.twig' %}
+                {% if item.desc %}<div id="prism-description-{{ md5(page.route ~ loop.index) }}" class="prism-description" hidden>{{ item.desc|markdown(false) }}</div>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

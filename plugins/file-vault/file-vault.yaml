@@ -1,0 +1,41 @@
+enabled: true
+
+admin:
+  show_sidebar: true
+
+storage_path: ../file-vault-files
+catalog_path: user/data/file-vault/catalog.json
+stats_path: user/data/file-vault/stats.json
+activity_path: user/data/file-vault/activity.json
+public_route: /downloads
+
+activity:
+  enabled: false
+  ip_mode: hash
+  retention_days: 30
+  store_user_agent: false
+  trust_proxy_headers: false
+
+public:
+  hero_kicker: FILE VAULT
+  hero_title: Downloads
+  hero_intro: A curated collection of protected downloads. Search the library or browse by category, then select a file to download.
+  show_intro: true
+  show_file_count: true
+  show_download_count: true
+  default_view: list
+  default_category: ''
+  search_placeholder: Search files, descriptions, and tags…
+
+max_upload_size: 104857600
+allowed_extensions:
+  - zip
+  - pdf
+  - txt
+  - 7z
+  - rar
+
+link_ttl: 43200
+show_locked: true
+new_days: 30
+hot_downloads: 25

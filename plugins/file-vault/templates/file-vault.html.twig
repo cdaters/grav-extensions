@@ -1,0 +1,10 @@
+{% extends 'partials/base.html.twig' %}
+
+{% block content %}
+  {% include 'partials/file-vault-browser.html.twig' with {
+    file_vault: file_vault,
+    embedded: false,
+    show_hero: true,
+    show_controls: true
+  } only %}
+{% endblock %}

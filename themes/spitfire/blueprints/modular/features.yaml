@@ -1,0 +1,54 @@
+title: Features
+'@extends': default
+
+form:
+  fields:
+    tabs:
+      fields:
+        features:
+          type: tab
+          title: Features
+          fields:
+            header.anchor:
+              type: text
+              label: Section anchor
+              help: Stable URL fragment used by the Home submenu, such as spitfire or archive. Use lowercase letters, numbers and hyphens only.
+              size: medium
+
+            header.intro_layout:
+              type: select
+              label: Introductory text layout
+              help: Keep the introductory Markdown in one column, or balance it across two columns on wider screens. Headings remain full width and mobile automatically uses one column.
+              default: single
+              size: medium
+              options:
+                single: Single column
+                columns: Two columns (desktop)
+
+            header.class:
+              type: select
+              label: Layout
+              default: small
+              size: medium
+              options:
+                small: Small   = 4 / 3 / 2 columns
+                standard: Standard  = 3 / 2 / 1 columns
+
+            header.features:
+              name: features
+              type: list
+              label: Features
+
+              fields:
+                .icon:
+                  type: iconpicker
+                  label: Icon
+                .header:
+                  type: text
+                  label: Header
+                .text:
+                  type: text
+                  label: Text
+                .url:
+                  type: text
+                  label: Link

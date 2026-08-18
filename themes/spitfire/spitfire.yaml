@@ -1,0 +1,31 @@
+enabled: true
+
+# Resolve Spitfire files first, then fall back to the installed Quark 2 parent.
+streams:
+  schemes:
+    theme:
+      type: ReadOnlyStream
+      prefixes:
+        '':
+          - user/themes/spitfire
+          - user/themes/quark2
+
+header-fixed: true
+header-animated: true
+header-transparent: false
+header-dark: false
+header-light: false
+sticky-footer: true
+theme-mode: auto
+accent-color: '#3B82F6'
+blog-page: '/blog'
+custom_logo:
+  user/themes/spitfire/images/logo/SF-logo.svg:
+    name: SF-logo.svg
+    type: image/svg+xml
+    size: 18615
+    path: user/themes/spitfire/images/logo/SF-logo.svg
+    url: /user/themes/spitfire/images/logo/SF-logo.svg
+fontawesome:
+  enabled: true
+  local: false

@@ -1,0 +1,230 @@
+name: File Vault
+slug: file-vault
+type: plugin
+version: 0.6.0
+description: Protected download library, catalog, analytics, and Admin2 manager for Grav 2.
+icon: box-archive
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-plugin-file-vault
+keywords: grav, plugin, admin2, downloads, archive, vault
+bugs: https://github.com/cdaters/grav-plugin-file-vault/issues
+docs: https://github.com/cdaters/grav-plugin-file-vault/blob/main/README.md
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav:
+    - '2.0'
+  api:
+    - '1.0'
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    storage_path:
+      type: text
+      label: Protected file storage path
+      help: Relative paths resolve from the Grav root. Keep this outside the public site root in production, for example ../file-vault-files.
+      default: ../file-vault-files
+
+    catalog_path:
+      type: text
+      label: Catalog data path
+      default: user/data/file-vault/catalog.json
+
+    stats_path:
+      type: text
+      label: Download statistics path
+      default: user/data/file-vault/stats.json
+
+    activity_path:
+      type: text
+      label: Download activity path
+      default: user/data/file-vault/activity.json
+
+    activity.enabled:
+      type: toggle
+      label: Record successful download activity
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+
+    activity.ip_mode:
+      type: select
+      label: IP address storage
+      default: hash
+      options:
+        none: Do not store
+        hash: Store a pseudonymous hash
+        full: Store the full address
+
+    activity.retention_days:
+      type: number
+      label: Activity retention in days
+      default: 30
+      validate:
+        type: int
+        min: 1
+        max: 3650
+
+    activity.store_user_agent:
+      type: toggle
+      label: Store browser user agent
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+
+    activity.trust_proxy_headers:
+      type: toggle
+      label: Trust X-Forwarded-For
+      help: Enable only when Grav is behind a trusted reverse proxy that replaces this header.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+
+    public_route:
+      type: text
+      label: Public vault route
+      default: /downloads
+
+    public.hero_kicker:
+      type: text
+      label: Public eyebrow
+      default: FILE VAULT
+
+    public.hero_title:
+      type: text
+      label: Public heading
+      default: Downloads
+
+    public.hero_intro:
+      type: textarea
+      label: Public introduction
+      default: A curated collection of protected downloads. Search the library or browse by category, then select a file to download.
+
+    public.show_intro:
+      type: toggle
+      label: Show public introduction
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    public.show_file_count:
+      type: toggle
+      label: Show archive file count
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    public.show_download_count:
+      type: toggle
+      label: Show download count
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    public.default_view:
+      type: select
+      label: Default public layout
+      default: list
+      options:
+        list: List
+        grid: Grid
+
+    public.default_category:
+      type: text
+      label: Default public category ID
+      help: Leave blank for All files, or use a managed category ID such as core. The File Vault screen provides a category selector.
+
+    public.search_placeholder:
+      type: text
+      label: Public search placeholder
+      default: Search files, descriptions, and tags…
+
+    max_upload_size:
+      type: number
+      label: Maximum upload size in bytes
+      default: 104857600
+      validate:
+        type: int
+        min: 1024
+
+    allowed_extensions:
+      type: array
+      label: Allowed file extensions
+      value_only: true
+
+    link_ttl:
+      type: number
+      label: Signed link lifetime in seconds
+      default: 43200
+      validate:
+        type: int
+        min: 300
+
+    show_locked:
+      type: toggle
+      label: Show protected files to unauthorized visitors
+      help: Protected entries remain visible but do not expose a download button.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+      validate:
+        type: bool
+
+    new_days:
+      type: number
+      label: Days an item is marked New
+      default: 30
+      validate:
+        type: int
+        min: 0
+
+    hot_downloads:
+      type: number
+      label: Downloads required for Hot badge
+      default: 25
+      validate:
+        type: int
+        min: 0

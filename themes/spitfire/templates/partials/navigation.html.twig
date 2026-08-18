@@ -1,0 +1,51 @@
+{% import 'macros/macros.html.twig' as macros %}
+
+{% set why_page = pages.find('/why-spitfire') %}
+{% set why_active = why_page and (why_page.active or why_page.activeChild) %}
+
+<ul {{ tree ? 'class="tree navigation"' : 'class="navigation"' }}>
+    {% for p in pages.children.visible %}
+        {% set is_home = p.route == '/' %}
+        {% set active_page = (p.active or p.activeChild or (is_home and why_active)) ? 'active' : '' %}
+
+        {% if is_home %}
+            <li class="has-children">
+                <a href="{{ p.url }}" class="{{ active_page }}">
+                    {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon }}" aria-hidden="true"></i>{% endif %}
+                    {{ p.menu }}
+                </a>
+                <ul>
+                    {% for module in p.collection() if module.header.visible is not same as(false) and module.template != 'modular/hero' and module.header.anchor|default(module.menu|hyphenize) == 'spitfire' %}
+                        {% set anchor = module.header.anchor|default(module.menu|hyphenize) %}
+                        <li class="onpage-link"><a href="{{ p.url }}#{{ anchor }}">{{ module.menu }}</a></li>
+                    {% endfor %}
+                    {% if why_page %}
+                        <li><a href="{{ why_page.url }}" class="{{ why_active ? 'active' : '' }}">Why This Site Exists</a></li>
+                    {% endif %}
+                    {% for module in p.collection() if module.header.visible is not same as(false) and module.template != 'modular/hero' and module.header.anchor|default(module.menu|hyphenize) != 'spitfire' %}
+                        {% set anchor = module.header.anchor|default(module.menu|hyphenize) %}
+                        <li class="onpage-link"><a href="{{ p.url }}#{{ anchor }}">{{ anchor == 'archive' ? 'Archive Overview' : module.menu }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            {% set has_children = p.children.visible.count > 0 %}
+            <li{% if has_children %} class="has-children"{% endif %}>
+                <a href="{{ p.url }}" class="{{ active_page }}">
+                    {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon }}" aria-hidden="true"></i>{% endif %}
+                    {{ p.menu }}
+                </a>
+                {% if has_children %}<ul>{{ macros.nav_loop(p) }}</ul>{% endif %}
+            </li>
+        {% endif %}
+    {% endfor %}
+
+    {% for mitem in site.menu %}
+        <li>
+            <a {% if mitem.class %}class="{{ mitem.class }}"{% endif %} href="{{ mitem.url }}">
+                {% if mitem.icon %}<i class="fa-solid fa-{{ mitem.icon }}" aria-hidden="true"></i>{% endif %}
+                {{ mitem.text }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

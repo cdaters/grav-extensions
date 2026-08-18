@@ -1,0 +1,486 @@
+/*
+ * Spitfire child theme — site customizations
+ *
+ * This file loads after Quark 2's theme.css.
+ */
+
+/* Feature-card icon and heading colors */
+.modular-features .feature-icon i {
+  color: var(--q2-accent);
+}
+
+.modular-features h6 {
+  color: var(--q2-text-strong);
+}
+
+/* Keep the hero title group compact */
+body.title-h1h2 .hero h1 + h2 {
+  margin-bottom: 1rem;
+}
+
+/*
+ * Features introduction
+ *
+ * Headings span the full width. Introductory content becomes two balanced
+ * columns on wider screens and automatically remains one column on mobile.
+ */
+@media (min-width: 860px) {
+  .modular-features .feature-intro-columns {
+    column-count: 2;
+    column-gap: clamp(2.5rem, 5vw, 4rem);
+    column-fill: balance;
+  }
+
+  .modular-features .feature-intro-columns > :is(h1, h2) {
+    column-span: all;
+  }
+
+  .modular-features .feature-intro-columns > h2 {
+    margin-bottom: 1rem;
+  }
+
+  .modular-features
+    .feature-intro-columns
+    > :is(p, ul, ol, blockquote) {
+    /*
+     * Padding provides paragraph spacing without Safari carrying a margin
+     * across the column break.
+     */
+    margin-block: 0;
+    padding-block-end: 1rem;
+
+    break-inside: avoid-column;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+
+    orphans: 3;
+    widows: 3;
+  }
+
+  .modular-features .feature-intro-columns > :last-child {
+    padding-block-end: 0;
+  }
+}
+
+/*
+ * Modular text image layout
+ *
+ * Allows text to wrap beside an image and continue at full width beneath it.
+ */
+.modular-text.image-layout-wrap .text-flow {
+  display: flow-root;
+}
+
+.modular-text.image-layout-wrap .flow-image {
+  width: min(48%, 34rem);
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.modular-text.image-layout-wrap .text-flow.align-right .flow-image {
+  float: right;
+  margin-left: 3.5rem;
+}
+
+.modular-text.image-layout-wrap .text-flow.align-left .flow-image {
+  float: left;
+  margin-right: 3.5rem;
+}
+
+.modular-text.image-layout-wrap .flow-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Stack wrapped images above their text on smaller screens */
+@media (max-width: 859px) {
+  .modular-text.image-layout-wrap .flow-image,
+  .modular-text.image-layout-wrap
+    .text-flow.align-left
+    .flow-image,
+  .modular-text.image-layout-wrap
+    .text-flow.align-right
+    .flow-image {
+    float: none;
+    width: 100%;
+    margin: 0 0 1.75rem;
+  }
+}
+
+/* Archive landing page */
+body.archive-hub #body-wrapper > .container > .content-item,
+body.newsletter-index #body-wrapper > .container > .content-item {
+  max-width: 1100px;
+}
+
+.archive-directory,
+.newsletter-issues {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 2rem;
+}
+
+.archive-directory-card,
+.newsletter-issues > a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 7.5rem;
+  padding: 1.25rem;
+  color: var(--q2-text);
+  text-decoration: none;
+  background: var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.archive-directory-card:hover,
+.newsletter-issues > a:hover {
+  color: var(--q2-text);
+  text-decoration: none;
+  border-color: var(--q2-accent);
+  box-shadow: var(--q2-shadow-card);
+  transform: translateY(-2px);
+}
+
+.archive-directory-card strong,
+.newsletter-issues > a strong {
+  color: var(--q2-text-strong);
+  font-size: 1.1rem;
+}
+
+.archive-directory-card span,
+.newsletter-issues > a span {
+  color: var(--q2-text-muted);
+}
+
+.newsletter-issues > a {
+  min-height: 0;
+}
+
+/* Long-form project history */
+body.spitfire-story #body-wrapper > .container > .content-item {
+  max-width: 800px;
+}
+
+body.spitfire-story .content-item > h1 + p {
+  font-size: 1.2rem;
+  color: var(--q2-text-strong);
+}
+
+/* SPITFIRE history — long-form narrative, statistics and timeline */
+body.spitfire-history #body-wrapper > .container > .content-item {
+  max-width: 1080px;
+}
+
+body.spitfire-history .content-item > h1 + p {
+  max-width: 900px;
+  margin-bottom: 1rem;
+  color: var(--q2-text-strong);
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.55;
+}
+
+body.spitfire-history .content-item > h1 + p + p {
+  max-width: 900px;
+  color: var(--q2-text-muted);
+  font-size: 1.08rem;
+}
+
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-block: 2.25rem 3rem;
+  overflow: hidden;
+  background: var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+}
+
+.history-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 1.25rem 1.4rem;
+}
+
+.history-stats > div + div {
+  border-left: 1px solid var(--q2-divider);
+}
+
+.history-stats strong {
+  color: var(--q2-text-strong);
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  line-height: 1;
+}
+
+.history-stats span {
+  color: var(--q2-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history-pullquote {
+  margin-block: 2.75rem;
+  padding: clamp(1.4rem, 3vw, 2rem);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--q2-accent) 13%, transparent), transparent 62%),
+    var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-left: 4px solid var(--q2-accent);
+  border-radius: var(--q2-radius-md);
+}
+
+.history-pullquote p {
+  margin: 0;
+  color: var(--q2-text-strong);
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.history-cite {
+  margin-left: 0.15em;
+  font-size: 0.7em;
+  font-weight: 700;
+  vertical-align: super;
+}
+
+.history-cite a {
+  text-decoration: none;
+}
+
+.history-timeline {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin-block: 2rem 3rem;
+  padding: 0;
+  list-style: none;
+}
+
+.history-timeline::before {
+  position: absolute;
+  top: 0.8rem;
+  bottom: 0.8rem;
+  left: 7.35rem;
+  width: 2px;
+  content: "";
+  background: var(--q2-divider);
+}
+
+.history-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 2rem;
+  padding-block: 0.9rem;
+}
+
+.history-timeline li::before {
+  position: absolute;
+  top: 1.42rem;
+  left: 7rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  content: "";
+  background: var(--q2-accent);
+  border: 3px solid var(--q2-bg);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--q2-divider);
+}
+
+.history-timeline time {
+  padding-top: 0.25rem;
+  color: var(--q2-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.history-timeline h3 {
+  margin: 0 0 0.35rem;
+  color: var(--q2-text-strong);
+  font-size: 1.1rem;
+}
+
+.history-timeline p {
+  margin: 0;
+  color: var(--q2-text-muted);
+}
+
+.history-next {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 2rem 3rem;
+}
+
+.history-next a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.2rem 1.25rem;
+  color: var(--q2-text);
+  text-decoration: none;
+  background: var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.history-next a:hover {
+  color: var(--q2-text);
+  text-decoration: none;
+  border-color: var(--q2-accent);
+  box-shadow: var(--q2-shadow-card);
+  transform: translateY(-2px);
+}
+
+.history-next strong {
+  color: var(--q2-text-strong);
+  font-size: 1.05rem;
+}
+
+.history-next span,
+.history-source-note {
+  color: var(--q2-text-muted);
+}
+
+.history-references {
+  padding-left: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.history-references li {
+  margin-bottom: 0.75rem;
+  padding-left: 0.35rem;
+  scroll-margin-top: 6rem;
+}
+
+.history-references li:target {
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, var(--q2-accent) 12%, transparent);
+  border-radius: var(--q2-radius-sm);
+}
+
+.history-source-note {
+  margin-top: 2rem;
+  padding: 1rem 1.1rem;
+  font-size: 0.9rem;
+  background: var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+}
+
+@media (max-width: 760px) {
+  .history-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-stats > div + div {
+    border-left: 0;
+  }
+
+  .history-stats > div:nth-child(even) {
+    border-left: 1px solid var(--q2-divider);
+  }
+
+  .history-stats > div:nth-child(n + 3) {
+    border-top: 1px solid var(--q2-divider);
+  }
+
+  .history-timeline::before {
+    left: 0.35rem;
+  }
+
+  .history-timeline li {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+    padding: 0.9rem 0 0.9rem 1.75rem;
+  }
+
+  .history-timeline li::before {
+    top: 1.35rem;
+    left: 0;
+  }
+
+  .history-timeline time {
+    padding: 0;
+    text-align: left;
+  }
+
+  .history-next {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .history-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .history-stats > div:nth-child(even) {
+    border-left: 0;
+  }
+
+  .history-stats > div + div {
+    border-top: 1px solid var(--q2-divider);
+  }
+}
+
+/* Faithful DOS newsletter transcripts */
+body.newsletter-issue #body-wrapper > .container > .content-item {
+  max-width: 1120px;
+}
+
+body.newsletter-issue .content-item pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 1.25rem;
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+  background: var(--q2-bg-muted);
+}
+
+body.newsletter-issue .content-item pre code {
+  white-space: pre;
+  font-size: clamp(0.72rem, 1.45vw, 0.9rem);
+  line-height: 1.35;
+}
+
+.newsletter-pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--q2-divider);
+}
+
+@media (max-width: 700px) {
+  .archive-directory,
+  .newsletter-issues {
+    grid-template-columns: 1fr;
+  }
+
+  .newsletter-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

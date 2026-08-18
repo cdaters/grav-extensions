@@ -1,0 +1,23 @@
+{% do assets.addCss('plugin://prism-gallery/assets/css/prism-gallery.css?v=0.2.1', 85) %}
+{% do assets.addJs('plugin://prism-gallery/assets/js/prism-gallery.js?v=0.2.1', {group: 'bottom', priority: 85}) %}
+{% set prism_type = type|default('image') %}
+{% set prism_source = source|default(image) %}
+{% set prism_resolve = prism_type in ['image', 'video'] ? prism_protect_media(prism_source) : '' %}
+<a class="prism-trigger {{ class|default('') }}"
+   href="{{ (prism_resolve ? '#prism-viewer' : prism_source)|e('html_attr') }}"
+   data-prism-type="{{ prism_type|e('html_attr') }}"
+   data-prism-src="{{ (prism_resolve ? '' : prism_source)|e('html_attr') }}"
+   {% if prism_resolve %}data-prism-resolve="{{ prism_resolve|e('html_attr') }}"{% endif %}
+   data-prism-gallery="{{ gallery|default('gallery')|e('html_attr') }}"
+   data-prism-title="{{ title|default('')|e('html_attr') }}"
+   data-prism-loop="{{ config.plugins['prism-gallery'].loop|default(true) ? 'true' : 'false' }}"
+   data-prism-keyboard="{{ config.plugins['prism-gallery'].keyboard|default(true) ? 'true' : 'false' }}"
+   data-prism-touch="{{ config.plugins['prism-gallery'].touch|default(true) ? 'true' : 'false' }}"
+   data-prism-backdrop="{{ config.plugins['prism-gallery'].close_on_backdrop|default(true) ? 'true' : 'false' }}"
+   data-prism-zoom="{{ config.plugins['prism-gallery'].zoom|default(true) ? 'true' : 'false' }}"
+   data-prism-autoplay="{{ config.plugins['prism-gallery'].autoplay_videos|default(false) ? 'true' : 'false' }}"
+   data-prism-animation="{{ config.plugins['prism-gallery'].animation|default('lift')|e('html_attr') }}"
+   {% if desc %}data-prism-description="{{ desc|e('html_attr') }}"{% endif %}
+   aria-label="{{ (title ? 'Open ' ~ title : 'Open media viewer')|e('html_attr') }}">
+    {{ content|raw }}
+</a>

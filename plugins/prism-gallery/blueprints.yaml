@@ -1,0 +1,150 @@
+name: Prism Gallery
+slug: prism-gallery
+type: plugin
+version: 0.2.1
+description: Accessible, framework-free image and video galleries with modular and shortcode support.
+icon: images
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-plugin-prism-gallery
+keywords: grav, gallery, lightbox, images, video, youtube, vimeo, shortcode, quark2
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=1.7.32' }
+  - { name: shortcode-core, version: '>=6.0.0' }
+
+compatibility:
+  grav: ['1.7', '2.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    load_assets:
+      type: select
+      label: Asset loading
+      help: Always is the cache-safe default. Automatic is available for tightly controlled sites that do not cache rendered gallery content.
+      default: always
+      options:
+        always: Every public page
+        auto: Automatic (advanced)
+
+    compatibility_aliases:
+      type: toggle
+      label: Enable conventional lightbox shortcode aliases
+      help: Also recognize lightbox and lightbox-gallery for easy migration from other gallery plugins.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    loop:
+      type: toggle
+      label: Loop galleries
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    keyboard:
+      type: toggle
+      label: Keyboard navigation
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    touch:
+      type: toggle
+      label: Touch and swipe navigation
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    zoom:
+      type: toggle
+      label: Image zoom
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    close_on_backdrop:
+      type: toggle
+      label: Close when backdrop is selected
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    autoplay_videos:
+      type: toggle
+      label: Autoplay videos after opening
+      help: Media is never loaded until the visitor opens it.
+      highlight: 0
+      default: 0
+      options:
+        1: Yes
+        0: No
+
+    animation:
+      type: select
+      label: Opening animation
+      default: lift
+      options:
+        lift: Lift and fade
+        fade: Fade
+        none: None
+
+    protection.enabled:
+      type: toggle
+      label: Protect full-resolution local media URLs
+      help: Replaces raw page-media links with opaque, short-lived, same-site delivery URLs. Gallery thumbnails remain normal optimized derivatives.
+      highlight: 1
+      default: 1
+      options:
+        1: Yes
+        0: No
+
+    protection.token_ttl:
+      type: number
+      label: Protected media link lifetime (seconds)
+      help: A fresh link is requested only when the visitor opens an item.
+      default: 900
+      validate:
+        min: 60
+        max: 86400
+
+    grid.minimum_width:
+      type: text
+      label: Minimum gallery tile width
+      default: 220px
+
+    grid.gap:
+      type: text
+      label: Gallery tile gap
+      default: 1rem
+
+    grid.aspect_ratio:
+      type: text
+      label: Gallery thumbnail aspect ratio
+      default: '4 / 3'

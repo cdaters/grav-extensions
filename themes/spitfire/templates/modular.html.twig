@@ -1,0 +1,71 @@
+{% extends 'partials/base.html.twig' %}
+
+{% set show_onpage_menu = header.onpage_menu == true or header.onpage_menu is null %}
+
+{% block bottom %}
+    {{ parent() }}
+    {% if show_onpage_menu %}
+        <script>
+        (function () {
+            var header = document.getElementById('header');
+            var offset = header ? header.offsetHeight : 0;
+            var sectionLinks = document.querySelectorAll('.navigation a[href*="#"]');
+
+            function localHash(link) {
+                try {
+                    var targetUrl = new URL(link.href, window.location.href);
+                    if (targetUrl.origin !== window.location.origin ||
+                        targetUrl.pathname !== window.location.pathname ||
+                        !targetUrl.hash) {
+                        return null;
+                    }
+                    return decodeURIComponent(targetUrl.hash.slice(1));
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            sectionLinks.forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    var id = localHash(link);
+                    var target = id ? document.getElementById(id) : null;
+                    if (target) {
+                        event.preventDefault();
+                        var top = target.getBoundingClientRect().top + window.scrollY - offset;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                        history.replaceState(null, '', '#' + id);
+                    }
+                });
+            });
+
+            var sections = document.querySelectorAll('.module-anchor');
+            window.addEventListener('scroll', function () {
+                var y = window.scrollY + offset + 20;
+                var current = null;
+                sections.forEach(function (section) {
+                    if (section.offsetTop <= y) current = section.id;
+                });
+                sectionLinks.forEach(function (link) {
+                    link.classList.toggle('active', localHash(link) === current);
+                });
+            }, { passive: true });
+        })();
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block hero %}
+    {% for module in page.collection() if module.template == 'modular/hero' %}
+        {% set anchor = module.header.anchor|default(module.menu|hyphenize) %}
+        <div id="{{ anchor }}" class="module-anchor"></div>
+        {{ module.content|raw }}
+    {% endfor %}
+{% endblock %}
+
+{% block body %}
+    {% for module in page.collection() if module.template != 'modular/hero' %}
+        {% set anchor = module.header.anchor|default(module.menu|hyphenize) %}
+        <div id="{{ anchor }}" class="module-anchor"></div>
+        {{ module.content|raw }}
+    {% endfor %}
+{% endblock %}

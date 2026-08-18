@@ -1,0 +1,17 @@
+{
+  "name": "cdaters/grav-plugin-file-vault",
+  "type": "grav-plugin",
+  "description": "Protected download library and Admin2 catalog manager for Grav 2.",
+  "keywords": ["grav", "downloads", "archive", "admin2"],
+  "homepage": "https://github.com/cdaters/grav-plugin-file-vault",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Craig Daters",
+      "email": "craig@daters.net"
+    }
+  ],
+  "require": {
+    "php": ">=8.3"
+  }
+}

@@ -1,0 +1,135 @@
+{% set settings = file_vault.settings|default({}) %}
+{% set selected_category = default_category|default(settings.default_category|default('')) %}
+{% set selected_view = default_view|default(settings.default_view|default('list')) %}
+{% set show_hero = show_hero is defined ? show_hero : true %}
+{% set show_controls = show_controls is defined ? show_controls : true %}
+{% set show_stats = show_stats is defined ? show_stats : true %}
+
+<div class="file-vault{{ embedded|default(false) ? ' fv-embedded' : '' }}"
+     data-file-vault
+     data-default-view="{{ selected_view|e('html_attr') }}">
+  {% if show_hero %}
+    <header class="fv-hero">
+      <div class="fv-hero-copy">
+        {% if settings.hero_kicker %}<span class="fv-kicker">{{ settings.hero_kicker|e }}</span>{% endif %}
+        <h1>{{ settings.hero_title|default('Downloads')|e }}</h1>
+        {% if settings.show_intro|default(true) and settings.hero_intro %}<p class="fv-intro">{{ settings.hero_intro|e }}</p>{% endif %}
+      </div>
+      {% if show_stats and (settings.show_file_count|default(true) or settings.show_download_count|default(true)) %}
+        <div class="fv-ledger" aria-label="Archive statistics">
+          {% if settings.show_file_count|default(true) %}<div><strong>{{ file_vault.count }}</strong><span>archive files</span></div>{% endif %}
+          {% if settings.show_download_count|default(true) %}<div><strong>{{ file_vault.total_downloads|number_format }}</strong><span>downloads</span></div>{% endif %}
+        </div>
+      {% endif %}
+    </header>
+  {% elseif embedded_title|default('') %}
+    <header class="fv-embed-head">
+      <div><span class="fv-kicker">FILE VAULT</span><h2>{{ embedded_title|e }}</h2></div>
+      <span>{{ file_vault.items|length }} {{ file_vault.items|length == 1 ? 'file' : 'files' }}</span>
+    </header>
+  {% endif %}
+
+  {% if file_vault.error %}<div class="fv-alert">{{ file_vault.error|e }}</div>{% endif %}
+
+  {% if show_controls %}
+    <section class="fv-controls" aria-label="Download filters">
+      <div class="fv-control-field fv-search-field">
+        <span class="fv-control-label">Search files</span>
+        <span class="fv-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+          <input type="search" data-fv-search aria-label="Search files" placeholder="{{ settings.search_placeholder|default('Search files, descriptions, and tags…')|e('html_attr') }}" autocomplete="off">
+        </span>
+      </div>
+      <div class="fv-control-field">
+        <span class="fv-control-label">Browse category</span>
+        <span class="fv-select-wrap">
+          <select data-fv-category aria-label="Browse category">
+            <option value="">All categories ({{ file_vault.count }})</option>
+            {% for category in file_vault.category_details %}
+              <option value="{{ category.id|e('html_attr') }}" {{ category.id == selected_category ? 'selected' : '' }}>{{ category.name|e }} ({{ category.file_count }})</option>
+            {% endfor %}
+          </select>
+        </span>
+      </div>
+      <div class="fv-control-field">
+        <span class="fv-control-label">Sort by</span>
+        <span class="fv-select-wrap">
+          <select data-fv-sort aria-label="Sort files">
+            <option value="order">Curated order</option>
+            <option value="name">Name A–Z</option>
+            <option value="date">Newest first</option>
+            <option value="size">Largest first</option>
+            <option value="downloads">Most downloaded</option>
+          </select>
+        </span>
+      </div>
+      <div class="fv-control-field fv-display-field">
+        <span class="fv-control-label">Display</span>
+        <div class="fv-view-toggle" role="group" aria-label="Display style">
+          <button type="button" data-fv-view="list" class="{{ selected_view == 'list' ? 'active' : '' }}" aria-pressed="{{ selected_view == 'list' ? 'true' : 'false' }}" title="List view"><span aria-hidden="true">☷</span><span class="sr-only">List view</span></button>
+          <button type="button" data-fv-view="grid" class="{{ selected_view == 'grid' ? 'active' : '' }}" aria-pressed="{{ selected_view == 'grid' ? 'true' : 'false' }}" title="Grid view"><span aria-hidden="true">▦</span><span class="sr-only">Grid view</span></button>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="fv-result-bar">
+    <span><strong data-fv-count>{{ file_vault.items|length }}</strong> <span data-fv-count-label>archive files in this view</span></span>
+    <span class="fv-legend"><i class="fv-signal"></i> Verified File Vault catalog</span>
+  </div>
+
+  <section class="fv-files {{ selected_view == 'grid' ? 'fv-grid' : 'fv-list' }}" data-fv-files aria-live="polite">
+    {% for item in file_vault.items %}
+      <article class="fv-file{% if item.featured %} is-featured{% endif %}{% if item.locked %} is-locked{% endif %}"
+               data-fv-item
+               data-name="{{ (item.display_name ~ ' ' ~ item.filename ~ ' ' ~ item.description ~ ' ' ~ item.tags|join(' '))|lower|e('html_attr') }}"
+               data-category="{{ item.category_id|default(item.category|lower)|e('html_attr') }}"
+               data-order="{{ item.sort_order }}"
+               data-date="{{ item.published_at|e('html_attr') }}"
+               data-size="{{ item.bytes }}"
+               data-downloads="{{ item.download_count }}">
+        <div class="fv-type" aria-hidden="true"><span>{{ item.source_type == 'url' ? 'URL' : item.filename|split('.')|last|upper|e }}</span></div>
+        <div class="fv-primary">
+          <div class="fv-title-row">
+            <h2>{{ item.display_name|e }}</h2>
+            <div class="fv-badges">
+              {% if item.featured %}<span class="featured">Featured</span>{% endif %}
+              {% if item.password_protected %}<span class="protected">Password</span>{% endif %}
+              {% if item.download_limit > 0 %}<span class="limited">{{ item.downloads_remaining }} left</span>{% endif %}
+              {% if item.is_new %}<span class="new">New</span>{% endif %}
+              {% if item.is_hot %}<span class="hot">Hot</span>{% endif %}
+            </div>
+          </div>
+          <p>{{ item.description|e }}</p>
+          <div class="fv-tags">
+            {% if item.category %}<span>{{ item.category|e }}</span>{% endif %}
+            {% for tag in item.tags %}<span>{{ tag|e }}</span>{% endfor %}
+          </div>
+        </div>
+        <dl class="fv-meta">
+          <div><dt>{{ item.source_type == 'url' ? 'Type' : 'File' }}</dt><dd>{{ item.source_type == 'url' ? 'Secure URL' : item.download_name|e }}</dd></div>
+          {% if item.version %}<div><dt>Version</dt><dd>{{ item.version|e }}</dd></div>{% endif %}
+          {% if item.source_type != 'url' %}<div><dt>Size</dt><dd>{{ item.size|e }}</dd></div>{% endif %}
+          {% if item.published_at %}<div><dt>Released</dt><dd>{{ item.published_at|date('M j, Y') }}</dd></div>{% endif %}
+          <div><dt>Downloads</dt><dd>{{ item.download_count|number_format }}</dd></div>
+        </dl>
+        <div class="fv-action">
+          {% if item.download_url %}
+            <a class="fv-download" href="{{ item.download_url|e('html_attr') }}" rel="nofollow"><span>{{ item.password_protected ? 'Unlock' : 'Download' }}</span><i aria-hidden="true">{{ item.source_type == 'url' ? '↗' : '↓' }}</i></a>
+            {% if item.checksum_sha256 %}<button class="fv-checksum" type="button" data-checksum="{{ item.checksum_sha256|e('html_attr') }}" title="Copy SHA-256 checksum">SHA-256</button>{% endif %}
+          {% else %}
+            <span class="fv-locked">{{ item.missing ? 'Unavailable' : 'Sign in required' }}</span>
+          {% endif %}
+        </div>
+      </article>
+    {% else %}
+      <div class="fv-empty">No files have been added to this archive yet.</div>
+    {% endfor %}
+  </section>
+
+  <div class="fv-empty fv-no-results" data-fv-empty hidden>No files match those filters.</div>
+
+  {% if not embedded|default(false) %}
+    <footer class="fv-footnote"><span class="fv-signal"></span><p>Each download is delivered through a protected, expiring link. SHA-256 checksums are provided for stored files.</p></footer>
+  {% endif %}
+</div>

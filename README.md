@@ -5,6 +5,16 @@ and themes. Every extension remains independently installable and packageable;
 the repository simply keeps development, compatibility rules, and release tools
 in one place.
 
+## Repository and Obsidian vault
+
+The repository root is also a portable Obsidian vault. Obsidian users can open
+this folder as a vault and begin at
+[Grav Extensions Workshop](%F0%9F%A7%B0%20Grav%20Extensions%20Workshop.md).
+No community plugin is required to read or maintain the documentation.
+
+GitHub and filesystem readers can begin with the
+[documentation index](docs/index.md).
+
 ## Included extensions
 
 | Extension | Type | Status | Install directory |
@@ -17,6 +27,14 @@ in one place.
 The future suite is deliberately maintained as a roadmap until each extension
 has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 [docs/architecture.md](docs/architecture.md).
+
+Every installable package also carries its own end-user README so the guidance
+travels with release ZIPs:
+
+- [File Vault manual](plugins/file-vault/README.md)
+- [Prism Gallery manual](plugins/prism-gallery/README.md)
+- [Grav Commander manual](plugins/grav-commander/README.md)
+- [Spitfire child-theme manual](themes/spitfire/README.md)
 
 ## Repository layout
 
@@ -71,6 +89,8 @@ Create an installable ZIP containing the required top-level extension folder:
 ```
 
 Generated archives are written to `dist/` and are intentionally ignored.
+
+The complete checklist is in [docs/releasing.md](docs/releasing.md).
 
 ## Licensing
 

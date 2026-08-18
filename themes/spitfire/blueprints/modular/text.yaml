@@ -1,0 +1,33 @@
+title: Text
+'@extends': default
+
+form:
+  fields:
+    tabs:
+      fields:
+        content:
+          fields:
+            header.anchor:
+              type: text
+              label: Section anchor
+              help: Stable URL fragment used by the Home submenu, such as mike-woltz. Use lowercase letters, numbers and hyphens only.
+              size: medium
+            header.media_order:
+              label: Page Media (first one will be displayed next to your content)
+            header.image_align:
+              type: select
+              label: Image position
+              classes: fancy
+              default: left
+              options:
+                'left': 'Left'
+                'right': 'Right'
+            header.image_layout:
+              type: select
+              label: Image layout
+              help: Columns keeps image and text separate. Wrapped text lets the copy continue at full width below the image.
+              classes: fancy
+              default: columns
+              options:
+                'columns': 'Two columns'
+                'wrap': 'Wrapped text'

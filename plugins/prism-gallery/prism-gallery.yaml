@@ -1,0 +1,17 @@
+enabled: true
+load_assets: always
+compatibility_aliases: true
+loop: true
+keyboard: true
+touch: true
+zoom: true
+close_on_backdrop: true
+autoplay_videos: false
+animation: lift
+protection:
+  enabled: true
+  token_ttl: 900
+grid:
+  minimum_width: 220px
+  gap: 1rem
+  aspect_ratio: '4 / 3'

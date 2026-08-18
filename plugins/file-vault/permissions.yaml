@@ -1,0 +1,7 @@
+actions:
+  file-vault:
+    label: File Vault
+    type: access
+    actions:
+      manage:
+        label: Upload files and manage the catalog
