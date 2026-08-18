@@ -17,7 +17,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.1.0';
+    private const VERSION = '0.2.0';
 
     private Grav $grav;
     private array $config;
@@ -51,8 +51,12 @@ class SafeguardService
             'stage_count' => count($stages),
             'stored_bytes' => array_sum(array_column($packages, 'size')),
             'allow_uploads' => (bool) ($this->config['allow_uploads'] ?? true),
+            'restore_enabled' => (bool) ($this->config['restore_enabled'] ?? false),
+            'restore_confirmation' => 'RESTORE THIS SITE',
+            'restore_preserve_paths' => $this->restorePreservePaths(),
+            'restore_history' => $this->restoreHistory(),
             'promotion_available' => false,
-            'safety_message' => 'Version 0.1 validates and stages packages outside the running site. Live promotion is intentionally unavailable.',
+            'safety_message' => 'Restore is rollback-first and CLI-only: Site Safeguard verifies the source, creates and stages a rollback package, preserves host-local paths, and verifies the restored site in a fresh process.',
         ];
     }
 
@@ -260,6 +264,7 @@ class SafeguardService
 
         $zipOpen = true;
         try {
+            $checksums = (array) ($inspection['checksums']['files'] ?? []);
             for ($index = 0; $index < $zip->numFiles; $index++) {
                 $entry = (string) $zip->getNameIndex($index);
                 if (!str_starts_with($entry, 'site/')) {
@@ -292,11 +297,15 @@ class SafeguardService
                 }
                 fclose($input);
                 fclose($output);
+                $mode = (int) ($checksums[$entry]['mode'] ?? (str_starts_with($entry, 'site/bin/') ? 0755 : 0644));
+                @chmod($destination, $mode & 0777);
+                if (isset($checksums[$entry]['modified'])) {
+                    @touch($destination, (int) $checksums[$entry]['modified']);
+                }
             }
             $zip->close();
             $zipOpen = false;
 
-            $checksums = (array) ($inspection['checksums']['files'] ?? []);
             $this->verifyStagedFiles($partial, $checksums);
             $stageRecord = file_put_contents($partial . '/.site-safeguard-stage.json', $this->json([
                 'schema' => 1,
@@ -334,6 +343,153 @@ class SafeguardService
         $items = array_map(fn (string $path): array => $this->stageInfo($path), $paths);
         usort($items, static fn (array $a, array $b): int => $b['modified'] <=> $a['modified']);
         return $items;
+    }
+
+    public function restoreStage(string $id, string $confirmation): array
+    {
+        if (PHP_SAPI !== 'cli') {
+            throw new ForbiddenException('Full-site restore must run from PHP CLI, outside the initiating web request.');
+        }
+        if (!($this->config['restore_enabled'] ?? false)) {
+            throw new ForbiddenException('Full-site restore is disabled in Site Safeguard configuration.');
+        }
+        if (!hash_equals('RESTORE THIS SITE', trim($confirmation))) {
+            throw new ValidationException('The restore confirmation phrase did not match.');
+        }
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        $stage = $this->stagePath($id);
+        $stageInfo = $this->stageInfo($stage);
+        if (!$stageInfo['verified'] || ($stageInfo['record']['promotion_ready'] ?? false) !== false) {
+            throw new ValidationException('Only a verified, unpromoted Site Safeguard stage can be restored.');
+        }
+        $packageName = (string) ($stageInfo['record']['package'] ?? '');
+        $packagePath = $this->packagePath($packageName);
+        $inspection = $this->inspectPath($packagePath, true);
+        if (!$inspection['valid'] || !(bool) ($inspection['manifest']['profile']['deployable'] ?? false)) {
+            throw new ValidationException('The stage source is no longer a valid deployable package.');
+        }
+        if (!hash_equals((string) ($stageInfo['record']['package_sha256'] ?? ''), (string) $inspection['package_sha256'])) {
+            throw new ValidationException('The package no longer matches the verified stage record.');
+        }
+        $checksums = (array) ($inspection['checksums']['files'] ?? []);
+        $this->verifyStagedFiles($stage, $checksums);
+        $this->verifyGravBoot($stage, true);
+        $this->verifyStagedFiles($stage, $checksums);
+
+        $lock = $this->restoreLock();
+        $operationId = 'restore-' . gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
+        $journalPath = $this->packageDirectory() . '/.' . $operationId . '.json';
+        $preserve = $this->restorePreservePaths();
+        $rollbackPackage = null;
+        $rollbackStage = null;
+        $maintenance = $this->root . '/.upgrading';
+        $journal = [
+            'schema' => 1,
+            'id' => $operationId,
+            'state' => 'preparing',
+            'started_at' => gmdate('c'),
+            'source_stage' => $id,
+            'source_package' => $packageName,
+            'source_sha256' => $inspection['package_sha256'],
+            'preserved_paths' => $preserve,
+            'rollback_package' => null,
+            'rollback_stage' => null,
+            'error' => null,
+        ];
+        try {
+            $this->writeJournal($journalPath, $journal);
+        } catch (\Throwable $journalError) {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+            throw $journalError;
+        }
+
+        try {
+            $rollbackPackage = $this->createPackage('portable_site', 'Automatic rollback before ' . $operationId);
+            $rollbackStage = $this->stagePackage((string) $rollbackPackage['name']);
+            $rollbackInspection = $this->inspectPath($this->packagePath((string) $rollbackPackage['name']), true);
+            $rollbackChecksums = (array) ($rollbackInspection['checksums']['files'] ?? []);
+            $this->verifyGravBoot((string) $rollbackStage['path'], true);
+            $this->verifyStagedFiles((string) $rollbackStage['path'], $rollbackChecksums);
+            $journal['rollback_package'] = $rollbackPackage['name'];
+            $journal['rollback_stage'] = $rollbackStage['id'];
+            $journal['state'] = 'rollback-verified';
+            $this->writeJournal($journalPath, $journal);
+
+            if (file_put_contents($maintenance, gmdate('c') . ' ' . $operationId . "\n", LOCK_EX) === false) {
+                throw new ValidationException('Unable to enter Grav maintenance mode.');
+            }
+            $journal['state'] = 'restoring';
+            $this->writeJournal($journalPath, $journal);
+
+            $stats = ['files_copied' => 0, 'directories_created' => 0, 'entries_removed' => 0, 'entries_preserved' => 0];
+            $this->mirrorStageToRoot($stage, $preserve, $stats);
+            $verified = $this->verifyRestoredFiles($checksums, $preserve);
+            $this->clearRuntimeCache();
+            @unlink($maintenance);
+            $this->verifyGravBoot($this->root, false);
+
+            $journal['state'] = 'completed';
+            $journal['completed_at'] = gmdate('c');
+            $journal['stats'] = $stats;
+            $journal['verified_files'] = $verified;
+            $this->writeJournal($journalPath, $journal);
+            clearstatcache(true);
+            if (function_exists('opcache_reset')) {
+                @opcache_reset();
+            }
+
+            $this->grav['log']->notice('[Site Safeguard] Full-site restore completed: ' . $operationId);
+            return [
+                'message' => 'Full-site restore completed and verified.',
+                'operation' => $journal,
+                'rollback_package' => $rollbackPackage,
+                'rollback_stage' => $rollbackStage,
+            ];
+        } catch (\Throwable $restoreError) {
+            $journal['state'] = 'restore-failed';
+            $journal['error'] = $restoreError->getMessage();
+            $this->writeJournal($journalPath, $journal);
+            @file_put_contents($maintenance, gmdate('c') . ' rollback ' . $operationId . "\n", LOCK_EX);
+
+            if (is_array($rollbackStage) && isset($rollbackStage['id'])) {
+                try {
+                    $rollbackPath = $this->stagePath((string) $rollbackStage['id']);
+                    $rollbackName = (string) ($rollbackStage['record']['package'] ?? $rollbackPackage['name'] ?? '');
+                    $rollbackInspection = $this->inspectPath($this->packagePath($rollbackName), true);
+                    $rollbackChecksums = (array) ($rollbackInspection['checksums']['files'] ?? []);
+                    $rollbackStats = ['files_copied' => 0, 'directories_created' => 0, 'entries_removed' => 0, 'entries_preserved' => 0];
+                    $this->mirrorStageToRoot($rollbackPath, $preserve, $rollbackStats);
+                    $this->verifyRestoredFiles($rollbackChecksums, $preserve);
+                    $this->clearRuntimeCache();
+                    @unlink($maintenance);
+                    $this->verifyGravBoot($this->root, false);
+                    $journal['state'] = 'rolled-back';
+                    $journal['rolled_back_at'] = gmdate('c');
+                    $journal['rollback_stats'] = $rollbackStats;
+                    $this->writeJournal($journalPath, $journal);
+                } catch (\Throwable $rollbackError) {
+                    @file_put_contents($maintenance, gmdate('c') . ' rollback-failed ' . $operationId . "\n", LOCK_EX);
+                    $journal['state'] = 'rollback-failed';
+                    $journal['rollback_error'] = $rollbackError->getMessage();
+                    $this->writeJournal($journalPath, $journal);
+                }
+            }
+            if ($journal['state'] === 'rolled-back') {
+                @unlink($maintenance);
+            }
+            throw new ValidationException(
+                $journal['state'] === 'rolled-back'
+                    ? 'Restore failed and the previous site was restored automatically: ' . $restoreError->getMessage()
+                    : 'Restore failed. Review the recovery journal and rollback stage immediately: ' . $restoreError->getMessage()
+            );
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
     }
 
     public function deletePackage(string $name): array
@@ -448,6 +604,7 @@ class SafeguardService
             'sha256' => hash_file('sha256', $absolute),
             'size' => $size,
             'modified' => (int) filemtime($absolute),
+            'mode' => fileperms($absolute) & 0777,
         ];
         $stats['files']++;
         $stats['bytes'] += $size;
@@ -661,6 +818,349 @@ class SafeguardService
                 throw new ValidationException('Staged file verification failed: ' . $relative);
             }
         }
+
+        $expected = array_fill_keys(array_map(
+            static fn (string $entry): string => substr($entry, 5),
+            array_filter(array_keys($checksums), static fn ($entry): bool => is_string($entry) && str_starts_with($entry, 'site/'))
+        ), true);
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($iterator as $item) {
+            if ($item->isLink()) {
+                throw new ValidationException('A symbolic link appeared in the staged site.');
+            }
+            if (!$item->isFile()) {
+                continue;
+            }
+            $relative = ltrim(str_replace('\\', '/', substr($item->getPathname(), strlen($root))), '/');
+            if ($relative === '.site-safeguard-stage.json') {
+                continue;
+            }
+            if (!isset($expected[$relative])) {
+                throw new ValidationException('Unexpected file appeared in the staged site: ' . $relative);
+            }
+        }
+    }
+
+    private function stagePath(string $id): string
+    {
+        if ($id !== basename($id) || !preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $id)) {
+            throw new ValidationException('Invalid stage identifier.');
+        }
+        $path = $this->stageDirectory() . '/' . $id;
+        if (!is_dir($path)) {
+            throw new NotFoundException('Stage not found.');
+        }
+        return $path;
+    }
+
+    private function restorePreservePaths(): array
+    {
+        $configured = $this->normaliseRelativePaths((array) ($this->config['restore_preserve_paths'] ?? []), false);
+        return array_values(array_unique(array_merge([
+            '.ddev',
+            '.git',
+            'cache',
+            'logs',
+            'tmp',
+            'backup',
+            'backups',
+            'file-vault-files',
+            'user/config/plugins/site-safeguard.yaml',
+        ], $configured)));
+    }
+
+    private function restoreHistory(): array
+    {
+        $files = glob($this->packageDirectory() . '/.restore-*.json') ?: [];
+        usort($files, static fn (string $a, string $b): int => filemtime($b) <=> filemtime($a));
+        $history = [];
+        foreach (array_slice($files, 0, 10) as $file) {
+            $decoded = json_decode((string) file_get_contents($file), true);
+            if (is_array($decoded)) {
+                $history[] = $decoded;
+            }
+        }
+        return $history;
+    }
+
+    private function restoreLock()
+    {
+        $path = $this->packageDirectory() . '/.restore.lock';
+        $lock = fopen($path, 'c+');
+        if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lock)) {
+                fclose($lock);
+            }
+            throw new ValidationException('Another Site Safeguard restore is already running.');
+        }
+        @chmod($path, 0600);
+        return $lock;
+    }
+
+    private function writeJournal(string $path, array $journal): void
+    {
+        $temporary = $path . '.tmp-' . bin2hex(random_bytes(3));
+        if (file_put_contents($temporary, $this->json($journal), LOCK_EX) === false || !rename($temporary, $path)) {
+            @unlink($temporary);
+            throw new RuntimeException('Unable to update the restore journal.');
+        }
+        @chmod($path, 0600);
+    }
+
+    private function mirrorStageToRoot(string $stage, array $preserve, array &$stats): void
+    {
+        $this->mirrorDirectory($stage, $this->root, '', $preserve, $stats);
+    }
+
+    private function mirrorDirectory(string $source, string $destination, string $relative, array $preserve, array &$stats): void
+    {
+        if (!is_dir($destination)) {
+            if (!mkdir($destination, 0755, true) && !is_dir($destination)) {
+                throw new ValidationException('Unable to create restore directory: ' . ($relative ?: '.'));
+            }
+            $stats['directories_created']++;
+        }
+
+        $sourceNames = [];
+        foreach (scandir($source) ?: [] as $name) {
+            if ($name === '.' || $name === '..' || ($relative === '' && $name === '.site-safeguard-stage.json')) {
+                continue;
+            }
+            $childRelative = $relative === '' ? $name : $relative . '/' . $name;
+            $sourceNames[$name] = true;
+            if ($this->isRestorePreserved($childRelative, $preserve)) {
+                $stats['entries_preserved']++;
+                continue;
+            }
+
+            $sourcePath = $source . '/' . $name;
+            $destinationPath = $destination . '/' . $name;
+            if (is_link($sourcePath)) {
+                throw new ValidationException('Symbolic links are not allowed in a restore stage: ' . $childRelative);
+            }
+            if (is_dir($sourcePath)) {
+                if (file_exists($destinationPath) && !is_dir($destinationPath)) {
+                    $this->removeRestoreEntry($destinationPath);
+                    $stats['entries_removed']++;
+                }
+                $this->mirrorDirectory($sourcePath, $destinationPath, $childRelative, $preserve, $stats);
+                continue;
+            }
+            if (!is_file($sourcePath)) {
+                throw new ValidationException('Unsupported staged entry: ' . $childRelative);
+            }
+            if (is_dir($destinationPath) && !is_link($destinationPath)) {
+                $this->removeTree($destinationPath, $this->root);
+                $stats['entries_removed']++;
+            } elseif (is_link($destinationPath)) {
+                if (!unlink($destinationPath)) {
+                    throw new ValidationException('Unable to remove destination link: ' . $childRelative);
+                }
+            }
+            $temporary = $destinationPath . '.safeguard-' . bin2hex(random_bytes(3));
+            if (!copy($sourcePath, $temporary)) {
+                @unlink($temporary);
+                throw new ValidationException('Unable to restore file: ' . $childRelative);
+            }
+            @chmod($temporary, fileperms($sourcePath) & 0777);
+            if (!rename($temporary, $destinationPath)) {
+                @unlink($temporary);
+                throw new ValidationException('Unable to publish restored file: ' . $childRelative);
+            }
+            @touch($destinationPath, (int) filemtime($sourcePath));
+            $stats['files_copied']++;
+        }
+
+        foreach (scandir($destination) ?: [] as $name) {
+            if ($name === '.' || $name === '..' || isset($sourceNames[$name])) {
+                continue;
+            }
+            $childRelative = $relative === '' ? $name : $relative . '/' . $name;
+            if ($this->isRestorePreserved($childRelative, $preserve)) {
+                $stats['entries_preserved']++;
+                continue;
+            }
+            $destinationPath = $destination . '/' . $name;
+            if ($this->hasPreservedDescendant($childRelative, $preserve) && is_dir($destinationPath) && !is_link($destinationPath)) {
+                $this->pruneAbsentDirectory($destinationPath, $childRelative, $preserve, $stats);
+                continue;
+            }
+            $this->removeRestoreEntry($destinationPath);
+            $stats['entries_removed']++;
+        }
+    }
+
+    private function pruneAbsentDirectory(string $path, string $relative, array $preserve, array &$stats): void
+    {
+        foreach (scandir($path) ?: [] as $name) {
+            if ($name === '.' || $name === '..') {
+                continue;
+            }
+            $childRelative = $relative . '/' . $name;
+            $child = $path . '/' . $name;
+            if ($this->isRestorePreserved($childRelative, $preserve)) {
+                $stats['entries_preserved']++;
+                continue;
+            }
+            if ($this->hasPreservedDescendant($childRelative, $preserve) && is_dir($child) && !is_link($child)) {
+                $this->pruneAbsentDirectory($child, $childRelative, $preserve, $stats);
+                continue;
+            }
+            $this->removeRestoreEntry($child);
+            $stats['entries_removed']++;
+        }
+    }
+
+    private function removeRestoreEntry(string $path): void
+    {
+        if (is_dir($path) && !is_link($path)) {
+            $this->removeTree($path, $this->root);
+            return;
+        }
+        if (!unlink($path)) {
+            throw new ValidationException('Unable to remove stale restore entry.');
+        }
+    }
+
+    private function isRestorePreserved(string $relative, array $preserve): bool
+    {
+        $relative = trim(str_replace('\\', '/', $relative), '/');
+        if ($relative === '.upgrading') {
+            return true;
+        }
+        if (!str_contains($relative, '/')
+            && $relative !== '.env.example'
+            && ($relative === '.env' || str_starts_with($relative, '.env.'))) {
+            return true;
+        }
+        foreach ($preserve as $path) {
+            if ($relative === $path || str_starts_with($relative, $path . '/')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function hasPreservedDescendant(string $relative, array $preserve): bool
+    {
+        foreach ($preserve as $path) {
+            if (str_starts_with($path, $relative . '/')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function verifyRestoredFiles(array $checksums, array $preserve): int
+    {
+        $verified = 0;
+        foreach ($checksums as $entry => $record) {
+            if (!is_string($entry) || !str_starts_with($entry, 'site/') || !is_array($record)) {
+                throw new ValidationException('Invalid restore checksum record.');
+            }
+            $relative = substr($entry, 5);
+            if ($this->isRestorePreserved($relative, $preserve)) {
+                continue;
+            }
+            $path = $this->safeChildPath($this->root, $relative);
+            if (!is_file($path)
+                || (int) filesize($path) !== (int) ($record['size'] ?? -1)
+                || !hash_equals((string) ($record['sha256'] ?? ''), hash_file('sha256', $path))) {
+                throw new ValidationException('Restored file verification failed: ' . $relative);
+            }
+            $verified++;
+        }
+        return $verified;
+    }
+
+    private function clearRuntimeCache(): void
+    {
+        $cache = $this->root . '/cache';
+        if (!is_dir($cache)) {
+            return;
+        }
+        foreach (scandir($cache) ?: [] as $name) {
+            if ($name === '.' || $name === '..') {
+                continue;
+            }
+            $path = $cache . '/' . $name;
+            if (is_dir($path) && !is_link($path)) {
+                $this->removeTree($path, $cache);
+            } else {
+                @unlink($path);
+            }
+        }
+    }
+
+    private function verifyGravBoot(string $root, bool $temporaryRuntime): void
+    {
+        if (!($this->config['restore_boot_check'] ?? true)) {
+            return;
+        }
+        if (!function_exists('proc_open')) {
+            throw new ValidationException('Fresh-process boot checks require proc_open().');
+        }
+        $binary = trim((string) ($this->config['php_cli_path'] ?? 'php'));
+        if ($binary === '' || str_contains($binary, "\0") || !preg_match('#^[A-Za-z0-9._/+-]+$#', $binary)) {
+            throw new ValidationException('The configured PHP CLI executable is invalid.');
+        }
+        $index = rtrim($root, '/') . '/index.php';
+        if (!is_file($index)) {
+            throw new ValidationException('The restore candidate has no index.php boot entrypoint.');
+        }
+
+        $runtimePaths = [];
+        if ($temporaryRuntime) {
+            foreach (['cache', 'logs', 'tmp', 'backup'] as $relative) {
+                $path = rtrim($root, '/') . '/' . $relative;
+                if (!file_exists($path)) {
+                    $this->ensureDirectory($path);
+                    $runtimePaths[] = $path;
+                }
+            }
+        }
+
+        $outputPath = $this->packageDirectory() . '/.boot-output-' . bin2hex(random_bytes(6));
+        $errorPath = $this->packageDirectory() . '/.boot-error-' . bin2hex(random_bytes(6));
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['file', $outputPath, 'w'],
+            2 => ['file', $errorPath, 'w'],
+        ];
+        $pipes = [];
+        $process = proc_open([$binary, $index], $descriptors, $pipes, $root);
+        if (!is_resource($process)) {
+            @unlink($outputPath);
+            @unlink($errorPath);
+            $this->removeTemporaryRuntime($runtimePaths, $root);
+            throw new ValidationException('Unable to start the isolated Grav boot check.');
+        }
+        fclose($pipes[0]);
+        $exit = proc_close($process);
+        $output = is_file($outputPath) ? (string) file_get_contents($outputPath) : '';
+        $errors = is_file($errorPath) ? (string) file_get_contents($errorPath) : '';
+        @unlink($outputPath);
+        @unlink($errorPath);
+        $this->removeTemporaryRuntime($runtimePaths, $root);
+
+        $failedPage = str_contains($output, '<title>Grav Problems</title>')
+            || str_contains($output, 'Whoops there was an error!');
+        if ($exit !== 0 || $failedPage) {
+            $detail = trim(strip_tags($errors !== '' ? $errors : substr($output, 0, 1000)));
+            $detail = preg_replace('/\s+/', ' ', $detail) ?: 'Grav did not boot successfully.';
+            throw new ValidationException('Fresh-process Grav boot check failed: ' . substr($detail, 0, 300));
+        }
+    }
+
+    private function removeTemporaryRuntime(array $paths, string $root): void
+    {
+        foreach (array_reverse($paths) as $path) {
+            if (is_dir($path)) {
+                $this->removeTree($path, $root);
+            }
+        }
     }
 
     private function isExcluded(string $relative, array $profile): bool
@@ -679,7 +1179,8 @@ class SafeguardService
         );
         foreach ($excludes as $prefix) {
             if ($relative === $prefix || str_starts_with($relative, $prefix . '/')
-                || (!str_contains($prefix, '/') && in_array($prefix, explode('/', $relative), true))) {
+                || (in_array($prefix, ['.git', '.github', '.idea', '.vscode', 'node_modules', '__MACOSX'], true)
+                    && in_array($prefix, explode('/', $relative), true))) {
                 return true;
             }
         }

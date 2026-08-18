@@ -8,4 +8,4 @@ actions:
       stage:
         label: Extract a verified package into isolated staging
       promote:
-        label: Promote a staged package (reserved; unavailable in 0.1)
+        label: Reserved for a future independently authenticated recovery interface

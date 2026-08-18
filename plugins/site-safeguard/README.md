@@ -4,10 +4,12 @@ Site Safeguard creates portable, self-describing Grav recovery packages,
 validates every archived file against SHA-256 metadata, and extracts complete
 packages into an isolated directory outside the running site.
 
-Version 0.1 is intentionally a **prepare-and-prove** release. It does not replace
-the live webroot. A future promotion workflow will be added only after
-maintenance mode, an immediately usable rollback copy, process separation, and
-post-promotion health checks are implemented and tested.
+Version 0.2 adds a guarded full-site restore for transfers between installations
+such as production and DDEV. Restore is deliberately CLI-only so the process
+does not overwrite the code serving the initiating web request. It requires a
+verified stage, creates and boots a verified rollback stage before touching the
+site, preserves host-local paths, uses Grav maintenance mode, mirrors the staged
+site, verifies every restored file, and boots Grav again in a fresh PHP process.
 
 ## Why this exists
 
@@ -22,7 +24,9 @@ adds the missing portability and recovery evidence:
 - imported-package inspection before retention;
 - extraction only into a unique staging directory outside the public site;
 - a second checksum pass against the extracted stage; and
-- protected, one-time package download URLs.
+- protected, one-time package download URLs;
+- file mode and modification-time preservation; and
+- rollback-first full-site restoration with a durable recovery journal.
 
 It is complementary to Grav Commander. Commander remains a trusted operator's
 file manager and backup workbench. Site Safeguard owns verified, portable
@@ -62,6 +66,13 @@ the Grav directory:
 Site Safeguard refuses to use either directory if it resolves inside the public
 Grav root.
 
+Full-site restore is disabled by default. Enable it only after reviewing the
+PHP CLI path and preserved host-local paths. DDEV installations should preserve
+`.ddev`; production commonly preserves environment files and runtime folders.
+The destination's `user/config/plugins/site-safeguard.yaml` is host-local and
+preserved by default, preventing a transferred package from replacing the
+destination's package paths and restore safety settings.
+
 ## Package profiles
 
 ### Portable site
@@ -99,6 +110,9 @@ Grav site; inspection checks for `index.php`, `system/`, and `user/`.
 6. Inspect it again, then select **Create stage**.
 7. The package is extracted outside the running Grav root and every staged file
    is hashed again. The current site remains untouched.
+8. Review the stage and run the displayed CLI restore command from the Grav
+   root. Site Safeguard creates and boots a rollback stage before maintenance
+   mode begins.
 
 An imported package that fails structural or checksum validation is deleted
 instead of being retained in the package library.
@@ -126,6 +140,16 @@ Create an isolated verified stage:
 ```bash
 bin/plugin site-safeguard stage safeguard-example-portable_site-20260818-120000-a1b2c3.zip
 ```
+
+Restore the current site from a verified deployable stage:
+
+```bash
+bin/plugin site-safeguard restore safeguard-example-portable_site-20260818-120000-a1b2c3-d4e5f6 \
+  --confirm="RESTORE THIS SITE"
+```
+
+Restore refuses to run through HTTP/API. Run it from a shell or hosting control
+panel terminal as the same operating-system user that owns the Grav files.
 
 CLI commands use bare filenames from the protected package directory. They do
 not accept arbitrary filesystem paths.
@@ -180,8 +204,9 @@ complete on the destination.
 - Package/stage roots must resolve outside `GRAV_ROOT`.
 - API operations require `site-safeguard.manage` or `site-safeguard.stage`;
   super administrators are accepted.
-- The `site-safeguard.promote` permission is reserved but has no executable
-  operation in version 0.1.
+- The `site-safeguard.promote` permission is reserved for a future independent
+  recovery interface and has no executable HTTP operation. Full-site restore is
+  CLI-only in version 0.2.
 - ZIP entry names reject NUL bytes, backslashes, absolute/drive paths, and `..`.
 - Duplicate entries and ZIP symlinks are rejected.
 - Entry count, package bytes, and expanded bytes are bounded.
@@ -193,11 +218,21 @@ complete on the destination.
   packages rather than inside the site backup source.
 - The Admin inspection response reports checksum totals and validation results;
   it does not send the potentially large per-file checksum map to the browser.
+- A restore requires an exact confirmation phrase and a non-blocking global
+  lock, revalidates and boots the source stage, creates and boots a rollback
+  stage, records a journal outside the site, and uses `.upgrading` maintenance
+  mode while files change.
+- Host-local paths are preserved, and the post-restore site must pass both its
+  checksum inventory and a fresh-process Grav boot check. Failure triggers the
+  verified rollback stage automatically.
 
-## Known limitations of 0.1
+## Known limitations of 0.2
 
-- No live promotion or rollback action.
 - No scheduler integration or remote/object-storage provider.
+- Restore requires PHP CLI and `proc_open()` for isolated boot checks.
+- Restore is not exposed as an Admin/API action. A future standalone recovery
+  assistant will provide a Kickstart-style workflow outside the site being
+  replaced.
 - Package creation and deep inspection run synchronously and remain subject to
   PHP/web-server execution limits on very large sites. Prefer the CLI for large
   sites.
@@ -206,6 +241,25 @@ complete on the destination.
 - File ownership, extended ACLs, and every platform-specific permission bit are
   not preserved by the portable ZIP format.
 - External protected storage is not bundled automatically.
+
+## Roadmap
+
+The next recovery milestones are deliberately separated from the tested 0.2
+restore core:
+
+- **Recovery Assistant:** a small, independently authenticated, single-use
+  Kickstart-style application that can inspect a package, test hosting
+  prerequisites, restore without depending on the installed site, surface the
+  rollback path, and remove/lock itself after completion.
+- **Scheduling:** Grav Scheduler integration, overlap locks, readable cron
+  previews, success/failure history, notifications, scheduled verification, and
+  retention policies such as daily/weekly/monthly generations.
+- **Off-site providers:** a provider interface followed by S3-compatible object
+  storage, SFTP, and WebDAV; client-side encryption, multipart/resumable transfer,
+  remote integrity checks, and remote retention must exist before cloud upload
+  is considered complete.
+- **External data sets:** explicit companion definitions for File Vault binary
+  storage and other site dependencies outside `GRAV_ROOT`.
 
 ## Updating
 

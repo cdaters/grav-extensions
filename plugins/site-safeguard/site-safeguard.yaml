@@ -11,6 +11,20 @@ max_uncompressed_bytes: 5368709120
 download_token_ttl: 180
 allow_uploads: true
 max_packages: 12
+restore_enabled: false
+restore_boot_check: true
+php_cli_path: php
+
+restore_preserve_paths:
+  - .ddev
+  - .git
+  - cache
+  - logs
+  - tmp
+  - backup
+  - backups
+  - file-vault-files
+  - user/config/plugins/site-safeguard.yaml
 
 exclude_paths:
   - .ddev

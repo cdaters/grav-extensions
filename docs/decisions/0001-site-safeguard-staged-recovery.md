@@ -3,6 +3,9 @@
 **Status:** accepted for Site Safeguard 0.1  
 **Date:** 2026-08-18
 
+Version 0.2 extends this decision with the separate-process restore boundary in
+[Decision 0002](0002-site-safeguard-cli-restore.md).
+
 ## Context
 
 Creating a backup is not the same as proving that it can be restored. Replacing

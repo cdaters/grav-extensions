@@ -1,8 +1,8 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.1.0
-description: Verified, portable Grav backup packages and isolated restore staging for Grav 2.
+version: 0.2.0
+description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:
   name: Craig Daters
@@ -100,6 +100,42 @@ form:
         type: int
         min: 1
         max: 100
+
+    restore_enabled:
+      type: toggle
+      label: Allow full-site restore
+      help: CLI restore requires a verified deployable stage, an exact confirmation phrase, and an automatically verified rollback package. No HTTP restore endpoint is exposed.
+      highlight: 0
+      default: 0
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    restore_boot_check:
+      type: toggle
+      label: Require fresh-process Grav boot checks
+      help: Refuses restore when the staged site cannot boot in a separate PHP CLI process and automatically rolls back when the restored site fails the same check.
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    php_cli_path:
+      type: text
+      label: PHP CLI executable
+      help: Executable used for isolated stage and post-restore boot checks. Usually php, /usr/bin/php, or the PHP CLI path supplied by your host.
+      default: php
+
+    restore_preserve_paths:
+      type: array
+      label: Host-local paths preserved during restore
+      help: Relative to the Grav root. These paths remain local and override same-named paths in a transferred package. Keep .ddev here for development sites.
+      value_only: true
 
     exclude_paths:
       type: array

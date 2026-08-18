@@ -7,7 +7,7 @@ can never be mistaken for an installable Grav package.
 | Order | Working name | Purpose | State |
 | ---: | --- | --- | --- |
 | 1 | Prism Gallery | Accessible mixed-media galleries and protected local-media delivery | Development release |
-| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.1 development release; promotion intentionally locked |
+| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.2 development release; guarded CLI restore available |
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | Specification queued |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | Specification queued |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | Specification queued |
@@ -27,3 +27,23 @@ Existing products that are not part of that build sequence remain first-class:
 Names are original working names and can be revisited before first stable
 releases. Implementations must be clean-room work based on public behavior and
 documentation, not copied premium source code.
+
+## Site Safeguard recovery roadmap
+
+Site Safeguard 0.2 provides the immediate production-to-DDEV and DDEV-to-
+production transfer path: portable packages, repeated validation, verified
+staging, rollback-first CLI restore, and automatic rollback when the restored
+site cannot boot.
+
+The recovery work that follows is intentionally incremental:
+
+1. **Recovery Assistant** — an independently authenticated, disposable,
+   Kickstart-style entry point that can recover a site even when Grav or the
+   installed plugin cannot start.
+2. **Scheduling** — Grav Scheduler/cron integration, overlap protection,
+   verification jobs, retention generations, notifications, and history.
+3. **Off-site storage** — an encrypted provider contract followed by
+   S3-compatible storage, SFTP, and WebDAV with resumable transfer, remote
+   integrity verification, and remote retention.
+4. **External data sets** — explicit companion backup definitions for File
+   Vault binaries and other protected data stored outside the Grav root.

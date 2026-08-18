@@ -1,7 +1,7 @@
 {
   "name": "cdaters/grav-plugin-site-safeguard",
   "type": "grav-plugin",
-  "description": "Verified portable Grav packages and isolated restore staging.",
+  "description": "Verified portable Grav packages and rollback-first full-site recovery.",
   "keywords": ["grav", "plugin", "backup", "restore", "deployment"],
   "license": "MIT",
   "authors": [
