@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — 2026-08-18
+
+- Supply the required resource location when returning HTTP 201 responses so
+  package creation, import, and staging work with the released Grav API plugin.
+
 ## 0.2.0 — 2026-08-18
 
 - Add CLI-only, rollback-first full-site restore from verified deployable stages.

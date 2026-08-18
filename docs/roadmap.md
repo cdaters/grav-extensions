@@ -7,7 +7,7 @@ can never be mistaken for an installable Grav package.
 | Order | Working name | Purpose | State |
 | ---: | --- | --- | --- |
 | 1 | Prism Gallery | Accessible mixed-media galleries and protected local-media delivery | Development release |
-| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.2 development release; guarded CLI restore available |
+| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.2.1 development release; guarded CLI restore available |
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | Specification queued |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | Specification queued |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | Specification queued |

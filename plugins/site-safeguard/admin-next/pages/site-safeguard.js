@@ -191,7 +191,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-state"><span>v${this.escape(status.version || '0.2.0')}</span><strong>${status.restore_enabled ? 'Restore armed' : 'Restore disabled'}</strong></div>
+          <div class="hero-state"><span>v${this.escape(status.version || '0.2.1')}</span><strong>${status.restore_enabled ? 'Restore armed' : 'Restore disabled'}</strong></div>
         </section>
 
         <section class="metrics">

@@ -29,10 +29,14 @@ class ApiController extends AbstractApiController
     {
         $this->requireSafeguardPermission($request, 'site-safeguard.manage');
         $body = $this->getRequestBody($request);
-        return ApiResponse::created(data: $this->service()->createPackage(
+        $package = $this->service()->createPackage(
             (string) ($body['profile'] ?? 'portable_site'),
             (string) ($body['note'] ?? '')
-        ));
+        );
+        return ApiResponse::created(
+            $package,
+            '/site-safeguard/packages/' . rawurlencode((string) $package['name'])
+        );
     }
 
     public function uploadPackage(ServerRequestInterface $request): ResponseInterface
@@ -43,7 +47,11 @@ class ApiController extends AbstractApiController
         if (!$package) {
             throw new ValidationException('No package was uploaded.');
         }
-        return ApiResponse::created(data: $this->service()->importPackage($package));
+        $imported = $this->service()->importPackage($package);
+        return ApiResponse::created(
+            $imported,
+            '/site-safeguard/packages/' . rawurlencode((string) $imported['name'])
+        );
     }
 
     public function inspectPackage(ServerRequestInterface $request): ResponseInterface
@@ -55,7 +63,11 @@ class ApiController extends AbstractApiController
     public function stagePackage(ServerRequestInterface $request): ResponseInterface
     {
         $this->requireSafeguardPermission($request, 'site-safeguard.stage');
-        return ApiResponse::created(data: $this->service()->stagePackage($this->packageName($request)));
+        $stage = $this->service()->stagePackage($this->packageName($request));
+        return ApiResponse::created(
+            $stage,
+            '/site-safeguard/stages/' . rawurlencode((string) $stage['id'])
+        );
     }
 
     public function createDownloadToken(ServerRequestInterface $request): ResponseInterface
