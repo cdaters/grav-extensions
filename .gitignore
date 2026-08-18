@@ -1,0 +1,39 @@
+# Generated packages
+/dist/*
+!/dist/.gitkeep
+
+# Operating-system and editor debris
+.DS_Store
+._*
+__MACOSX/
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Local environments and dependencies
+.ddev/
+node_modules/
+
+# Grav runtime state must never enter the source repository
+cache/
+logs/
+sessions/
+tmp/
+user/data/
+user/accounts/
+user/config/security.yaml
+user/config/secrets.yaml
+file-vault-files/
+**/file-vault-files/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
