@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 — 2026-08-18
+
+- Display the embedded operator note directly in every recovery-package card
+  and in the expanded inspection results, including an explicit empty state.
+
 ## 0.2.1 — 2026-08-18
 
 - Supply the required resource location when returning HTTP 201 responses so

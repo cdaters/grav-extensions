@@ -191,7 +191,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-state"><span>v${this.escape(status.version || '0.2.1')}</span><strong>${status.restore_enabled ? 'Restore armed' : 'Restore disabled'}</strong></div>
+          <div class="hero-state"><span>v${this.escape(status.version || '0.2.2')}</span><strong>${status.restore_enabled ? 'Restore armed' : 'Restore disabled'}</strong></div>
         </section>
 
         <section class="metrics">
@@ -260,6 +260,7 @@ class SiteSafeguardPage extends HTMLElement {
   packageCard(item, disabled) {
     const manifest = item.manifest || {};
     const profile = manifest.profile || {};
+    const note = String(manifest.note || '').trim();
     const inspection = this.state.inspections[item.name];
     const canStage = inspection?.valid && profile.deployable;
     return `
@@ -272,6 +273,10 @@ class SiteSafeguardPage extends HTMLElement {
             <code>SHA-256 ${this.escape(item.sha256 || '')}</code>
           </div>
           <span class="badge ${inspection ? (inspection.valid ? 'good' : 'bad') : ''}">${inspection ? (inspection.valid ? 'Verified' : 'Invalid') : 'Unverified'}</span>
+        </div>
+        <div class="package-note ${note ? '' : 'empty-note'}">
+          <span>Operator note</span>
+          <p>${note ? this.escape(note) : 'No operator note was attached to this package.'}</p>
         </div>
         <div class="actions">
           <button class="inspect" data-name="${this.escape(item.name)}" ${disabled}>Inspect</button>
@@ -286,6 +291,7 @@ class SiteSafeguardPage extends HTMLElement {
   inspectionPanel(result) {
     const manifest = result.manifest || {};
     const stats = manifest.stats || {};
+    const note = String(manifest.note || '').trim();
     return `
       <div class="inspection ${result.valid ? 'valid' : 'invalid'}">
         <div class="inspection-grid">
@@ -294,6 +300,7 @@ class SiteSafeguardPage extends HTMLElement {
           <div><span>Expanded size</span><strong>${this.formatBytes(result.uncompressed_bytes || 0)}</strong></div>
           <div><span>Source warnings</span><strong>${(result.warnings || []).length}</strong></div>
         </div>
+        <div class="inspection-note"><span>Operator note</span><p>${note ? this.escape(note) : 'No operator note was attached to this package.'}</p></div>
         ${(result.errors || []).length ? `<ul class="issues errors">${result.errors.map(error => `<li>${this.escape(error)}</li>`).join('')}</ul>` : ''}
         ${(result.warnings || []).length ? `<ul class="issues warnings">${result.warnings.map(warning => `<li>${this.escape(warning)}</li>`).join('')}</ul>` : ''}
         ${stats.symlinks_skipped ? `<p class="fine">${stats.symlinks_skipped} symbolic link(s) were deliberately omitted when this package was created.</p>` : ''}
@@ -362,11 +369,12 @@ class SiteSafeguardPage extends HTMLElement {
       .package-card { border-bottom:1px solid var(--line); }.package-card:last-child { border-bottom:0; }.package-main { display:flex; align-items:center; gap:13px; padding:14px 18px 8px; }.file-icon { display:grid; flex:0 0 48px; height:48px; place-items:center; border:1px solid var(--line); border-radius:9px; color:var(--accent-2); font:800 11px ui-monospace,monospace; background:var(--panel-2); }
       .package-copy { display:grid; flex:1; min-width:0; gap:2px; }.package-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.package-copy small { color:var(--muted); }.package-copy code { overflow:hidden; color:var(--muted); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
       .badge { padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; }.badge.good { border-color:color-mix(in srgb,var(--good) 40%,var(--line)); color:var(--good); background:color-mix(in srgb,var(--good) 10%,transparent); }.badge.bad { color:var(--bad); }
+      .package-note { margin:0 18px 13px 83px; padding:10px 12px; border-left:2px solid var(--accent); background:var(--panel-2); }.package-note span,.inspection-note span { color:var(--accent-2); font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }.package-note p,.inspection-note p { margin:3px 0 0; color:var(--text); font-size:12px; line-height:1.5; white-space:pre-wrap; }.package-note.empty-note p { color:var(--muted); font-style:italic; }
       .actions { display:flex; justify-content:flex-end; gap:7px; padding:0 18px 14px; }
-      .inspection { margin:0 18px 16px; padding:13px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }.inspection.valid { border-color:color-mix(in srgb,var(--good) 45%,var(--line)); }.inspection.invalid { border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }.inspection-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }.inspection-grid > div { display:grid; gap:4px; }.issues { margin:10px 0 0; padding-left:20px; }.issues.errors { color:var(--bad); }.issues.warnings { color:#d89a2b; }
+      .inspection { margin:0 18px 16px; padding:13px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }.inspection.valid { border-color:color-mix(in srgb,var(--good) 45%,var(--line)); }.inspection.invalid { border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }.inspection-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }.inspection-grid > div { display:grid; gap:4px; }.inspection-note { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }.issues { margin:10px 0 0; padding-left:20px; }.issues.errors { color:var(--bad); }.issues.warnings { color:#d89a2b; }
       .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
       @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; } }
-      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
+      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
     `;
   }
 
