@@ -70,6 +70,39 @@ final class RevisionLedgerService
         return $items;
     }
 
+    public function editorContext(string $adminPath): array
+    {
+        $needle = $this->normalizeRoute($adminPath);
+        $pages = $this->grav['pages'];
+        // The API request pipeline normally keeps Grav's public page tree
+        // disabled. Editor helpers must explicitly opt back in before walking
+        // routes (including modular children such as /home/_spitfire).
+        if (method_exists($pages, 'enablePages')) {
+            $pages->enablePages();
+        } elseif (method_exists($pages, 'init')) {
+            $pages->init();
+        }
+        foreach ($pages->all() as $page) {
+            if (!is_object($page) || !method_exists($page, 'route')) {
+                continue;
+            }
+            $route = $this->normalizeRoute((string) $page->route());
+            $rawRoute = method_exists($page, 'rawRoute')
+                ? $this->normalizeRoute((string) $page->rawRoute())
+                : $route;
+            if ($needle !== $route && $needle !== $rawRoute) {
+                continue;
+            }
+            return [
+                'route' => $route,
+                'raw_route' => $rawRoute,
+                'title' => method_exists($page, 'title') ? (string) $page->title() : $route,
+                'count' => count($this->revisions($route)),
+            ];
+        }
+        throw new \RuntimeException('The page editor route could not be resolved: ' . $needle);
+    }
+
     public function revision(string $id): array
     {
         $revision = $this->findRevision($id);

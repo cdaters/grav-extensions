@@ -1,7 +1,7 @@
 # Revision Ledger — graduated specification
 
 Revision Ledger graduated into a working Grav 2 development package at
-`plugins/revision-ledger` in version 0.1.0.
+`plugins/revision-ledger` in version 0.2.0.
 
 The initial release records automatic and explicit snapshots, author and reason
 metadata, readable comparisons, retention policies, and deliberate rollback.

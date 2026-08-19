@@ -25,6 +25,7 @@ final class RevisionLedgerPlugin extends Plugin
             'onAdminAfterSave' => ['onAdminAfterSave', -1000],
             'onRevisionLedgerCheckpoint' => ['onExternalCheckpoint', 0],
             'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
+            'onApiBlueprintResolved' => ['onApiBlueprintResolved', 0],
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
         ];
@@ -146,6 +147,7 @@ final class RevisionLedgerPlugin extends Plugin
         $controller = \Grav\Plugin\RevisionLedger\Controller\ApiController::class;
         $event['routes']->group('/revision-ledger', static function ($group) use ($controller): void {
             $group->get('/status', [$controller, 'status']);
+            $group->get('/editor-context', [$controller, 'editorContext']);
             $group->get('/pages', [$controller, 'pages']);
             $group->get('/revisions', [$controller, 'revisions']);
             $group->get('/revisions/{id}', [$controller, 'revision']);
@@ -154,6 +156,25 @@ final class RevisionLedgerPlugin extends Plugin
             $group->post('/revisions/{id}/restore', [$controller, 'restore']);
             $group->post('/prune', [$controller, 'prune']);
         });
+    }
+
+    public function onApiBlueprintResolved(Event $event): void
+    {
+        if (($event['context'] ?? null) !== 'page') {
+            return;
+        }
+        $user = $event['user'] ?? null;
+        if ($user && !$this->userCan($user, 'revision-ledger.read')) {
+            return;
+        }
+
+        $fields = (array) ($event['fields'] ?? []);
+        $fields[] = [
+            'name' => '_revision_ledger_history',
+            'type' => 'revision-ledger-history',
+            'label' => false,
+        ];
+        $event['fields'] = $fields;
     }
 
     public function onApiSidebarItems(Event $event): void

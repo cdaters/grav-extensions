@@ -2,8 +2,11 @@
 
 Revision Ledger is durable content history for Grav 2. It records the page file before an Admin save, gives editors named checkpoints and readable comparisons, and makes rollback a deliberate, guarded action.
 
-## What 0.1.0 includes
+## What 0.2.0 includes
 
+- A revision-history button and live count badge directly in the Admin2 page editor toolbar.
+- A page-local slide-out history with preview, compare, checkpoint, and guarded restore controls.
+- Deep linking between a page editor and that page's full Revision Ledger timeline.
 - Automatic pre-save snapshots and an initial snapshot for new pages.
 - SHA-256 integrity checks and content deduplication.
 - Protected storage outside the public Grav root by default.
@@ -28,7 +31,9 @@ Restore permission should be limited to site administrators or senior editors.
 
 ## Admin workflow
 
-Open **Revision Ledger** in the Admin2 sidebar. Select a page to see its timeline. **Compare** shows the retained content next to the current page file. **Restore** requires the exact phrase `RESTORE PAGE` and first records the content being replaced.
+On any Admin2 page editor, use the revision-history button beside the page actions to open that page's history without leaving the editor. Its badge shows the retained revision count. Preview, compare, create a named checkpoint, or restore from the slide-out panel.
+
+Open **Revision Ledger** in the Admin2 sidebar for the full catalog. Select a page to see its timeline. **Compare** shows the retained content next to the current page file. **Restore** requires the exact phrase `RESTORE PAGE` and first records the content being replaced.
 
 Use **Plugin settings** from the dashboard to configure automatic checkpoints, protected storage, and retention.
 

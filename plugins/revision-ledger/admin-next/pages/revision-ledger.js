@@ -4,7 +4,8 @@ class RevisionLedgerPage extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.state = { status: null, pages: [], revisions: [], route: '', query: '', busy: false, error: '', compare: null, theme: 'dark' };
+    const requestedRoute = new URLSearchParams(location.search).get('route') || '';
+    this.state = { status: null, pages: [], revisions: [], route: requestedRoute, query: '', busy: false, error: '', compare: null, theme: 'dark' };
   }
 
   connectedCallback() { this.syncTheme(); this.render(); this.load(); }
@@ -55,7 +56,7 @@ class RevisionLedgerPage extends HTMLElement {
     try {
       const [status, catalog] = await Promise.all([this.api('/revision-ledger/status'), this.api('/revision-ledger/pages')]);
       this.state.status = status; this.state.pages = catalog.pages || [];
-      if (!preserveRoute || !this.state.route) this.state.route = this.state.pages[0]?.route || '';
+      if (!preserveRoute || !this.state.route || !this.state.pages.some(page => page.route === this.state.route)) this.state.route = this.state.pages[0]?.route || '';
       await this.loadRevisions();
     } catch (error) { this.state.error = error?.message || String(error); }
     finally { this.state.busy = false; this.render(); }
@@ -68,6 +69,7 @@ class RevisionLedgerPage extends HTMLElement {
 
   async chooseRoute(route) {
     this.state.route = route; this.state.busy = true; this.render();
+    const url = new URL(location.href); url.searchParams.set('route', route); history.replaceState(null, '', url);
     try { await this.loadRevisions(); this.state.error = ''; } catch (error) { this.state.error = error?.message || String(error); }
     finally { this.state.busy = false; this.render(); }
   }

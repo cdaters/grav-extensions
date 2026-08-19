@@ -24,7 +24,7 @@ GitHub and filesystem readers can begin with the
 | Site Safeguard | Plugin | 0.3.1 development release | `user/plugins/site-safeguard` |
 | Image Foundry | Plugin | 0.2.1 development release | `user/plugins/image-foundry` |
 | Meta Pilot | Plugin | 0.2.0 development release | `user/plugins/meta-pilot` |
-| Revision Ledger | Plugin | 0.1.0 development release | `user/plugins/revision-ledger` |
+| Revision Ledger | Plugin | 0.2.0 development release | `user/plugins/revision-ledger` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 

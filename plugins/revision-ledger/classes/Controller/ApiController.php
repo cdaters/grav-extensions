@@ -19,6 +19,17 @@ final class ApiController extends AbstractApiController
         return ApiResponse::create((new RevisionLedgerService())->status());
     }
 
+    public function editorContext(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requireLedgerPermission($request, 'revision-ledger.read');
+        $query = $request->getQueryParams();
+        $path = trim((string) ($query['path'] ?? ''));
+        if ($path === '') {
+            throw new \RuntimeException('An Admin page path is required.');
+        }
+        return ApiResponse::create((new RevisionLedgerService())->editorContext($path));
+    }
+
     public function pages(ServerRequestInterface $request): ResponseInterface
     {
         $this->requireLedgerPermission($request, 'revision-ledger.read');
