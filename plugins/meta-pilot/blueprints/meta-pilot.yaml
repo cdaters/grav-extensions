@@ -1,0 +1,112 @@
+form:
+  fields:
+    tabs:
+      fields:
+        options:
+          type: tab
+          fields:
+            meta_pilot:
+              type: section
+              title: Meta Pilot
+              underline: true
+              fields:
+                header.meta_pilot.enabled:
+                  type: toggle
+                  toggleable: true
+                  label: Enable Meta Pilot for this page
+                  highlight: 1
+                  options: { 1: Yes, 0: No }
+                  validate: { type: bool, required: false }
+
+                header.meta_pilot.title:
+                  type: text
+                  toggleable: true
+                  label: Search and social title override
+
+                header.meta_pilot.description:
+                  type: textarea
+                  toggleable: true
+                  label: Description override
+                  rows: 3
+
+                header.meta_pilot.image:
+                  type: text
+                  toggleable: true
+                  label: Social image
+                  help: Page-media filename, absolute URL, root-relative URL, or Grav stream URL.
+
+                header.meta_pilot.canonical:
+                  type: text
+                  toggleable: true
+                  label: Canonical URL override
+
+                header.meta_pilot.robots:
+                  type: text
+                  toggleable: true
+                  label: Robots directive override
+
+                header.meta_pilot.type:
+                  type: select
+                  toggleable: true
+                  label: Open Graph type
+                  options:
+                    website: Website
+                    article: Article
+                    profile: Profile
+
+                header.meta_pilot.schema_type:
+                  type: select
+                  toggleable: true
+                  label: Structured-data type
+                  options:
+                    WebPage: WebPage
+                    Article: Article
+                    AboutPage: AboutPage
+                    ContactPage: ContactPage
+                    CollectionPage: CollectionPage
+
+                header.meta_pilot.twitter_card:
+                  type: select
+                  toggleable: true
+                  label: X/Twitter card
+                  options:
+                    summary: Summary
+                    summary_large_image: Summary with large image
+
+                header.meta_pilot.sitemap.exclude:
+                  type: toggle
+                  toggleable: true
+                  label: Exclude from XML sitemap
+                  highlight: 0
+                  options: { 1: Yes, 0: No }
+                  validate: { type: bool, required: false }
+
+                header.meta_pilot.sitemap.changefreq:
+                  type: select
+                  toggleable: true
+                  label: Sitemap change frequency
+                  options:
+                    always: Always
+                    hourly: Hourly
+                    daily: Daily
+                    weekly: Weekly
+                    monthly: Monthly
+                    yearly: Yearly
+                    never: Never
+
+                header.meta_pilot.sitemap.priority:
+                  type: select
+                  toggleable: true
+                  label: Sitemap priority
+                  options:
+                    '0.1': 0.1
+                    '0.2': 0.2
+                    '0.3': 0.3
+                    '0.4': 0.4
+                    '0.5': 0.5
+                    '0.6': 0.6
+                    '0.7': 0.7
+                    '0.8': 0.8
+                    '0.9': 0.9
+                    '1.0': 1.0
+                  validate: { type: float, required: false }

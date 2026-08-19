@@ -21,6 +21,8 @@
   packages and isolated restore staging
 - [[plugins/image-foundry/README|Image Foundry]] — original-preserving WebP and
   AVIF responsive derivatives
+- [[plugins/meta-pilot/README|Meta Pilot]] — canonical, social, structured-data,
+  sitemap, and metadata diagnostics
 - [[plugins/grav-commander/README|Grav Commander]] — file, archive, and guarded
   backup tools
 - [[themes/spitfire/README|Spitfire]] — update-safe Quark 2 child theme
@@ -37,7 +39,7 @@
 
 - [[docs/planned/README|Planned extension briefs]]
 - [[docs/planned/image-foundry|Image Foundry scope record]]
-- [[docs/planned/meta-pilot|Meta Pilot]]
+- [[docs/planned/meta-pilot|Meta Pilot scope record]]
 - [[docs/planned/revision-ledger|Revision Ledger]]
 - [[docs/planned/lantern-search|Lantern Search]]
 - [[docs/planned/site-workshop|Site Workshop]]

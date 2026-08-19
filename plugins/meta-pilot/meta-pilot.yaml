@@ -1,0 +1,35 @@
+enabled: true
+
+admin:
+  show_sidebar: true
+
+site_name: ''
+title_separator: ' | '
+default_description: ''
+default_image: ''
+twitter_site: ''
+
+metadata:
+  canonical: true
+  robots: true
+  open_graph: true
+  twitter_cards: true
+  json_ld: true
+  default_robots: 'index, follow, max-image-preview:large'
+  description_max_length: 160
+
+sitemap:
+  enabled: true
+  route: /sitemap.xml
+  exclude_noindex: true
+  ignore_protected: true
+  default_changefreq: monthly
+  default_priority: 0.5
+
+robots:
+  enabled: true
+  route: /robots.txt
+  body: |-
+    User-agent: *
+    Allow: /
+  include_sitemap: true

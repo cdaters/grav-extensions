@@ -6,7 +6,7 @@ README, blueprint, defaults, license, changelog, tests, and independent
 installation path. Implemented briefs remain as scope records.
 
 - [Image Foundry scope record](image-foundry.md) — implemented
-- [Meta Pilot](meta-pilot.md)
+- [Meta Pilot scope record](meta-pilot.md) — implemented
 - [Revision Ledger](revision-ledger.md)
 - [Lantern Search](lantern-search.md)
 - [Site Workshop](site-workshop.md)

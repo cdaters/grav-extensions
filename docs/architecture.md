@@ -71,8 +71,12 @@ The order reduces risk and establishes reusable primitives before the editor: sa
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig
   `<picture>` helper, and reversible automatic public-HTML replacement.
+- **Meta Pilot 0.1.0:** working development release with normalized canonical,
+  description, robots, Open Graph, X/Twitter, and JSON-LD output; XML sitemap
+  and robots routes; Admin2 page diagnostics; page-editor overrides; and CLI
+  report parity.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Meta Pilot and later roadmap plugins:** named and bounded, not yet represented
-  as finished packages.
+- **Later roadmap plugins:** named and bounded, not yet represented as finished
+  packages.

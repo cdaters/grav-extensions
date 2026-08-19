@@ -1,0 +1,7 @@
+actions:
+  meta-pilot:
+    label: Meta Pilot
+    type: access
+    actions:
+      read:
+        label: View metadata reports and configuration diagnostics

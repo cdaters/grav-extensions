@@ -1,0 +1,196 @@
+name: Meta Pilot
+slug: meta-pilot
+type: plugin
+version: 0.1.0
+description: Canonical, robots, social-card, structured-data, sitemap, and metadata diagnostics for Grav 2.
+icon: compass
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/meta-pilot
+keywords: grav, plugin, admin2, seo, metadata, canonical, opengraph, sitemap, jsonld
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav: ['2.0']
+  api: ['1.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options: { 1: Yes, 0: No }
+      validate: { type: bool }
+
+    identity_section:
+      type: section
+      title: Site identity and fallbacks
+      underline: true
+
+    site_name:
+      type: text
+      label: Social and structured-data site name
+      help: Leave blank to use site.title.
+
+    title_separator:
+      type: text
+      label: Page/site title separator
+      default: ' | '
+
+    default_description:
+      type: textarea
+      label: Default description
+      help: Used only when neither page metadata nor generated page text supplies a description.
+      rows: 3
+
+    default_image:
+      type: text
+      label: Default social image URL
+      help: Absolute URL, root-relative URL, or Grav stream URL such as theme://images/social-card.jpg.
+
+    twitter_site:
+      type: text
+      label: X/Twitter site handle
+      help: Optional, including the @ sign.
+
+    output_section:
+      type: section
+      title: Metadata output
+      underline: true
+
+    metadata.canonical:
+      type: toggle
+      label: Canonical links
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    metadata.robots:
+      type: toggle
+      label: Robots meta directives
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    metadata.default_robots:
+      type: text
+      label: Default robots directive
+      default: 'index, follow, max-image-preview:large'
+
+    metadata.open_graph:
+      type: toggle
+      label: Open Graph tags
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    metadata.twitter_cards:
+      type: toggle
+      label: X/Twitter cards
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    metadata.json_ld:
+      type: toggle
+      label: JSON-LD WebPage/Article schema
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    metadata.description_max_length:
+      type: number
+      label: Generated description maximum length
+      default: 160
+      validate: { type: int, min: 80, max: 320 }
+
+    sitemap_section:
+      type: section
+      title: Sitemap and robots.txt
+      underline: true
+
+    sitemap.enabled:
+      type: toggle
+      label: Generate XML sitemap
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    sitemap.route:
+      type: text
+      label: Sitemap route
+      default: /sitemap.xml
+
+    sitemap.exclude_noindex:
+      type: toggle
+      label: Exclude noindex pages from sitemap
+      default: 1
+      highlight: 1
+      options: { 1: Yes, 0: No }
+
+    sitemap.ignore_protected:
+      type: toggle
+      label: Exclude access-protected pages
+      default: 1
+      highlight: 1
+      options: { 1: Yes, 0: No }
+
+    sitemap.default_changefreq:
+      type: select
+      label: Default change frequency
+      default: monthly
+      options:
+        always: Always
+        hourly: Hourly
+        daily: Daily
+        weekly: Weekly
+        monthly: Monthly
+        yearly: Yearly
+        never: Never
+
+    sitemap.default_priority:
+      type: number
+      label: Default sitemap priority
+      default: 0.5
+      validate: { type: number, min: 0, max: 1 }
+
+    robots.enabled:
+      type: toggle
+      label: Generate robots.txt when the web server has no physical file
+      default: 1
+      highlight: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    robots.route:
+      type: text
+      label: Robots route
+      default: /robots.txt
+
+    robots.body:
+      type: textarea
+      label: Robots.txt body
+      rows: 5
+      default: "User-agent: *\nAllow: /"
+
+    robots.include_sitemap:
+      type: toggle
+      label: Append sitemap URL to robots.txt
+      default: 1
+      highlight: 1
+      options: { 1: Yes, 0: No }

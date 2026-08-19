@@ -1,0 +1,11 @@
+{
+  "name": "cdaters/grav-plugin-meta-pilot",
+  "description": "Search, social, and structured-metadata control center for Grav 2",
+  "type": "grav-plugin",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\MetaPilot\\": "classes/"
+    }
+  }
+}
