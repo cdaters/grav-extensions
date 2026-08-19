@@ -2,7 +2,7 @@
 
 Revision Ledger is durable content history for Grav 2. It records the page file before an Admin save, gives editors named checkpoints and readable comparisons, and makes rollback a deliberate, guarded action.
 
-## What 0.2.0 includes
+## What 0.2.1 includes
 
 - A revision-history button and live count badge directly in the Admin2 page editor toolbar.
 - A page-local slide-out history with preview, compare, checkpoint, and guarded restore controls.

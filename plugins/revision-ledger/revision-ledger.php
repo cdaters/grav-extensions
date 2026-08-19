@@ -169,11 +169,31 @@ final class RevisionLedgerPlugin extends Plugin
         }
 
         $fields = (array) ($event['fields'] ?? []);
-        $fields[] = [
+        $historyField = [
             'name' => '_revision_ledger_history',
             'type' => 'revision-ledger-history',
             'label' => false,
         ];
+        $inserted = false;
+        foreach ($fields as &$field) {
+            if (($field['type'] ?? null) !== 'tabs' || !isset($field['fields']) || !is_array($field['fields'])) {
+                continue;
+            }
+            foreach ($field['fields'] as &$tab) {
+                if (($tab['type'] ?? null) !== 'tab' || ($tab['name'] ?? null) !== 'content') {
+                    continue;
+                }
+                $tab['fields'] = array_values((array) ($tab['fields'] ?? []));
+                $tab['fields'][] = $historyField;
+                $inserted = true;
+                break 2;
+            }
+            unset($tab);
+        }
+        unset($field);
+        if (!$inserted) {
+            $fields[] = $historyField;
+        }
         $event['fields'] = $fields;
     }
 

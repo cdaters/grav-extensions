@@ -75,7 +75,7 @@ The order reduces risk and establishes reusable primitives before the editor: sa
   description, robots, Open Graph, X/Twitter, and JSON-LD output; XML sitemap
   and robots routes; Admin2 page diagnostics; page-editor overrides; and CLI
   report parity.
-- **Revision Ledger 0.2.0:** working development release with protected,
+- **Revision Ledger 0.2.1:** working development release with protected,
   integrity-checked page snapshots; automatic and named checkpoints; Admin2
   comparisons; retention controls; guarded rollback; CLI parity; and a public
   checkpoint integration seam for other plugins.

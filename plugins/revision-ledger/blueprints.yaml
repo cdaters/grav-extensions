@@ -1,7 +1,7 @@
 name: Revision Ledger
 slug: revision-ledger
 type: plugin
-version: 0.2.0
+version: 0.2.1
 description: Durable page history, readable comparisons, deliberate rollback, and plugin-requested checkpoints for Grav 2.
 icon: clock-rotate-left
 author:

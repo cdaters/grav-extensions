@@ -121,8 +121,17 @@ class RevisionLedgerHistoryField extends HTMLElement {
       const label = `${button.getAttribute('aria-label') || ''} ${button.getAttribute('title') || ''}`.toLowerCase();
       return text === 'save' || /(^|\s)save(\s|$)/.test(label);
     });
-    const group = save?.parentElement;
-    if (!save || !group || group.querySelectorAll('button').length < 2) return;
+    if (!save) return;
+
+    // Admin2 wraps action buttons (including Save) in small positioning
+    // containers. Walk outward until we reach the complete editor action
+    // group rather than assuming Save's immediate parent is the toolbar.
+    let group = save.parentElement;
+    while (group && group !== document.body && group.querySelectorAll('button').length < 2) {
+      group = group.parentElement;
+    }
+
+    if (!group || group === document.body) return;
     const neutral = [...group.querySelectorAll('button')].find(button => button !== save && !/delete|remove/.test(`${button.textContent} ${button.title} ${button.getAttribute('aria-label')}`.toLowerCase()));
     const button = document.createElement('button');
     button.type = 'button';

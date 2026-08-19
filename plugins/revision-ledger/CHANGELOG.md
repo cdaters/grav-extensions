@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-08-19
+
+- Fixed the Admin2 page-editor history control not appearing when action buttons are wrapped in nested toolbar containers.
+- Registered the page-local history field inside Admin2's Content tab so its integration script mounts reliably.
+- Verified the live revision badge and slide-out history panel in the rendered Grav Admin2 page editor.
+
 ## 0.2.0 — 2026-08-19
 
 - Added an Admin2 page-editor history control with a live revision-count badge.

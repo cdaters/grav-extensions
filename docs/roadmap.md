@@ -10,7 +10,7 @@ can never be mistaken for an installable Grav package.
 | 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.3.1 development release; detached Admin restore and CLI fallback available |
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.2.1 development release; automatic public-HTML replacement available |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | 0.2.0 development release; Admin diagnostics, local exports, and public metadata output available |
-| 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | 0.2.0 development release; page-editor history drawer, automatic checkpoints, Admin2 comparisons, guarded restore, and CLI parity available |
+| 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | 0.2.1 development release; page-editor history drawer, automatic checkpoints, Admin2 comparisons, guarded restore, and CLI parity available |
 | 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | Specification queued |
 | 7 | Site Workshop | Focused maintenance, link checking, redirects, and health tools | Specification queued |
 | 8 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
