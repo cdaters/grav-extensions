@@ -1,0 +1,11 @@
+{
+  "name": "cdaters/grav-plugin-revision-ledger",
+  "description": "Durable page history and deliberate rollback for Grav 2",
+  "type": "grav-plugin",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\RevisionLedger\\": "classes/"
+    }
+  }
+}

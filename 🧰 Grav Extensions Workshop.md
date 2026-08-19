@@ -23,6 +23,8 @@
   AVIF responsive derivatives
 - [[plugins/meta-pilot/README|Meta Pilot]] — canonical, social, structured-data,
   sitemap, and metadata diagnostics
+- [[plugins/revision-ledger/README|Revision Ledger]] — protected page history,
+  readable comparisons, retention, and guarded rollback
 - [[plugins/grav-commander/README|Grav Commander]] — file, archive, and guarded
   backup tools
 - [[themes/spitfire/README|Spitfire]] — update-safe Quark 2 child theme
@@ -40,7 +42,7 @@
 - [[docs/planned/README|Planned extension briefs]]
 - [[docs/planned/image-foundry|Image Foundry scope record]]
 - [[docs/planned/meta-pilot|Meta Pilot scope record]]
-- [[docs/planned/revision-ledger|Revision Ledger]]
+- [[docs/planned/revision-ledger|Revision Ledger scope record]]
 - [[docs/planned/lantern-search|Lantern Search]]
 - [[docs/planned/site-workshop|Site Workshop]]
 - [[docs/planned/edge-console|Edge Console]]

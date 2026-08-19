@@ -13,6 +13,7 @@ belong in that extension's own README.
 - [Site Safeguard archive-format direction](site-safeguard-archive-formats.md)
 - [Image Foundry](../plugins/image-foundry/README.md)
 - [Meta Pilot](../plugins/meta-pilot/README.md)
+- [Revision Ledger](../plugins/revision-ledger/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 

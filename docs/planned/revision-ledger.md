@@ -1,8 +1,10 @@
-# Revision Ledger
+# Revision Ledger — graduated specification
 
-A durable content-history plugin for Grav pages and supported writers.
+Revision Ledger graduated into a working Grav 2 development package at
+`plugins/revision-ledger` in version 0.1.0.
 
-The first milestone will record automatic and explicit snapshots, author and
-reason metadata, readable diffs, retention policies, and deliberate rollback.
+The initial release records automatic and explicit snapshots, author and reason
+metadata, readable comparisons, retention policies, and deliberate rollback.
 Other plugins can request a checkpoint through a small public service/event;
-they cannot reach into the ledger's private files.
+they cannot reach into the ledger's private files. The package README is the
+authoritative operator manual; this file remains the original scope record.

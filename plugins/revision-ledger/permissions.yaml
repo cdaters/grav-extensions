@@ -1,0 +1,11 @@
+actions:
+  revision-ledger:
+    label: Revision Ledger
+    type: access
+    actions:
+      read:
+        label: View page history and comparisons
+      manage:
+        label: Create checkpoints and run retention
+      restore:
+        label: Restore a page revision

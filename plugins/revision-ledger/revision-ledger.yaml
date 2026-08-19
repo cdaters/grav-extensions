@@ -1,0 +1,14 @@
+enabled: true
+admin:
+  show_sidebar: true
+storage:
+  directory: ../revision-ledger-data
+  require_outside_root: true
+automatic:
+  enabled: true
+  snapshot_new_pages: true
+  fail_closed: false
+retention:
+  max_per_page: 50
+  max_age_days: 365
+  keep_manual: true

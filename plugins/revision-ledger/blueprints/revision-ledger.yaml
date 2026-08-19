@@ -1,0 +1,15 @@
+form:
+  fields:
+    tabs:
+      fields:
+        options:
+          fields:
+            revision_ledger_section:
+              type: section
+              title: Revision Ledger
+              underline: true
+            revision_ledger_guidance:
+              type: display
+              label: Page history
+              markdown: true
+              content: "Revision Ledger records the current file before Admin saves it. Open **Revision Ledger** in the Admin sidebar to compare revisions, create a named checkpoint, or perform a guarded restore."

@@ -1,0 +1,116 @@
+name: Revision Ledger
+slug: revision-ledger
+type: plugin
+version: 0.1.0
+description: Durable page history, readable comparisons, deliberate rollback, and plugin-requested checkpoints for Grav 2.
+icon: clock-rotate-left
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/revision-ledger
+keywords: grav, plugin, admin2, revisions, history, diff, rollback, checkpoint
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav: ['2.0']
+  api: ['1.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options: { 1: Yes, 0: No }
+      validate: { type: bool }
+
+    storage_section:
+      type: section
+      title: Protected storage
+      underline: true
+
+    storage.directory:
+      type: text
+      label: Revision data directory
+      help: Relative paths resolve from the Grav root. Keep this outside the public web root.
+      default: ../revision-ledger-data
+
+    storage.require_outside_root:
+      type: toggle
+      label: Require storage outside the Grav root
+      help: Strongly recommended. Revision content can contain unpublished or sensitive text.
+      highlight: 1
+      default: 1
+      options: { 1: Required, 0: Allow inside root }
+      validate: { type: bool }
+
+    automatic_section:
+      type: section
+      title: Automatic checkpoints
+      underline: true
+
+    automatic.enabled:
+      type: toggle
+      label: Checkpoint before Admin page saves
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    automatic.snapshot_new_pages:
+      type: toggle
+      label: Record the initial version of new pages
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    automatic.fail_closed:
+      type: toggle
+      label: Block page saves if checkpointing fails
+      help: Leave disabled unless editorial policy requires every save to have a checkpoint.
+      highlight: 0
+      default: 0
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    retention_section:
+      type: section
+      title: Retention
+      underline: true
+
+    retention.max_per_page:
+      type: number
+      label: Maximum automatic revisions per page
+      help: Zero means no count limit. The newest revision is always retained.
+      default: 50
+      validate: { type: int, min: 0, max: 10000 }
+
+    retention.max_age_days:
+      type: number
+      label: Maximum automatic revision age in days
+      help: Zero means no age limit.
+      default: 365
+      validate: { type: int, min: 0, max: 36500 }
+
+    retention.keep_manual:
+      type: toggle
+      label: Preserve manual, plugin, and pre-restore checkpoints
+      highlight: 1
+      default: 1
+      options: { 1: Preserve, 0: Apply normal retention }
+      validate: { type: bool }
