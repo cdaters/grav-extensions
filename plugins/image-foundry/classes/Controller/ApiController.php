@@ -15,19 +15,19 @@ final class ApiController extends AbstractApiController
 {
     public function status(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireFoundryPermission($request);
         return ApiResponse::create((new ImageFoundryService())->status());
     }
 
     public function scan(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireFoundryPermission($request);
         return ApiResponse::create((new ImageFoundryService())->scan());
     }
 
     public function build(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireFoundryPermission($request);
         $body = $this->getRequestBody($request);
         return ApiResponse::create((new ImageFoundryService())->build(
             isset($body['source']) ? (string) $body['source'] : null,
@@ -38,11 +38,11 @@ final class ApiController extends AbstractApiController
 
     public function purge(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireFoundryPermission($request);
         return ApiResponse::create((new ImageFoundryService())->purge());
     }
 
-    private function requirePermission(ServerRequestInterface $request): void
+    private function requireFoundryPermission(ServerRequestInterface $request): void
     {
         $user = $this->getUser($request);
         foreach (['image-foundry.manage', 'api.super', 'admin.super'] as $candidate) {
@@ -54,4 +54,3 @@ final class ApiController extends AbstractApiController
         throw new ForbiddenException('Missing required permission: image-foundry.manage');
     }
 }
-

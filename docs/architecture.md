@@ -65,7 +65,7 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Site Safeguard 0.2.2:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
   rollback-first, CLI-only full-site restore with fresh-process boot checks.
-- **Image Foundry 0.1.0:** working development release with original-preserving
+- **Image Foundry 0.1.1:** working development release with original-preserving
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, and an opt-in Twig
   `<picture>` helper.
