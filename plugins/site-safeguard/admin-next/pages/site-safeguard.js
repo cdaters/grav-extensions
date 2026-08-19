@@ -16,6 +16,8 @@ class SiteSafeguardPage extends HTMLElement {
       restoreOperation: '',
     };
     this.themeObserver = null;
+    this.themeMedia = null;
+    this.themeListener = null;
     this.restorePollTimer = null;
   }
 
@@ -27,24 +29,62 @@ class SiteSafeguardPage extends HTMLElement {
 
   disconnectedCallback() {
     this.themeObserver?.disconnect();
+    this.themeMedia?.removeEventListener?.('change', this.themeListener);
     if (this.restorePollTimer) clearTimeout(this.restorePollTimer);
   }
 
   syncTheme() {
     const update = () => {
-      const tokens = `${document.documentElement.dataset.theme || ''} ${document.documentElement.className || ''} ${document.body?.className || ''}`.toLowerCase();
-      let theme = tokens.includes('light') ? 'light' : (tokens.includes('dark') ? 'dark' : '');
-      if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const theme = this.detectTheme();
       if (theme !== this.state.theme) {
         this.state.theme = theme;
         this.render();
       }
     };
+    this.themeMedia = window.matchMedia?.('(prefers-color-scheme: dark)') || null;
+    this.themeListener = update;
+    this.themeMedia?.addEventListener?.('change', update);
     this.themeObserver = new MutationObserver(update);
-    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-    if (document.body) this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-mode', 'style'] });
+    if (document.body) this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-mode', 'style'] });
     update();
   }
+
+  detectTheme() {
+    const explicit = [document.documentElement?.dataset?.theme, document.documentElement?.dataset?.mode, document.body?.dataset?.theme, document.body?.dataset?.mode].join(' ').toLowerCase();
+    if (/\bdark\b/.test(explicit)) return 'dark';
+    if (/\blight\b/.test(explicit)) return 'light';
+    const classes = [...(document.documentElement?.classList || []), ...(document.body?.classList || [])].map(value => String(value).toLowerCase());
+    if (classes.includes('dark')) return 'dark';
+    if (classes.includes('light')) return 'light';
+    for (const node of [document.body, document.documentElement, this.parentElement].filter(Boolean)) {
+      const style = window.getComputedStyle(node);
+      const parsed = this.parseRgb(style.backgroundColor || style.getPropertyValue('--admin-bg') || style.getPropertyValue('--background'));
+      if (!parsed) continue;
+      const [red, green, blue] = parsed;
+      return ((red * 299 + green * 587 + blue * 114) / 1000) < 150 ? 'dark' : 'light';
+    }
+    return this.themeMedia?.matches ? 'dark' : 'light';
+  }
+
+  parseRgb(value) {
+    if (!value || value === 'transparent') return null;
+    const match = String(value).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/i);
+    if (!match || (match[4] !== undefined && Number(match[4]) === 0)) return null;
+    return [Number(match[1]), Number(match[2]), Number(match[3])];
+  }
+
+  adminBasePath() {
+    const path = window.location.pathname || '/admin';
+    for (const marker of ['/plugin/site-safeguard', '/plugins/site-safeguard']) {
+      const index = path.indexOf(marker);
+      if (index >= 0) return path.slice(0, index) || '/admin';
+    }
+    const index = path.indexOf('/admin');
+    return index >= 0 ? path.slice(0, index + '/admin'.length) : '/admin';
+  }
+
+  openPluginSettings() { window.location.href = `${this.adminBasePath()}/plugins/site-safeguard`; }
 
   getAuthHeaders(json = true) {
     let token = window.__GRAV_API_TOKEN || '';
@@ -269,7 +309,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-state"><span>v${this.escape(status.version || '0.3.0')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.1')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
@@ -440,6 +480,7 @@ class SiteSafeguardPage extends HTMLElement {
   }
 
   bind() {
+    this.shadowRoot.querySelector('#settings')?.addEventListener('click', () => this.openPluginSettings());
     this.shadowRoot.querySelector('#profile')?.addEventListener('change', event => {
       this.state.profile = event.target.value;
       this.render();
@@ -475,7 +516,7 @@ class SiteSafeguardPage extends HTMLElement {
       h1,h2,p { margin:0; } h1 { margin:.2rem 0 .35rem; font-size:30px; } h2 { margin:.15rem 0 0; font-size:19px; }
       .hero p,.profile-help,.fine { color:var(--muted); }
       .eyebrow { color:var(--accent-2); font-size:10px; font-weight:850; letter-spacing:.14em; }
-      .hero-state { display:grid; gap:3px; min-width:160px; padding:14px 16px; border:1px solid var(--line); border-radius:9px; background:var(--panel); }
+      .hero-actions { display:flex; align-items:center; gap:10px; }.hero-state { display:grid; gap:3px; min-width:160px; padding:14px 16px; border:1px solid var(--line); border-radius:9px; background:var(--panel); }
       .hero-state span { color:var(--muted); font:12px ui-monospace,monospace; }
       .hero-state strong { color:var(--bad); }
       .metrics { display:grid; grid-template-columns:repeat(3,minmax(120px,1fr)) minmax(260px,1.5fr); border:1px solid var(--line); border-top:0; background:var(--panel); }

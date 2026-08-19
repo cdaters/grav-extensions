@@ -19,6 +19,8 @@ installed on the same server as Grav.
 
 Use **Image Foundry** in Admin to scan configured source roots, generate stale
 derivatives, inspect the generated footprint, and purge generated data.
+The dashboard's **Plugin settings** button opens source-root, format, quality,
+and automatic-HTML configuration directly.
 Equivalent CLI commands:
 
 ```sh

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - 2026-08-19
+
+- Added complete local report exports in CSV and JSON formats from the Admin2
+  metadata manifest.
+- Added direct navigation from the Meta Pilot dashboard to its plugin settings.
+- Made the dashboard follow Admin2 light and dark mode using explicit theme
+  markers with a computed-color fallback for hosts that expose no theme class.
+
 ## 0.1.3 - 2026-08-18
 
 - Initialize Grav's page tree before generating Admin API reports. Grav skips

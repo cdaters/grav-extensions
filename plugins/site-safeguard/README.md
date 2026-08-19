@@ -76,6 +76,9 @@ Open **Site Safeguard** in Admin2. Before creating a package, review the package
 and staging paths in the plugin configuration. Their defaults resolve beside
 the Grav directory:
 
+The dashboard's **Plugin settings** button opens storage, limits, preservation,
+restore, and PHP CLI configuration directly.
+
 ```text
 ../site-safeguard-packages
 ../site-safeguard-stage

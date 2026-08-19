@@ -12,7 +12,7 @@ use RuntimeException;
 final class ImageFoundryService
 {
     private const SCHEMA = 1;
-    private const VERSION = '0.2.0';
+    private const VERSION = '0.2.1';
 
     private Grav $grav;
     private array $config;

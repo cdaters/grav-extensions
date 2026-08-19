@@ -6,6 +6,8 @@ class ImageFoundryPage extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.state = { status: null, busy: false, message: '', error: '', filter: '', theme: 'dark' };
     this.themeObserver = null;
+    this.themeMedia = null;
+    this.themeListener = null;
   }
 
   connectedCallback() {
@@ -14,20 +16,60 @@ class ImageFoundryPage extends HTMLElement {
     this.load();
   }
 
-  disconnectedCallback() { this.themeObserver?.disconnect(); }
+  disconnectedCallback() {
+    this.themeObserver?.disconnect();
+    this.themeMedia?.removeEventListener?.('change', this.themeListener);
+  }
 
   syncTheme() {
     const update = () => {
-      const tokens = `${document.documentElement.dataset.theme || ''} ${document.documentElement.className || ''} ${document.body?.className || ''}`.toLowerCase();
-      let theme = tokens.includes('light') ? 'light' : (tokens.includes('dark') ? 'dark' : '');
-      if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const theme = this.detectTheme();
       if (theme !== this.state.theme) { this.state.theme = theme; this.render(); }
     };
+    this.themeMedia = window.matchMedia?.('(prefers-color-scheme: dark)') || null;
+    this.themeListener = update;
+    this.themeMedia?.addEventListener?.('change', update);
     this.themeObserver = new MutationObserver(update);
-    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-    if (document.body) this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-mode', 'style'] });
+    if (document.body) this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-mode', 'style'] });
     update();
   }
+
+  detectTheme() {
+    const explicit = [document.documentElement?.dataset?.theme, document.documentElement?.dataset?.mode, document.body?.dataset?.theme, document.body?.dataset?.mode].join(' ').toLowerCase();
+    if (/\bdark\b/.test(explicit)) return 'dark';
+    if (/\blight\b/.test(explicit)) return 'light';
+    const classes = [...(document.documentElement?.classList || []), ...(document.body?.classList || [])].map(value => String(value).toLowerCase());
+    if (classes.includes('dark')) return 'dark';
+    if (classes.includes('light')) return 'light';
+    for (const node of [document.body, document.documentElement, this.parentElement].filter(Boolean)) {
+      const style = window.getComputedStyle(node);
+      const parsed = this.parseRgb(style.backgroundColor || style.getPropertyValue('--admin-bg') || style.getPropertyValue('--background'));
+      if (!parsed) continue;
+      const [red, green, blue] = parsed;
+      return ((red * 299 + green * 587 + blue * 114) / 1000) < 150 ? 'dark' : 'light';
+    }
+    return this.themeMedia?.matches ? 'dark' : 'light';
+  }
+
+  parseRgb(value) {
+    if (!value || value === 'transparent') return null;
+    const match = String(value).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/i);
+    if (!match || (match[4] !== undefined && Number(match[4]) === 0)) return null;
+    return [Number(match[1]), Number(match[2]), Number(match[3])];
+  }
+
+  adminBasePath() {
+    const path = window.location.pathname || '/admin';
+    for (const marker of ['/plugin/image-foundry', '/plugins/image-foundry']) {
+      const index = path.indexOf(marker);
+      if (index >= 0) return path.slice(0, index) || '/admin';
+    }
+    const index = path.indexOf('/admin');
+    return index >= 0 ? path.slice(0, index + '/admin'.length) : '/admin';
+  }
+
+  openPluginSettings() { window.location.href = `${this.adminBasePath()}/plugins/image-foundry`; }
 
   getAuthHeaders() {
     let token = window.__GRAV_API_TOKEN || '';
@@ -102,7 +144,7 @@ class ImageFoundryPage extends HTMLElement {
       <main class="shell ${this.state.theme}">
         <section class="hero">
           <div><span class="eyebrow">RESPONSIVE IMAGE WORKSHOP</span><h1>Image Foundry</h1><p>Forge modern derivatives while every original remains intact and authoritative.</p></div>
-          <div class="hero-actions"><button class="quiet" id="scan" ${disabled}>Scan sources</button><button class="primary" id="build" ${disabled || !status.gd_available ? 'disabled' : ''}>Build stale</button></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><button class="quiet" id="scan" ${disabled}>Scan sources</button><button class="primary" id="build" ${disabled || !status.gd_available ? 'disabled' : ''}>Build stale</button></div>
         </section>
         <section class="metrics">
           <div><span>Sources</span><strong>${status.source_count || 0}</strong></div>
@@ -146,6 +188,7 @@ class ImageFoundryPage extends HTMLElement {
   badge(label, available) { return `<span class="badge ${available ? 'good' : 'bad'}">${available ? '✓' : '×'} ${label}</span>`; }
 
   bind() {
+    this.shadowRoot.getElementById('settings')?.addEventListener('click', () => this.openPluginSettings());
     this.shadowRoot.getElementById('scan')?.addEventListener('click', () => this.scan());
     this.shadowRoot.getElementById('build')?.addEventListener('click', () => this.build());
     this.shadowRoot.getElementById('all')?.addEventListener('click', () => this.build(null, true));

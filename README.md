@@ -21,9 +21,9 @@ GitHub and filesystem readers can begin with the
 | --- | --- | --- | --- |
 | File Vault | Plugin | Development release | `user/plugins/file-vault` |
 | Prism Gallery | Plugin | Development release | `user/plugins/prism-gallery` |
-| Site Safeguard | Plugin | Development release | `user/plugins/site-safeguard` |
-| Image Foundry | Plugin | 0.2 development release | `user/plugins/image-foundry` |
-| Meta Pilot | Plugin | 0.1.3 development release | `user/plugins/meta-pilot` |
+| Site Safeguard | Plugin | 0.3.1 development release | `user/plugins/site-safeguard` |
+| Image Foundry | Plugin | 0.2.1 development release | `user/plugins/image-foundry` |
+| Meta Pilot | Plugin | 0.2.0 development release | `user/plugins/meta-pilot` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 

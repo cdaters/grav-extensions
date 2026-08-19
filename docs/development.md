@@ -34,3 +34,19 @@ the repository.
 
 Grav Commander is synchronized through Git subtree; follow the commands in the
 root README rather than copying its directory from a site.
+
+## Admin dashboard conventions
+
+Every custom Admin2 workbench with configurable behavior should expose a
+clearly labeled **Plugin settings** action. Resolve the current Admin base path
+at runtime and navigate to `plugins/<plugin-slug>` so custom Admin routes and
+subdirectory installations continue to work. Omit the action only when an
+extension genuinely has no user settings.
+
+Dashboard themes must honor explicit Admin2 light/dark markers and use the
+computed host background as a fallback. Do not assume the operating-system
+color preference matches the active Admin theme.
+
+Diagnostic workbenches should offer local, portable report exports when that
+materially helps an operator. Exports must not introduce telemetry or remote
+reporting without separate, explicit consent.

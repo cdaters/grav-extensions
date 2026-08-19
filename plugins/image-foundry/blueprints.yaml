@@ -1,7 +1,7 @@
 name: Image Foundry
 slug: image-foundry
 type: plugin
-version: 0.2.0
+version: 0.2.1
 description: Original-preserving, self-hosted responsive image derivatives for Grav 2.
 icon: images
 author:

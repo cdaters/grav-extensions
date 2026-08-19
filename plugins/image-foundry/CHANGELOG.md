@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 - 2026-08-19
+
+- Added direct navigation from the Image Foundry dashboard to plugin settings.
+- Made the dashboard reliably follow Admin2 light and dark mode, including
+  installations that expose their theme only through computed page colors.
+
 ## 0.2.0 - 2026-08-19
 
 - Added opt-in automatic replacement of eligible public-page `<img>` elements

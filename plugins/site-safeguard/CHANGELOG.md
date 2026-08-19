@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 2026-08-19
+
+- Added direct navigation from the Site Safeguard dashboard to plugin settings.
+- Made the recovery dashboard reliably follow Admin2 light and dark mode,
+  including installations that expose their theme through computed colors.
+
 ## 0.3.0 — 2026-08-19
 
 - Add a guarded **Restore** action to Admin2 while retaining the manual CLI

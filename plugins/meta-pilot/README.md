@@ -26,6 +26,12 @@ duplicated; disabling a feature leaves the theme's corresponding tags alone.
    identity overrides.
 5. Verify `/sitemap.xml` and `/robots.txt` on the public site.
 
+The dashboard's **Plugin settings** button opens that settings screen directly.
+Use **Export CSV** for a spreadsheet-friendly page manifest or **Export JSON**
+for a complete machine-readable snapshot containing the report, feature status,
+diagnostics, and export time. Exports are generated locally in the browser and
+are not sent to a third party.
+
 The same report is available without Admin:
 
 ```sh
