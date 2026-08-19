@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 - 2026-08-18
+
+- Renamed the plugin-specific API permission helper so it no longer overrides
+  Grav API's two-argument `requirePermission()` method. This restores Admin2
+  authentication, cache actions, configuration loading, and plugin pages.
+
 ## 0.1.1 - 2026-08-18
 
 - Corrected the Admin2 API permission-helper visibility so the controller can

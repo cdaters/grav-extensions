@@ -9,7 +9,7 @@ use Grav\Common\Utils;
 
 final class MetaPilotService
 {
-    private const VERSION = '0.1.1';
+    private const VERSION = '0.1.2';
 
     private Grav $grav;
     private array $config;

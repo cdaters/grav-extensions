@@ -9,7 +9,7 @@ can never be mistaken for an installable Grav package.
 | 1 | Prism Gallery | Accessible mixed-media galleries and protected local-media delivery | Development release |
 | 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.3.0 development release; detached Admin restore and CLI fallback available |
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.2.0 development release; automatic public-HTML replacement available |
-| 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | 0.1.1 development release; Admin diagnostics and public metadata output available |
+| 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | 0.1.2 development release; Admin diagnostics and public metadata output available |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | Specification queued |
 | 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | Specification queued |
 | 7 | Site Workshop | Focused maintenance, link checking, redirects, and health tools | Specification queued |

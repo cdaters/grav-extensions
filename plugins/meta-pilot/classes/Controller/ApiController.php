@@ -15,17 +15,17 @@ final class ApiController extends AbstractApiController
 {
     public function status(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireMetaPilotPermission($request);
         return ApiResponse::create((new MetaPilotService())->status());
     }
 
     public function report(ServerRequestInterface $request): ResponseInterface
     {
-        $this->requirePermission($request);
+        $this->requireMetaPilotPermission($request);
         return ApiResponse::create((new MetaPilotService())->report());
     }
 
-    protected function requirePermission(ServerRequestInterface $request): void
+    private function requireMetaPilotPermission(ServerRequestInterface $request): void
     {
         $user = $this->getUser($request);
         foreach (['meta-pilot.read', 'api.super', 'admin.super'] as $candidate) {
