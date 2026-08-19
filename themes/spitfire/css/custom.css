@@ -108,6 +108,44 @@ body.title-h1h2 .hero h1 + h2 {
   }
 }
 
+/*
+ * Modular forms
+ *
+ * Provides a reusable, contained layout for a form placed after a modular
+ * hero. Form definitions remain owned by the modular form page itself.
+ */
+.modular-form .container {
+  max-width: 880px;
+}
+
+.modular-form-inner > h1:first-child {
+  margin-bottom: 0.6rem;
+}
+
+.modular-form-inner > h1:first-child ~ p {
+  max-width: 760px;
+}
+
+.modular-form-inner form {
+  margin-top: 2rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--q2-bg-muted);
+  border: 1px solid var(--q2-divider);
+  border-radius: var(--q2-radius-md);
+  box-shadow: var(--q2-shadow-card);
+}
+
+.modular-form-inner textarea {
+  min-height: 12rem;
+  resize: vertical;
+}
+
+@media (max-width: 600px) {
+  .modular-form-inner form {
+    padding: 1rem;
+  }
+}
+
 /* Archive landing page */
 body.archive-hub #body-wrapper > .container > .content-item,
 body.newsletter-index #body-wrapper > .container > .content-item {

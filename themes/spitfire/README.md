@@ -15,11 +15,16 @@ The child theme owns:
 - the compact hero title/subtitle spacing;
 - an optional responsive two-column introduction for Features modules;
 - the modular text wrapped-image option and its Admin blueprint; and
+- a reusable, responsive modular form treatment;
 - site-specific CSS.
 
 Version 1.1 adds the Archive information architecture, responsive dropdown
 menus, the long-form project story treatment, and the searchable newsletter
 archive presentation.
+
+Version 1.2 adds a reusable modular form wrapper and refreshes the packaged
+site favicon. Form definitions remain in page content so validation, CAPTCHA,
+email and save actions can be configured per form.
 
 Page content remains in `user/pages` and site configuration remains in
 `user/config`, both of which are already outside the parent theme.

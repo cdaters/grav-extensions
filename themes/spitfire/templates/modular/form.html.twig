@@ -1,0 +1,12 @@
+<section class="section modular-form {{ page.header.class }}">
+    <div class="container">
+        <div class="modular-form-inner">
+            {{ content|raw }}
+            {% if config.plugins.form.modular_form_fix %}
+                {% include 'forms/form.html.twig' with {form: forms({route: page.route})} %}
+            {% else %}
+                {% include 'forms/form.html.twig' %}
+            {% endif %}
+        </div>
+    </div>
+</section>
