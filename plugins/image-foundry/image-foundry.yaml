@@ -35,3 +35,7 @@ max_source_pixels: 20000000
 build_limit: 50
 preserve_transparency: true
 auto_orient_jpeg: true
+
+automatic_html:
+  enabled: false
+  default_sizes: 100vw

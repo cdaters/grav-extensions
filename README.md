@@ -22,7 +22,7 @@ GitHub and filesystem readers can begin with the
 | File Vault | Plugin | Development release | `user/plugins/file-vault` |
 | Prism Gallery | Plugin | Development release | `user/plugins/prism-gallery` |
 | Site Safeguard | Plugin | Development release | `user/plugins/site-safeguard` |
-| Image Foundry | Plugin | 0.1 development release | `user/plugins/image-foundry` |
+| Image Foundry | Plugin | 0.2 development release | `user/plugins/image-foundry` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 

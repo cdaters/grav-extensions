@@ -17,7 +17,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.2.2';
+    private const VERSION = '0.2.3';
 
     private Grav $grav;
     private array $config;
@@ -425,7 +425,13 @@ class SafeguardService
             $journal['state'] = 'restoring';
             $this->writeJournal($journalPath, $journal);
 
-            $stats = ['files_copied' => 0, 'directories_created' => 0, 'entries_removed' => 0, 'entries_preserved' => 0];
+            $stats = [
+                'files_copied' => 0,
+                'directories_created' => 0,
+                'directories_normalized' => 0,
+                'entries_removed' => 0,
+                'entries_preserved' => 0,
+            ];
             $this->mirrorStageToRoot($stage, $preserve, $stats);
             $verified = $this->verifyRestoredFiles($checksums, $preserve);
             $this->clearRuntimeCache();
@@ -461,7 +467,13 @@ class SafeguardService
                     $rollbackName = (string) ($rollbackStage['record']['package'] ?? $rollbackPackage['name'] ?? '');
                     $rollbackInspection = $this->inspectPath($this->packagePath($rollbackName), true);
                     $rollbackChecksums = (array) ($rollbackInspection['checksums']['files'] ?? []);
-                    $rollbackStats = ['files_copied' => 0, 'directories_created' => 0, 'entries_removed' => 0, 'entries_preserved' => 0];
+                    $rollbackStats = [
+                        'files_copied' => 0,
+                        'directories_created' => 0,
+                        'directories_normalized' => 0,
+                        'entries_removed' => 0,
+                        'entries_preserved' => 0,
+                    ];
                     $this->mirrorStageToRoot($rollbackPath, $preserve, $rollbackStats);
                     $this->verifyRestoredFiles($rollbackChecksums, $preserve);
                     $this->clearRuntimeCache();
@@ -923,6 +935,16 @@ class SafeguardService
             $stats['directories_created']++;
         }
 
+        // Isolated stages deliberately use 0700 directories. Those private
+        // staging modes must never leak into the web-served Grav tree: on
+        // split-process hosts (for example LiteSpeed/LSAPI) PHP can still boot
+        // while the static-file worker returns 403 for every theme/Admin asset.
+        // Host-local preserved paths are skipped before recursion; every other
+        // restored Grav directory is normalized to the portable web-safe mode.
+        if ($relative !== '') {
+            $this->normalizeRestoredDirectory($destination, $relative, $stats);
+        }
+
         $sourceNames = [];
         foreach (scandir($source) ?: [] as $name) {
             if ($name === '.' || $name === '..' || ($relative === '' && $name === '.site-safeguard-stage.json')) {
@@ -989,6 +1011,26 @@ class SafeguardService
             }
             $this->removeRestoreEntry($destinationPath);
             $stats['entries_removed']++;
+        }
+    }
+
+    private function normalizeRestoredDirectory(string $path, string $relative, array &$stats): void
+    {
+        clearstatcache(true, $path);
+        $mode = fileperms($path);
+        if ($mode === false) {
+            throw new ValidationException('Unable to read restored directory permissions: ' . $relative);
+        }
+        if (($mode & 0777) !== 0755) {
+            if (!@chmod($path, 0755)) {
+                throw new ValidationException('Unable to normalize restored directory permissions: ' . $relative);
+            }
+            $stats['directories_normalized'] = (int) ($stats['directories_normalized'] ?? 0) + 1;
+        }
+        clearstatcache(true, $path);
+        $verified = fileperms($path);
+        if ($verified === false || ($verified & 0555) !== 0555) {
+            throw new ValidationException('Restored directory is not web-traversable: ' . $relative);
         }
     }
 

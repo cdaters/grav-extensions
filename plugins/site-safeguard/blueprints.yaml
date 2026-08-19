@@ -1,7 +1,7 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.2.2
+version: 0.2.3
 description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:

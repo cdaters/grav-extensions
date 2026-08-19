@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3 — 2026-08-19
+
+- Keep isolated stage directories private while normalizing restored,
+  non-preserved Grav directories to web-traversable `0755` permissions.
+- Verify restored directory traversal permissions and fail into the automatic
+  rollback path if a hosting platform refuses the normalization.
+- Record the number of normalized directories in restore and rollback journals.
+
 ## 0.2.2 — 2026-08-18
 
 - Display the embedded operator note directly in every recovery-package card

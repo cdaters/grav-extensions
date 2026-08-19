@@ -225,6 +225,9 @@ complete on the destination.
 - Host-local paths are preserved, and the post-restore site must pass both its
   checksum inventory and a fresh-process Grav boot check. Failure triggers the
   verified rollback stage automatically.
+- Isolated stages retain private `0700` directory permissions. During restore,
+  non-preserved Grav directories are normalized to `0755` and verified so
+  split-process web servers can deliver theme, plugin, media, and Admin assets.
 
 ## Known limitations of 0.2
 
@@ -239,7 +242,9 @@ complete on the destination.
 - Symbolic links are recorded as warnings and omitted. They must be recreated
   explicitly on the destination.
 - File ownership, extended ACLs, and every platform-specific permission bit are
-  not preserved by the portable ZIP format.
+  not preserved by the portable ZIP format. File modes are retained; restored
+  non-preserved directory modes are intentionally normalized to portable
+  web-safe `0755` permissions.
 - External protected storage is not bundled automatically.
 
 ## Roadmap

@@ -18,6 +18,8 @@ final class ImageFoundryPlugin extends Plugin
         return [
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
             'onTwigExtensions' => ['onTwigExtensions', 0],
+            'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
+            'onOutputGenerated' => ['onOutputGenerated', -100],
             'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
@@ -128,6 +130,50 @@ final class ImageFoundryPlugin extends Plugin
                     . '" alt="' . htmlspecialchars((string) $alt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">';
             }
         }, ['is_safe' => ['html']]));
+    }
+
+    public function onTwigSiteVariables(): void
+    {
+        if ($this->config->get('plugins.image-foundry.automatic_html.enabled', false) && !$this->isAdmin()) {
+            $this->grav['assets']->addCss('plugin://image-foundry/assets/css/image-foundry.css?v=0.2.0', 95);
+        }
+    }
+
+    public function onOutputGenerated(Event $event): void
+    {
+        if (!$this->config->get('plugins.image-foundry.automatic_html.enabled', false)
+            || $this->isCli()
+            || $this->isAdmin()) {
+            return;
+        }
+
+        $uri = $this->grav['uri'] ?? null;
+        $path = $uri && method_exists($uri, 'path') ? '/' . trim((string) $uri->path(), '/') : '';
+        $assetRoute = '/' . trim((string) $this->config->get('plugins.image-foundry.route', '/image-foundry/asset'), '/');
+        $adminRoute = '/' . trim((string) $this->config->get('plugins.admin.route', '/admin'), '/');
+        if ($path === $assetRoute
+            || str_starts_with($path, $assetRoute . '/')
+            || $path === $adminRoute
+            || str_starts_with($path, $adminRoute . '/')
+            || $path === '/api'
+            || str_starts_with($path, '/api/')) {
+            return;
+        }
+
+        $output = (string) ($event['output'] ?? '');
+        if (stripos($output, '<img') === false
+            || (stripos($output, '<html') === false && stripos($output, '<!doctype') === false)) {
+            return;
+        }
+
+        try {
+            $event['output'] = (new ImageFoundryService())->rewriteHtmlImages(
+                $output,
+                (string) $this->config->get('plugins.image-foundry.automatic_html.default_sizes', '100vw')
+            );
+        } catch (\Throwable $e) {
+            $this->grav['log']->warning('[Image Foundry] Automatic HTML replacement skipped: ' . $e->getMessage());
+        }
     }
 
     public function onApiRegisterRoutes(Event $event): void

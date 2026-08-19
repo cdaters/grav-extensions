@@ -12,7 +12,7 @@ use RuntimeException;
 final class ImageFoundryService
 {
     private const SCHEMA = 1;
-    private const VERSION = '0.1.1';
+    private const VERSION = '0.2.0';
 
     private Grav $grav;
     private array $config;
@@ -64,6 +64,7 @@ final class ImageFoundryService
             'storage_path' => $this->storage,
             'source_roots' => $this->sourceRoots(),
             'policy' => $this->policy(),
+            'automatic_html_enabled' => (bool) ($this->config['automatic_html']['enabled'] ?? false),
             'source_count' => count($sources),
             'stale_count' => $stale,
             'derivative_count' => $derivativeCount,
@@ -274,25 +275,155 @@ final class ImageFoundryService
             if (!is_array($entry) || (bool) ($entry['stale'] ?? true)) {
                 return $fallbackImage;
             }
-            $sourceTags = [];
-            foreach (['avif' => 'image/avif', 'webp' => 'image/webp'] as $format => $mime) {
-                $variants = array_values((array) ($entry['derivatives'][$format] ?? []));
-                usort($variants, static fn(array $a, array $b): int => ((int) $a['width']) <=> ((int) $b['width']));
-                if ($variants === []) {
-                    continue;
-                }
-                $srcset = [];
-                foreach ($variants as $variant) {
-                    $srcset[] = $this->assetUrl((string) $variant['id']) . ' ' . (int) $variant['width'] . 'w';
-                }
-                $sourceTags[] = '<source type="' . $mime . '" srcset="'
-                    . htmlspecialchars(implode(', ', $srcset), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-                    . '" sizes="' . htmlspecialchars($sizes, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">';
-            }
+            $sourceTags = $this->sourceTagsForEntry($entry, $sizes);
             return $sourceTags === [] ? $fallbackImage : '<picture>' . implode('', $sourceTags) . $fallbackImage . '</picture>';
         } catch (\Throwable $e) {
             return $fallbackImage;
         }
+    }
+
+    public function rewriteHtmlImages(string $html, string $defaultSizes = '100vw'): string
+    {
+        if ($html === '' || stripos($html, '<img') === false) {
+            return $html;
+        }
+
+        $catalog = $this->loadCatalog();
+        $sources = (array) ($catalog['sources'] ?? []);
+        if ($sources === []) {
+            return $html;
+        }
+
+        $defaultSizes = trim($defaultSizes) ?: '100vw';
+        $pictureDepth = 0;
+        $rewritten = preg_replace_callback(
+            '~<picture\b[^>]*>|</picture\s*>|<img\b[^>]*>~is',
+            function (array $match) use ($sources, $defaultSizes, &$pictureDepth): string {
+                $tag = (string) $match[0];
+                if (preg_match('~^</picture~i', $tag)) {
+                    $pictureDepth = max(0, $pictureDepth - 1);
+                    return $tag;
+                }
+                if (preg_match('~^<picture\b~i', $tag)) {
+                    $pictureDepth++;
+                    return $tag;
+                }
+                if ($pictureDepth > 0
+                    || preg_match('~\sdata-foundry-ignore(?:\s|=|/?>)~i', $tag)) {
+                    return $tag;
+                }
+
+                $class = strtolower((string) ($this->htmlAttribute($tag, 'class') ?? ''));
+                if (in_array('image-foundry-ignore', preg_split('/\s+/', trim($class)) ?: [], true)) {
+                    return $tag;
+                }
+
+                $src = $this->htmlAttribute($tag, 'src');
+                if ($src === null) {
+                    return $tag;
+                }
+                $logical = $this->logicalPathForPublicUrl($src);
+                $entry = $logical !== null ? ($sources[$logical] ?? null) : null;
+                if (!is_array($entry) || (bool) ($entry['stale'] ?? true)) {
+                    return $tag;
+                }
+
+                $sizes = $this->htmlAttribute($tag, 'data-foundry-sizes')
+                    ?? $this->htmlAttribute($tag, 'sizes')
+                    ?? $defaultSizes;
+                $sourceTags = $this->sourceTagsForEntry($entry, trim($sizes) ?: $defaultSizes);
+                if ($sourceTags === []) {
+                    return $tag;
+                }
+                return '<picture class="image-foundry-picture" data-image-foundry="auto">'
+                    . implode('', $sourceTags) . $tag . '</picture>';
+            },
+            $html
+        );
+
+        return is_string($rewritten) ? $rewritten : $html;
+    }
+
+    private function sourceTagsForEntry(array $entry, string $sizes): array
+    {
+        $sourceTags = [];
+        foreach (['avif' => 'image/avif', 'webp' => 'image/webp'] as $format => $mime) {
+            $variants = array_values((array) ($entry['derivatives'][$format] ?? []));
+            usort($variants, static fn(array $a, array $b): int => ((int) $a['width']) <=> ((int) $b['width']));
+            if ($variants === []) {
+                continue;
+            }
+            $srcset = [];
+            foreach ($variants as $variant) {
+                $id = (string) ($variant['id'] ?? '');
+                $width = (int) ($variant['width'] ?? 0);
+                if (!preg_match('/^[a-f0-9]{32}$/', $id) || $width < 1) {
+                    continue;
+                }
+                $srcset[] = $this->assetUrl($id) . ' ' . $width . 'w';
+            }
+            if ($srcset !== []) {
+                $sourceTags[] = '<source type="' . $mime . '" srcset="'
+                    . htmlspecialchars(implode(', ', $srcset), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                    . '" sizes="' . htmlspecialchars($sizes, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">';
+            }
+        }
+        return $sourceTags;
+    }
+
+    private function logicalPathForPublicUrl(string $url): ?string
+    {
+        $url = html_entity_decode(trim($url), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        if ($url === '' || str_starts_with($url, '#') || preg_match('~^(?:data|blob):~i', $url)) {
+            return null;
+        }
+        $parts = parse_url($url);
+        if ($parts === false || !isset($parts['path'])) {
+            return null;
+        }
+        if (isset($parts['scheme']) && !in_array(strtolower((string) $parts['scheme']), ['http', 'https'], true)) {
+            return null;
+        }
+        if (isset($parts['host'])) {
+            $requestHost = strtolower(preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')) ?? '');
+            if ($requestHost === '' || strtolower((string) $parts['host']) !== $requestHost) {
+                return null;
+            }
+        }
+
+        $path = rawurldecode((string) $parts['path']);
+        $base = method_exists($this->grav['uri'], 'rootUrl') ? (string) $this->grav['uri']->rootUrl(false) : '';
+        $basePath = (string) (parse_url($base, PHP_URL_PATH) ?: $base);
+        $basePath = '/' . trim($basePath, '/');
+        if ($basePath !== '/' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
+            $path = substr($path, strlen($basePath));
+        }
+
+        try {
+            $logical = $this->normaliseLogicalPath($path);
+            $extension = strtolower(pathinfo($logical, PATHINFO_EXTENSION));
+            if (!in_array($extension, $this->sourceExtensions(), true)) {
+                return null;
+            }
+            $this->absoluteSource($logical);
+            return $logical;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function htmlAttribute(string $tag, string $name): ?string
+    {
+        $pattern = '~(?:^|\s)' . preg_quote($name, '~') . '\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))~is';
+        if (!preg_match($pattern, $tag, $matches)) {
+            return null;
+        }
+        foreach ([1, 2, 3] as $index) {
+            if (isset($matches[$index]) && $matches[$index] !== '') {
+                return html_entity_decode((string) $matches[$index], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+        return '';
     }
 
     private function buildSource(string $logical, array $item): array

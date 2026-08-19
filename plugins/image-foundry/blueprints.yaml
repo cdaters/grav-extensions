@@ -1,7 +1,7 @@
 name: Image Foundry
 slug: image-foundry
 type: plugin
-version: 0.1.1
+version: 0.2.0
 description: Original-preserving, self-hosted responsive image derivatives for Grav 2.
 icon: images
 author:
@@ -122,6 +122,24 @@ form:
         type: int
         min: 1
         max: 500
+
+    automatic_html.enabled:
+      type: toggle
+      label: Automatically serve optimized images
+      help: On public HTML pages, replace eligible cataloged img elements with responsive picture markup. Existing picture elements, remote images, Admin/API responses, stale sources, and images marked data-foundry-ignore are left unchanged.
+      highlight: 1
+      default: 0
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    automatic_html.default_sizes:
+      type: text
+      label: Automatic responsive sizes
+      help: Used when an eligible img element does not already provide sizes or data-foundry-sizes.
+      default: 100vw
 
     storage_path:
       type: text

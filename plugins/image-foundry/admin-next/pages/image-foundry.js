@@ -116,7 +116,7 @@ class ImageFoundryPage extends HTMLElement {
         <section class="capabilities panel">
           <div><span class="eyebrow">SERVER CAPABILITIES</span><h2>Local image engine</h2></div>
           <div class="badges">
-            ${this.badge('GD', status.gd_available)}${this.badge('WebP', status.webp_available)}${this.badge('AVIF', status.avif_available)}${this.badge('EXIF orientation', status.exif_available)}
+            ${this.badge('GD', status.gd_available)}${this.badge('WebP', status.webp_available)}${this.badge('AVIF', status.avif_available)}${this.badge('EXIF orientation', status.exif_available)}${this.badge('Automatic HTML', status.automatic_html_enabled)}
           </div>
           <code>${this.escape(status.storage_path || 'Protected storage not initialized')}</code>
         </section>

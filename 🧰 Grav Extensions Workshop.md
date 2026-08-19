@@ -36,7 +36,7 @@
 ## Planned work
 
 - [[docs/planned/README|Planned extension briefs]]
-- [[docs/planned/image-foundry|Image Foundry 0.1 scope record]]
+- [[docs/planned/image-foundry|Image Foundry scope record]]
 - [[docs/planned/meta-pilot|Meta Pilot]]
 - [[docs/planned/revision-ledger|Revision Ledger]]
 - [[docs/planned/lantern-search|Lantern Search]]

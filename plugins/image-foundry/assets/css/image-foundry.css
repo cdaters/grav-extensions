@@ -1,0 +1,4 @@
+/* Preserve the original layout when automatic mode adds a semantic picture wrapper. */
+picture.image-foundry-picture[data-image-foundry="auto"] {
+  display: contents;
+}

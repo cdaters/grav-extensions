@@ -38,7 +38,8 @@ Originals are never deleted or overwritten.
    resolves outside the public Grav root.
 3. Open **Image Foundry** in Admin and choose **Scan sources**.
 4. Review the catalog and server capabilities, then choose **Build stale**.
-5. Opt individual templates into responsive output as shown below.
+5. Enable **Automatically serve optimized images** in the plugin settings, or
+   opt individual templates into responsive output as shown below.
 
 The generated store is rebuildable data, so it does not need to travel in a
 normal site-content backup. After moving a site to another host, install the
@@ -67,6 +68,29 @@ absent will not have the Twig function.
 
 Image Foundry never rewrites Markdown output and does not require a specific
 theme or gallery plugin.
+
+## Automatic front-end replacement
+
+Automatic replacement is disabled by default. When enabled, Image Foundry
+processes only complete public HTML responses and wraps eligible local `<img>`
+elements in responsive `<picture>` markup. The original `<img>` and all of its
+attributes remain intact as the fallback. An image is replaced only when its
+source URL maps to a current, built catalog entry beneath an allowed source
+root. A small `display: contents` compatibility rule keeps the original image's
+flex/grid/layout behavior intact after the semantic wrapper is added.
+
+Image Foundry leaves the following unchanged:
+
+- Admin and API output;
+- images already inside `<picture>`;
+- remote, data, blob, stale, uncataloged, or generated-cache images;
+- CSS background images; and
+- any image with `data-foundry-ignore` or the `image-foundry-ignore` class.
+
+Use `data-foundry-sizes="(min-width: 60rem) 50vw, 100vw"` on an `<img>` to
+override the automatic `sizes` policy for that image. Automatic replacement is
+request-time markup selection only: it never builds derivatives during a page
+request. Scan and build after adding or changing originals.
 
 ## Configuration
 
@@ -103,5 +127,7 @@ not make a browser-visible image impossible to save.
 - **Storage error:** configure an absolute or Grav-relative directory outside
   the public root and make it writable by the PHP user.
 - **An image is absent:** confirm its extension/root and check byte/pixel limits.
-- **A template still shows the original:** scan and build the source, then check
-  that the first helper argument exactly matches its catalog path.
+- **A template still shows the original:** scan and build the source. For the
+  Twig helper, check that its first argument exactly matches the catalog path.
+  For automatic mode, confirm the rendered `src` is a direct same-site URL
+  beneath a configured source root rather than a Grav-generated crop/cache URL.

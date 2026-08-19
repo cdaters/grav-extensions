@@ -13,7 +13,8 @@ An original-preserving image optimization and derivative-management plugin.
 - Provide an Admin2 dashboard, equivalent CLI operations, and an opt-in Twig
   `<picture>` helper with an ordinary original URL as its fallback.
 
-Automatic HTML rewriting, remote optimization services, animated-image
-conversion, and in-place replacement are intentionally outside the first
-milestone. A future reversible replacement workflow must retain the source and
-an auditable restoration path.
+Version 0.2 adds reversible, opt-in automatic public-HTML replacement for
+eligible direct local `<img>` sources. Remote optimization services,
+animated-image conversion, CSS backgrounds, and generated Grav crop/cache
+correlation remain outside the implemented milestone. Originals remain the
+authoritative restoration path.

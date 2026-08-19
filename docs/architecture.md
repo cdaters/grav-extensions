@@ -62,15 +62,16 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Prism Gallery 0.2.1:** working development release with Quark 2 modular
   integration, shortcodes, mixed media, and opaque just-in-time local-media
   delivery.
-- **Site Safeguard 0.2.2:** working development release for checksummed portable
+- **Site Safeguard 0.2.3:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
-  rollback-first, CLI-only full-site restore with fresh-process boot checks.
-- **Image Foundry 0.1.1:** working development release with original-preserving
+  rollback-first, CLI-only full-site restore with fresh-process boot checks and
+  verified production-safe directory permissions.
+- **Image Foundry 0.2.0:** working development release with original-preserving
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
-  opaque immutable delivery, Admin2 operations, CLI parity, and an opt-in Twig
-  `<picture>` helper.
+  opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig
+  `<picture>` helper, and reversible automatic public-HTML replacement.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
-- **Spitfire 1.1.0:** working Quark 2 child theme, intentionally site-specific.
+- **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
 - **Meta Pilot and later roadmap plugins:** named and bounded, not yet represented
   as finished packages.
