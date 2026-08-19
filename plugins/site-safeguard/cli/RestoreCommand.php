@@ -17,16 +17,19 @@ class RestoreCommand extends ConsoleCommand
             ->setName('restore')
             ->setDescription('Rollback-first full-site restore from a verified Site Safeguard stage.')
             ->addArgument('stage', InputArgument::REQUIRED, 'Verified stage identifier.')
-            ->addOption('confirm', null, InputOption::VALUE_REQUIRED, 'Must be exactly: RESTORE THIS SITE');
+            ->addOption('confirm', null, InputOption::VALUE_REQUIRED, 'Must be exactly: RESTORE THIS SITE')
+            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Preallocated restore operation identifier used by the Admin launcher.');
     }
 
     protected function serve(): int
     {
         require_once dirname(__DIR__) . '/classes/Service/SafeguardService.php';
+        $operationOption = trim((string) $this->input->getOption('operation'));
         try {
             $result = (new SafeguardService())->restoreStage(
                 (string) $this->input->getArgument('stage'),
-                (string) $this->input->getOption('confirm')
+                (string) $this->input->getOption('confirm'),
+                $operationOption !== '' ? $operationOption : null
             );
             $operation = (array) ($result['operation'] ?? []);
             $this->output->writeln('<green>Full-site restore completed and verified.</green>');

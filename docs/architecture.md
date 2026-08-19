@@ -62,10 +62,11 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Prism Gallery 0.2.1:** working development release with Quark 2 modular
   integration, shortcodes, mixed media, and opaque just-in-time local-media
   delivery.
-- **Site Safeguard 0.2.3:** working development release for checksummed portable
+- **Site Safeguard 0.3.0:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
-  rollback-first, CLI-only full-site restore with fresh-process boot checks and
-  verified production-safe directory permissions.
+  rollback-first full-site restore through a detached Admin-launched CLI worker
+  or manual CLI fallback, with fresh-process boot checks and verified
+  production-safe directory permissions.
 - **Image Foundry 0.2.0:** working development release with original-preserving
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig

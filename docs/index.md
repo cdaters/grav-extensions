@@ -10,6 +10,7 @@ belong in that extension's own README.
 - [File Vault](../plugins/file-vault/README.md)
 - [Prism Gallery](../plugins/prism-gallery/README.md)
 - [Site Safeguard](../plugins/site-safeguard/README.md)
+- [Site Safeguard archive-format direction](site-safeguard-archive-formats.md)
 - [Image Foundry](../plugins/image-foundry/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)

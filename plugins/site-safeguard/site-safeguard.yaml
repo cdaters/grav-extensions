@@ -12,6 +12,7 @@ download_token_ttl: 180
 allow_uploads: true
 max_packages: 12
 restore_enabled: false
+admin_restore_enabled: false
 restore_boot_check: true
 php_cli_path: php
 

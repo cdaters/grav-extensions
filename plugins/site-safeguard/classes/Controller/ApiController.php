@@ -70,6 +70,17 @@ class ApiController extends AbstractApiController
         );
     }
 
+    public function restoreStage(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requireSafeguardPermission($request, 'site-safeguard.restore');
+        $body = $this->getRequestBody($request);
+        $id = rawurldecode((string) $this->getRouteParam($request, 'id'));
+        return ApiResponse::create($this->service()->launchRestore(
+            $id,
+            (string) ($body['confirmation'] ?? '')
+        ), 202);
+    }
+
     public function createDownloadToken(ServerRequestInterface $request): ResponseInterface
     {
         $this->requireSafeguardPermission($request, 'site-safeguard.manage');

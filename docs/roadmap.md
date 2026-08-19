@@ -7,7 +7,7 @@ can never be mistaken for an installable Grav package.
 | Order | Working name | Purpose | State |
 | ---: | --- | --- | --- |
 | 1 | Prism Gallery | Accessible mixed-media galleries and protected local-media delivery | Development release |
-| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.2.3 development release; guarded CLI restore available |
+| 2 | Site Safeguard | Verified backup, restore, and clean deployment packages | 0.3.0 development release; detached Admin restore and CLI fallback available |
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.2.0 development release; automatic public-HTML replacement available |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | Specification queued |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | Specification queued |
@@ -30,22 +30,28 @@ documentation, not copied premium source code.
 
 ## Site Safeguard recovery roadmap
 
-Site Safeguard 0.2 provides the immediate production-to-DDEV and DDEV-to-
+Site Safeguard 0.3 provides the immediate production-to-DDEV and DDEV-to-
 production transfer path: portable packages, repeated validation, verified
-staging, rollback-first CLI restore, and automatic rollback when the restored
-site cannot boot.
+staging, rollback-first restore launched by Admin2 or CLI, live recovery-journal
+progress, and automatic rollback when the restored site cannot boot.
 
 The recovery work that follows is intentionally incremental:
 
-1. **Recovery Assistant** — an independently authenticated, disposable,
-   Kickstart-style entry point that can recover a site even when Grav or the
-   installed plugin cannot start.
-2. **Scheduling** — Grav Scheduler/cron integration, overlap protection,
+1. **Archive engineering** — retain ZIP permanently as the compatibility
+   format; specify and benchmark the streaming `.ssa` format under constrained
+   PHP hosting; specify `.sss` authenticated encryption using Sodium
+   secretstream and a versioned Argon2id KDF profile. SSA is not the default
+   until benchmarks, test vectors, corruption behavior, and at least two
+   independent readers justify it.
+2. **Recovery Console** — an independently authenticated, disposable
+   `safeguard-recovery.php` entry point that can recover a site even when Grav
+   or the installed plugin cannot start, then locks or removes itself.
+3. **Scheduling** — Grav Scheduler/cron integration, overlap protection,
    verification jobs, retention generations, notifications, and history.
-3. **Off-site storage** — an encrypted provider contract followed by
+4. **Off-site storage** — an encrypted provider contract followed by
    S3-compatible storage, SFTP, and WebDAV with resumable transfer, remote
    integrity verification, and remote retention.
-4. **External data sets** — explicit companion backup definitions for File
+5. **External data sets** — explicit companion backup definitions for File
    Vault binaries and other protected data stored outside the Grav root.
 
 ## Image Foundry roadmap

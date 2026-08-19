@@ -4,12 +4,13 @@ Site Safeguard creates portable, self-describing Grav recovery packages,
 validates every archived file against SHA-256 metadata, and extracts complete
 packages into an isolated directory outside the running site.
 
-Version 0.2 adds a guarded full-site restore for transfers between installations
-such as production and DDEV. Restore is deliberately CLI-only so the process
-does not overwrite the code serving the initiating web request. It requires a
-verified stage, creates and boots a verified rollback stage before touching the
-site, preserves host-local paths, uses Grav maintenance mode, mirrors the staged
-site, verifies every restored file, and boots Grav again in a fresh PHP process.
+Version 0.3 adds a guarded **Restore** action to Admin2 for transfers between
+installations such as production and DDEV. The authenticated web request only
+queues a uniquely identified operation and launches a detached PHP CLI worker;
+it never replaces the code serving the request. The worker requires a verified
+stage, creates and boots a verified rollback stage before touching the site,
+preserves host-local paths, uses Grav maintenance mode, mirrors the staged site,
+verifies every restored file, and boots Grav again in a fresh PHP process.
 
 ## Why this exists
 
@@ -34,11 +35,28 @@ deployment/recovery packages and staged restore orchestration.
 
 ## Requirements
 
+### Minimum
+
 - Grav 2.0+
 - PHP 8.3+
 - PHP ZIP extension
 - Grav API/Admin2 plugin 1.0+
 - write access to two directories outside the public Grav root
+
+### Preferred and feature-specific
+
+- for the Admin **Restore** action: a Unix-like host with `/bin/sh`, `nohup`,
+  `proc_open()`, and an executable PHP CLI binary
+- Zlib for the planned streaming SSA format
+- PHP Sodium for the preferred future SSS authenticated-encryption profile
+- OpenSSL is optional and may support a separately versioned AES-256-GCM
+  compatibility profile after independent tests; it is not a silent substitute
+  for Sodium
+
+The Admin2 **Environment readiness** panel checks these capabilities after an
+installation or update and distinguishes required, recommended, optional, and
+restore-only items. Missing Sodium does not prevent ZIP or unencrypted SSA use.
+Secure archives will fail with guidance instead of silently downgrading.
 
 ## Installation
 
@@ -66,10 +84,12 @@ the Grav directory:
 Site Safeguard refuses to use either directory if it resolves inside the public
 Grav root.
 
-Full-site restore is disabled by default. Enable it only after reviewing the
-PHP CLI path and preserved host-local paths. DDEV installations should preserve
-`.ddev`; production commonly preserves environment files and runtime folders.
-The destination's `user/config/plugins/site-safeguard.yaml` is host-local and
+Full-site restore is disabled by default. Enable **Allow full-site restore**
+only after reviewing the PHP CLI path and preserved host-local paths. Enable
+**Allow the Admin2 Restore button** separately when the hosting environment
+passes the launcher checks. DDEV installations should preserve `.ddev`;
+production commonly preserves environment files and runtime folders. The
+destination's `user/config/plugins/site-safeguard.yaml` is host-local and
 preserved by default, preventing a transferred package from replacing the
 destination's package paths and restore safety settings.
 
@@ -110,9 +130,13 @@ Grav site; inspection checks for `index.php`, `system/`, and `user/`.
 6. Inspect it again, then select **Create stage**.
 7. The package is extracted outside the running Grav root and every staged file
    is hashed again. The current site remains untouched.
-8. Review the stage and run the displayed CLI restore command from the Grav
-   root. Site Safeguard creates and boots a rollback stage before maintenance
-   mode begins.
+8. Review the stage and select **Restore**. Type the exact confirmation phrase
+   and approve the final warning. Admin2 follows the detached operation through
+   its durable recovery journal while Site Safeguard creates and boots a
+   rollback stage before maintenance mode begins.
+
+The displayed CLI command remains the recovery fallback when the Admin launcher
+is disabled or unavailable.
 
 An imported package that fails structural or checksum validation is deleted
 instead of being retained in the package library.
@@ -148,8 +172,10 @@ bin/plugin site-safeguard restore safeguard-example-portable_site-20260818-12000
   --confirm="RESTORE THIS SITE"
 ```
 
-Restore refuses to run through HTTP/API. Run it from a shell or hosting control
-panel terminal as the same operating-system user that owns the Grav files.
+The manual CLI command remains available from a shell or hosting control panel
+terminal. Use the same operating-system user that owns the Grav files. The
+Admin API does not perform the restore in-process; it can only launch this same
+CLI workflow as a detached worker.
 
 CLI commands use bare filenames from the protected package directory. They do
 not accept arbitrary filesystem paths.
@@ -202,11 +228,12 @@ complete on the destination.
 ## Security model
 
 - Package/stage roots must resolve outside `GRAV_ROOT`.
-- API operations require `site-safeguard.manage` or `site-safeguard.stage`;
-  super administrators are accepted.
-- The `site-safeguard.promote` permission is reserved for a future independent
-  recovery interface and has no executable HTTP operation. Full-site restore is
-  CLI-only in version 0.2.
+- API operations require the narrow `site-safeguard.manage`,
+  `site-safeguard.stage`, or `site-safeguard.restore` permission; super
+  administrators are accepted.
+- The restore route requires `site-safeguard.restore`, both restore switches,
+  an exact confirmation phrase, a verified deployable stage, and an available
+  detached CLI launcher. It only queues the worker and returns HTTP 202.
 - ZIP entry names reject NUL bytes, backslashes, absolute/drive paths, and `..`.
 - Duplicate entries and ZIP symlinks are rejected.
 - Entry count, package bytes, and expanded bytes are bounded.
@@ -229,13 +256,15 @@ complete on the destination.
   non-preserved Grav directories are normalized to `0755` and verified so
   split-process web servers can deliver theme, plugin, media, and Admin assets.
 
-## Known limitations of 0.2
+## Known limitations of 0.3
 
 - No scheduler integration or remote/object-storage provider.
-- Restore requires PHP CLI and `proc_open()` for isolated boot checks.
-- Restore is not exposed as an Admin/API action. A future standalone recovery
-  assistant will provide a Kickstart-style workflow outside the site being
-  replaced.
+- Restore requires PHP CLI and `proc_open()` for isolated boot checks. The
+  Admin launcher additionally requires a Unix-like shell and `nohup`; the
+  manual CLI command remains available on other hosts.
+- The Admin button still depends on a healthy Grav/Admin installation. A future
+  standalone recovery assistant will provide a recovery workflow outside the
+  site being replaced.
 - Package creation and deep inspection run synchronously and remain subject to
   PHP/web-server execution limits on very large sites. Prefer the CLI for large
   sites.
@@ -249,7 +278,7 @@ complete on the destination.
 
 ## Roadmap
 
-The next recovery milestones are deliberately separated from the tested 0.2
+The next recovery milestones are deliberately separated from the tested 0.3
 restore core:
 
 - **Recovery Assistant:** a small, independently authenticated, single-use
@@ -265,6 +294,21 @@ restore core:
   is considered complete.
 - **External data sets:** explicit companion definitions for File Vault binary
   storage and other site dependencies outside `GRAV_ROOT`.
+- **SSA/SSS archive family:** design and benchmark an open, versioned,
+  forward-only Site Safeguard Archive (`.ssa`) using streaming Deflate and no
+  ZIP central directory or per-entry CRC pre-pass. Preserve ZIP as the
+  universally available compatibility format. SSA becomes the default only if
+  shared-host benchmarks, recovery tooling, corruption handling, and format
+  documentation justify that change.
+- **Authenticated secure archives:** build Site Safeguard Secure (`.sss`) on
+  the SSA record stream with chunked authenticated encryption using PHP Sodium
+  (secretstream XChaCha20-Poly1305), a memory-hard Argon2id passphrase derivation
+  profile, explicit version/KDF parameters, and independent test vectors. SSS
+  must fail closed on truncation, reordering, or tampering and must never fall
+  back to unauthenticated encryption.
+
+The detailed format principles and default-format acceptance gate are recorded
+in [Site Safeguard archive-format direction](../../docs/site-safeguard-archive-formats.md).
 
 ## Updating
 

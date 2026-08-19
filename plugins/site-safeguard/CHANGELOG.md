@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 — 2026-08-19
+
+- Add a guarded **Restore** action to Admin2 while retaining the manual CLI
+  recovery path.
+- Queue each Admin restore as a uniquely identified operation and launch the
+  existing rollback-first restore command as a detached PHP CLI worker instead
+  of replacing the running site inside an HTTP request.
+- Require separate `site-safeguard.restore` permission, independently disabled
+  Admin-launch setting, exact typed confirmation, and a final browser warning.
+- Detect unsupported launch environments and keep the CLI command visible as
+  the fallback.
+- Poll a protected recovery journal and display queued, validation, rollback,
+  maintenance, copy, verification, completion, failure, and automatic-rollback
+  progress in Admin2, including bounded worker output on failure.
+- Add a live environment-readiness panel distinguishing current minimum,
+  recommended, optional, and restore-only host capabilities, including clear
+  Sodium/Zlib/OpenSSL guidance for the future archive formats.
+- Reserve `.ssa` and `.sss` as documented, benchmark-gated future streaming and
+  authenticated-encryption formats while keeping ZIP as the compatibility
+  baseline.
+
 ## 0.2.3 — 2026-08-19
 
 - Keep isolated stage directories private while normalizing restored,

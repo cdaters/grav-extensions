@@ -1,7 +1,7 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.2.3
+version: 0.3.0
 description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:
@@ -22,6 +22,12 @@ compatibility:
 form:
   validation: loose
   fields:
+    requirements_section:
+      type: section
+      title: Environment requirements
+      help: PHP 8.3 and ZipArchive are the current minimum. Zlib and Sodium are preferred for the planned SSA/SSS formats; OpenSSL is an optional future compatibility provider. The Site Safeguard dashboard performs live checks and explains missing capabilities. Secure archives will never silently downgrade to unauthenticated encryption.
+      underline: true
+
     enabled:
       type: toggle
       label: Plugin status
@@ -104,7 +110,19 @@ form:
     restore_enabled:
       type: toggle
       label: Allow full-site restore
-      help: CLI restore requires a verified deployable stage, an exact confirmation phrase, and an automatically verified rollback package. No HTTP restore endpoint is exposed.
+      help: Restore requires a verified deployable stage, an exact confirmation phrase, and an automatically verified rollback package. The replacement itself always runs in PHP CLI.
+      highlight: 0
+      default: 0
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+
+    admin_restore_enabled:
+      type: toggle
+      label: Allow Restore button in Admin2
+      help: Launches the CLI restore as a detached worker after a separately authorized Admin user types the exact confirmation phrase. Leave disabled if the host cannot safely run detached PHP CLI processes.
       highlight: 0
       default: 0
       options:

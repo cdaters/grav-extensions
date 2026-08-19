@@ -17,7 +17,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.2.3';
+    private const VERSION = '0.3.0';
 
     private Grav $grav;
     private array $config;
@@ -38,6 +38,7 @@ class SafeguardService
     {
         $packages = $this->packages();
         $stages = $this->stages();
+        $launcher = $this->restoreLauncherStatus();
 
         return [
             'version' => self::VERSION,
@@ -52,12 +53,114 @@ class SafeguardService
             'stored_bytes' => array_sum(array_column($packages, 'size')),
             'allow_uploads' => (bool) ($this->config['allow_uploads'] ?? true),
             'restore_enabled' => (bool) ($this->config['restore_enabled'] ?? false),
+            'admin_restore_enabled' => (bool) ($this->config['admin_restore_enabled'] ?? false),
+            'restore_launcher_available' => $launcher['available'],
+            'restore_launcher_message' => $launcher['message'],
+            'environment_requirements' => $this->environmentRequirements($launcher),
             'restore_confirmation' => 'RESTORE THIS SITE',
             'restore_preserve_paths' => $this->restorePreservePaths(),
             'restore_history' => $this->restoreHistory(),
             'promotion_available' => false,
-            'safety_message' => 'Restore is rollback-first and CLI-only: Site Safeguard verifies the source, creates and stages a rollback package, preserves host-local paths, and verifies the restored site in a fresh process.',
+            'safety_message' => 'Admin launches restore in a detached PHP CLI process. The worker re-verifies the source, creates and stages a rollback package, preserves host-local paths, and verifies the restored site in a fresh process.',
         ];
+    }
+
+    public function launchRestore(string $id, string $confirmation): array
+    {
+        $this->assertRestoreEnabled();
+        if (!($this->config['admin_restore_enabled'] ?? false)) {
+            throw new ForbiddenException('The Site Safeguard Restore button is disabled in plugin configuration.');
+        }
+        $this->assertRestoreConfirmation($confirmation);
+        $launcher = $this->restoreLauncherStatus();
+        if (!$launcher['available']) {
+            throw new ValidationException((string) $launcher['message']);
+        }
+
+        $stage = $this->stagePath($id);
+        $stageInfo = $this->stageInfo($stage);
+        if (!$stageInfo['verified'] || ($stageInfo['record']['promotion_ready'] ?? false) !== false) {
+            throw new ValidationException('Only a verified, unpromoted Site Safeguard stage can be restored.');
+        }
+
+        $launchLock = $this->restoreLaunchLock();
+        try {
+            foreach ($this->restoreHistory() as $operation) {
+                if ($this->restoreStateIsActive((string) ($operation['state'] ?? ''))) {
+                    throw new ValidationException('Another Site Safeguard restore is already queued or running.');
+                }
+            }
+
+            $operationId = 'restore-' . gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
+            $journalPath = $this->packageDirectory() . '/.' . $operationId . '.json';
+            $logPath = $this->packageDirectory() . '/.' . $operationId . '.log';
+            $exitPath = $this->packageDirectory() . '/.' . $operationId . '.exit';
+            $journal = [
+                'schema' => 1,
+                'id' => $operationId,
+                'state' => 'queued',
+                'requested_at' => gmdate('c'),
+                'requested_via' => 'admin2',
+                'source_stage' => $id,
+                'source_package' => (string) ($stageInfo['record']['package'] ?? ''),
+                'error' => null,
+            ];
+            $this->writeJournal($journalPath, $journal);
+
+            $binary = $this->configuredPhpBinary();
+            $plugin = $this->root . '/bin/plugin';
+            $worker = 'umask 077; ' . implode(' ', [
+                escapeshellarg($binary),
+                escapeshellarg($plugin),
+                'site-safeguard',
+                'restore',
+                escapeshellarg($id),
+                escapeshellarg('--confirm=RESTORE THIS SITE'),
+                escapeshellarg('--operation=' . $operationId),
+            ]);
+            $worker .= ' > ' . escapeshellarg($logPath) . ' 2>&1';
+            $worker .= '; code=$?; printf "%s" "$code" > ' . escapeshellarg($exitPath);
+            $command = escapeshellarg($this->nohupBinary()) . ' /bin/sh -c ' . escapeshellarg($worker) . ' </dev/null >/dev/null 2>&1 & echo $!';
+
+            $descriptors = [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ];
+            $pipes = [];
+            $process = proc_open(['/bin/sh', '-c', $command], $descriptors, $pipes, $this->root);
+            if (!is_resource($process)) {
+                throw new ValidationException('Unable to start the detached restore worker.');
+            }
+            fclose($pipes[0]);
+            $pid = trim((string) stream_get_contents($pipes[1]));
+            $errors = trim((string) stream_get_contents($pipes[2]));
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $exit = proc_close($process);
+            if ($exit !== 0 || !preg_match('/^[1-9][0-9]*$/', $pid)) {
+                throw new ValidationException('Unable to detach the restore worker.' . ($errors !== '' ? ' ' . $errors : ''));
+            }
+            @chmod($logPath, 0600);
+
+            $this->grav['log']->notice('[Site Safeguard] Restore queued from Admin2: ' . $operationId);
+            return [
+                'message' => 'Restore queued in a detached PHP CLI process.',
+                'operation' => $journal,
+                'worker_pid' => (int) $pid,
+            ];
+        } catch (\Throwable $e) {
+            if (isset($journalPath, $journal) && is_array($journal)) {
+                $journal['state'] = 'launch-failed';
+                $journal['error'] = $e->getMessage();
+                $journal['completed_at'] = gmdate('c');
+                $this->writeJournal($journalPath, $journal);
+            }
+            throw $e;
+        } finally {
+            flock($launchLock, LOCK_UN);
+            fclose($launchLock);
+        }
     }
 
     public function profiles(): array
@@ -345,17 +448,13 @@ class SafeguardService
         return $items;
     }
 
-    public function restoreStage(string $id, string $confirmation): array
+    public function restoreStage(string $id, string $confirmation, ?string $requestedOperationId = null): array
     {
         if (PHP_SAPI !== 'cli') {
             throw new ForbiddenException('Full-site restore must run from PHP CLI, outside the initiating web request.');
         }
-        if (!($this->config['restore_enabled'] ?? false)) {
-            throw new ForbiddenException('Full-site restore is disabled in Site Safeguard configuration.');
-        }
-        if (!hash_equals('RESTORE THIS SITE', trim($confirmation))) {
-            throw new ValidationException('The restore confirmation phrase did not match.');
-        }
+        $this->assertRestoreEnabled();
+        $this->assertRestoreConfirmation($confirmation);
         if (function_exists('set_time_limit')) {
             @set_time_limit(0);
         }
@@ -380,7 +479,9 @@ class SafeguardService
         $this->verifyStagedFiles($stage, $checksums);
 
         $lock = $this->restoreLock();
-        $operationId = 'restore-' . gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
+        $operationId = $requestedOperationId !== null
+            ? $this->validatedOperationId($requestedOperationId)
+            : 'restore-' . gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
         $journalPath = $this->packageDirectory() . '/.' . $operationId . '.json';
         $preserve = $this->restorePreservePaths();
         $rollbackPackage = null;
@@ -891,10 +992,183 @@ class SafeguardService
         foreach (array_slice($files, 0, 10) as $file) {
             $decoded = json_decode((string) file_get_contents($file), true);
             if (is_array($decoded)) {
+                $id = (string) ($decoded['id'] ?? '');
+                if ($id !== '' && preg_match('/^restore-[A-Za-z0-9.-]+$/', $id)) {
+                    $exitPath = $this->packageDirectory() . '/.' . $id . '.exit';
+                    $logPath = $this->packageDirectory() . '/.' . $id . '.log';
+                    if (is_file($exitPath)) {
+                        $decoded['worker_exit'] = (int) trim((string) file_get_contents($exitPath));
+                        if ($this->restoreStateIsActive((string) ($decoded['state'] ?? ''))) {
+                            $decoded['state'] = $decoded['worker_exit'] === 0 ? 'completed' : 'worker-failed';
+                        }
+                    }
+                    if (is_file($logPath)) {
+                        $decoded['worker_log_tail'] = $this->fileTail($logPath, 3000);
+                    }
+                }
                 $history[] = $decoded;
             }
         }
         return $history;
+    }
+
+    private function restoreLauncherStatus(): array
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            return ['available' => false, 'message' => 'Admin restore launching currently requires a Unix-like host. Use the displayed CLI command on Windows.'];
+        }
+        if (!function_exists('proc_open')) {
+            return ['available' => false, 'message' => 'Admin restore launching requires proc_open(). Use the displayed CLI command on this host.'];
+        }
+        if (!is_file($this->root . '/bin/plugin')) {
+            return ['available' => false, 'message' => 'The Grav bin/plugin entrypoint is missing.'];
+        }
+        if (!is_executable('/bin/sh')) {
+            return ['available' => false, 'message' => 'The detached Admin launcher requires /bin/sh. Use the displayed CLI command on this host.'];
+        }
+        try {
+            $this->configuredPhpBinary();
+            $this->nohupBinary();
+        } catch (\Throwable $e) {
+            return ['available' => false, 'message' => $e->getMessage()];
+        }
+        return ['available' => true, 'message' => 'Detached PHP CLI restore is available.'];
+    }
+
+    private function environmentRequirements(array $launcher): array
+    {
+        $sodium = extension_loaded('sodium')
+            && function_exists('sodium_crypto_secretstream_xchacha20poly1305_init_push')
+            && function_exists('sodium_crypto_pwhash');
+        $openssl = extension_loaded('openssl') && function_exists('openssl_encrypt');
+
+        return [
+            [
+                'key' => 'php',
+                'label' => 'PHP 8.3 or newer',
+                'group' => 'required',
+                'available' => version_compare(PHP_VERSION, '8.3.0', '>='),
+                'detail' => 'Running PHP ' . PHP_VERSION . '.',
+            ],
+            [
+                'key' => 'zip',
+                'label' => 'ZIP compatibility format',
+                'group' => 'required',
+                'available' => class_exists(ZipArchive::class),
+                'detail' => class_exists(ZipArchive::class) ? 'PHP ZipArchive is available.' : 'Enable the PHP zip extension before creating or importing packages.',
+            ],
+            [
+                'key' => 'zlib',
+                'label' => 'Zlib streaming compression',
+                'group' => 'recommended',
+                'available' => extension_loaded('zlib') && function_exists('deflate_init'),
+                'detail' => 'Preferred for future SSA streaming archives; ZIP remains available independently.',
+            ],
+            [
+                'key' => 'sodium',
+                'label' => 'Sodium authenticated encryption',
+                'group' => 'recommended',
+                'available' => $sodium,
+                'detail' => $sodium
+                    ? 'Preferred future SSS provider: secretstream XChaCha20-Poly1305 and Argon2id are available.'
+                    : 'Not required for ZIP or unencrypted SSA. Future SSS creation will not silently downgrade.',
+            ],
+            [
+                'key' => 'openssl',
+                'label' => 'OpenSSL compatibility provider',
+                'group' => 'optional',
+                'available' => $openssl,
+                'detail' => $openssl
+                    ? 'Available for a separately versioned, future AES-256-GCM compatibility profile.'
+                    : 'Optional; it is not a substitute for authenticated encryption unless an explicit SSS profile supports it.',
+            ],
+            [
+                'key' => 'restore_cli',
+                'label' => 'Detached Admin restore worker',
+                'group' => 'restore',
+                'available' => (bool) ($launcher['available'] ?? false),
+                'detail' => (string) ($launcher['message'] ?? 'Restore launcher status is unavailable.'),
+            ],
+        ];
+    }
+
+    private function nohupBinary(): string
+    {
+        foreach (['/usr/bin/nohup', '/bin/nohup'] as $candidate) {
+            if (is_file($candidate) && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+        throw new ValidationException('The detached Admin launcher requires the nohup utility. Use the displayed CLI command on this host.');
+    }
+
+    private function configuredPhpBinary(): string
+    {
+        $binary = trim((string) ($this->config['php_cli_path'] ?? 'php'));
+        if ($binary === '' || str_contains($binary, "\0") || !preg_match('#^[A-Za-z0-9._/+-]+$#', $binary)) {
+            throw new ValidationException('The configured PHP CLI executable is invalid.');
+        }
+        if (str_contains($binary, '/') && (!is_file($binary) || !is_executable($binary))) {
+            throw new ValidationException('The configured PHP CLI executable does not exist or is not executable.');
+        }
+        return $binary;
+    }
+
+    private function assertRestoreEnabled(): void
+    {
+        if (!($this->config['restore_enabled'] ?? false)) {
+            throw new ForbiddenException('Full-site restore is disabled in Site Safeguard configuration.');
+        }
+    }
+
+    private function assertRestoreConfirmation(string $confirmation): void
+    {
+        if (!hash_equals('RESTORE THIS SITE', trim($confirmation))) {
+            throw new ValidationException('The restore confirmation phrase did not match.');
+        }
+    }
+
+    private function validatedOperationId(string $id): string
+    {
+        if (!preg_match('/^restore-[0-9]{8}-[0-9]{6}-[a-f0-9]{6}$/', $id)) {
+            throw new ValidationException('Invalid restore operation identifier.');
+        }
+        return $id;
+    }
+
+    private function restoreStateIsActive(string $state): bool
+    {
+        return in_array($state, ['queued', 'preparing', 'rollback-verified', 'restoring', 'restore-failed'], true);
+    }
+
+    private function restoreLaunchLock()
+    {
+        $path = $this->packageDirectory() . '/.restore-launch.lock';
+        $lock = fopen($path, 'c+');
+        if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lock)) {
+                fclose($lock);
+            }
+            throw new ValidationException('Another restore launch request is being processed.');
+        }
+        @chmod($path, 0600);
+        return $lock;
+    }
+
+    private function fileTail(string $path, int $maxBytes): string
+    {
+        $size = (int) filesize($path);
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            return '';
+        }
+        if ($size > $maxBytes) {
+            fseek($handle, -$maxBytes, SEEK_END);
+        }
+        $tail = (string) stream_get_contents($handle);
+        fclose($handle);
+        $tail = preg_replace('/\x1B\[[0-9;]*[A-Za-z]/', '', $tail) ?? $tail;
+        return trim($tail);
     }
 
     private function restoreLock()
@@ -913,6 +1187,7 @@ class SafeguardService
 
     private function writeJournal(string $path, array $journal): void
     {
+        $journal['updated_at'] = gmdate('c');
         $temporary = $path . '.tmp-' . bin2hex(random_bytes(3));
         if (file_put_contents($temporary, $this->json($journal), LOCK_EX) === false || !rename($temporary, $path)) {
             @unlink($temporary);
@@ -1144,10 +1419,7 @@ class SafeguardService
         if (!function_exists('proc_open')) {
             throw new ValidationException('Fresh-process boot checks require proc_open().');
         }
-        $binary = trim((string) ($this->config['php_cli_path'] ?? 'php'));
-        if ($binary === '' || str_contains($binary, "\0") || !preg_match('#^[A-Za-z0-9._/+-]+$#', $binary)) {
-            throw new ValidationException('The configured PHP CLI executable is invalid.');
-        }
+        $binary = $this->configuredPhpBinary();
         $index = rtrim($root, '/') . '/index.php';
         if (!is_file($index)) {
             throw new ValidationException('The restore candidate has no index.php boot entrypoint.');

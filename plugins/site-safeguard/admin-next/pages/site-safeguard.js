@@ -13,8 +13,10 @@ class SiteSafeguardPage extends HTMLElement {
       message: '',
       error: '',
       theme: 'dark',
+      restoreOperation: '',
     };
     this.themeObserver = null;
+    this.restorePollTimer = null;
   }
 
   connectedCallback() {
@@ -25,6 +27,7 @@ class SiteSafeguardPage extends HTMLElement {
 
   disconnectedCallback() {
     this.themeObserver?.disconnect();
+    if (this.restorePollTimer) clearTimeout(this.restorePollTimer);
   }
 
   syncTheme() {
@@ -100,6 +103,11 @@ class SiteSafeguardPage extends HTMLElement {
   async load() {
     await this.run(async () => {
       this.state.status = await this.api('/site-safeguard/status');
+      const active = (this.state.status?.restore_history || []).find(operation => this.restoreStateIsActive(operation.state));
+      if (active) {
+        this.state.restoreOperation = active.id;
+        this.scheduleRestorePoll();
+      }
       const profiles = this.state.status?.profiles || [];
       if (!profiles.some(profile => profile.key === this.state.profile)) {
         this.state.profile = profiles[0]?.key || 'portable_site';
@@ -175,12 +183,82 @@ class SiteSafeguardPage extends HTMLElement {
     }, 'Deleting stage…');
   }
 
+  async restoreStage(id) {
+    const phrase = this.state.status?.restore_confirmation || 'RESTORE THIS SITE';
+    const entered = prompt(`This will replace the running Grav site from the verified stage. Site Safeguard will first create and verify a rollback package.\n\nType ${phrase} to continue:`);
+    if (entered === null) return;
+    if (entered.trim() !== phrase) {
+      this.state.error = 'Restore cancelled: the confirmation phrase did not match.';
+      this.render();
+      return;
+    }
+    if (!confirm('Final confirmation: launch the rollback-first restore now? Admin may be temporarily unavailable while files are replaced.')) return;
+
+    await this.run(async () => {
+      const result = await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}/restore`, {
+        method: 'POST',
+        body: JSON.stringify({ confirmation: entered.trim() }),
+      });
+      this.state.restoreOperation = result.operation?.id || '';
+      this.state.status = await this.api('/site-safeguard/status');
+      this.state.message = 'Restore launched. This page will follow the protected recovery journal.';
+      this.scheduleRestorePoll();
+    }, 'Launching detached restore worker…');
+  }
+
+  scheduleRestorePoll(delay = 1800) {
+    if (this.restorePollTimer) clearTimeout(this.restorePollTimer);
+    if (!this.state.restoreOperation) return;
+    this.restorePollTimer = setTimeout(() => this.pollRestore(), delay);
+  }
+
+  async pollRestore() {
+    if (!this.state.restoreOperation) return;
+    try {
+      this.state.status = await this.api('/site-safeguard/status');
+      const operation = (this.state.status?.restore_history || []).find(item => item.id === this.state.restoreOperation);
+      if (operation && !this.restoreStateIsActive(operation.state)) {
+        this.state.message = operation.state === 'completed'
+          ? 'Restore completed and the restored site passed verification.'
+          : `Restore finished with state: ${this.restoreStateLabel(operation.state)}.`;
+        this.state.restoreOperation = '';
+      }
+      this.state.error = '';
+      this.render();
+    } catch (_) {
+      // Maintenance mode or a cache rebuild can briefly interrupt the API while
+      // the detached worker replaces files. Keep following the same operation.
+    }
+    if (this.state.restoreOperation) this.scheduleRestorePoll(2200);
+  }
+
+  restoreStateIsActive(state) {
+    return ['queued', 'preparing', 'rollback-verified', 'restoring', 'restore-failed'].includes(String(state || ''));
+  }
+
+  restoreStateLabel(state) {
+    return ({
+      queued: 'Queued',
+      preparing: 'Preparing source',
+      'rollback-verified': 'Rollback verified',
+      restoring: 'Restoring files',
+      completed: 'Completed',
+      'restore-failed': 'Restore failed; rolling back',
+      'rolled-back': 'Automatically rolled back',
+      'rollback-failed': 'Rollback failed',
+      'launch-failed': 'Launch failed',
+      'worker-failed': 'Worker failed',
+    })[state] || String(state || 'Unknown');
+  }
+
   render() {
     const status = this.state.status || {};
     const profiles = status.profiles || [];
     const packages = status.packages || [];
     const stages = status.stages || [];
-    const disabled = this.state.busy ? 'disabled' : '';
+    const history = status.restore_history || [];
+    const requirements = status.environment_requirements || [];
+    const disabled = (this.state.busy || this.state.restoreOperation) ? 'disabled' : '';
 
     this.shadowRoot.innerHTML = `
       <style>${this.styles()}</style>
@@ -191,7 +269,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-state"><span>v${this.escape(status.version || '0.2.3')}</span><strong>${status.restore_enabled ? 'Restore armed' : 'Restore disabled'}</strong></div>
+          <div class="hero-state"><span>v${this.escape(status.version || '0.3.0')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div>
         </section>
 
         <section class="metrics">
@@ -206,8 +284,17 @@ class SiteSafeguardPage extends HTMLElement {
 
         <section class="safety">
           <div class="shield">✓</div>
-          <div><strong>Browser operations never replace the running site.</strong><p>${this.escape(status.safety_message || 'Packages are validated and staged outside the running site; restore is a separate CLI operation.')}</p></div>
+          <div><strong>The initiating browser request never performs the replacement.</strong><p>${this.escape(status.safety_message || 'Restore runs in a detached, rollback-first PHP CLI worker.')}</p></div>
         </section>
+
+        ${requirements.length ? `
+        <section class="panel readiness">
+          <header class="section-head"><div><span class="eyebrow">ENVIRONMENT READINESS</span><h2>Host capabilities</h2></div><span class="readiness-summary">${requirements.filter(item => item.group === 'required' && !item.available).length ? 'Action required' : 'Minimum requirements passed'}</span></header>
+          <div class="requirement-grid">
+            ${requirements.map(item => this.requirementCard(item)).join('')}
+          </div>
+          <p class="requirement-note"><strong>Required</strong> capabilities power the current ZIP workflow. <strong>Recommended</strong> capabilities prepare this host for SSA/SSS. Missing optional capabilities never cause a silent cryptographic downgrade.</p>
+        </section>` : ''}
 
         <section class="workspace">
           <div class="create panel">
@@ -243,18 +330,63 @@ class SiteSafeguardPage extends HTMLElement {
           <header class="section-head"><div><span class="eyebrow">ISOLATED STAGING</span><h2>Verified stages</h2></div><code>${this.escape(status.stage_path || '')}</code></header>
           ${stages.length ? stages.map(stage => `
             <article class="stage-row">
-              <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.record?.package || 'Unknown package')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
+              <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.record?.package || 'Unknown package')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
               <span class="badge good">${stage.verified ? 'Verified' : 'Unknown'}</span>
               <div class="stage-actions">
-                <span class="cli-ready">${status.restore_enabled ? 'CLI restore ready' : 'Restore disabled'}</span>
+                ${stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : `<span class="cli-ready">${status.restore_enabled ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled') : 'Restore disabled'}</span>`}
                 <button class="danger delete-stage" data-id="${this.escape(stage.id)}" ${disabled}>Delete stage</button>
               </div>
             </article>`).join('') : '<div class="empty compact">No isolated stages.</div>'}
+        </section>
+
+        <section class="panel history">
+          <header class="section-head"><div><span class="eyebrow">RECOVERY JOURNAL</span><h2>Restore operations</h2></div>${this.state.restoreOperation ? '<span class="working-dot">Following active restore…</span>' : ''}</header>
+          ${history.length ? history.map(operation => this.restoreCard(operation)).join('') : '<div class="empty compact">No restore operations recorded.</div>'}
         </section>
       </main>
     `;
 
     this.bind();
+  }
+
+  restoreCard(operation) {
+    const state = String(operation.state || 'unknown');
+    const active = this.restoreStateIsActive(state);
+    const good = state === 'completed';
+    const warning = state === 'rolled-back';
+    const when = operation.completed_at || operation.updated_at || operation.started_at || operation.requested_at;
+    const log = String(operation.worker_log_tail || '').trim();
+    return `
+      <article class="restore-card ${active ? 'active' : ''}">
+        <div class="restore-summary">
+          <div>
+            <strong>${this.escape(operation.id || 'Unknown operation')}</strong>
+            <small>${this.escape(operation.source_stage || 'Unknown stage')} · ${this.formatDate(when)}</small>
+          </div>
+          <span class="badge ${good ? 'good' : ((!active && !warning) ? 'bad' : '')}">${this.escape(this.restoreStateLabel(state))}</span>
+        </div>
+        <div class="restore-progress" aria-label="Restore progress"><span style="width:${this.restoreProgress(state)}%"></span></div>
+        <div class="restore-facts">
+          <span>Verified files <strong>${operation.verified_files ?? '—'}</strong></span>
+          <span>Rollback package <strong>${this.escape(operation.rollback_package || 'Pending')}</strong></span>
+          ${operation.error ? `<span class="restore-error">${this.escape(operation.error)}</span>` : ''}
+        </div>
+        ${log ? `<details><summary>Worker output</summary><pre>${this.escape(log)}</pre></details>` : ''}
+      </article>`;
+  }
+
+  restoreProgress(state) {
+    return ({ queued: 8, preparing: 22, 'rollback-verified': 45, restoring: 72, 'restore-failed': 82, completed: 100, 'rolled-back': 100, 'rollback-failed': 100, 'launch-failed': 100, 'worker-failed': 100 })[state] || 0;
+  }
+
+  requirementCard(item) {
+    const group = ({ required: 'Required', recommended: 'Recommended', optional: 'Optional', restore: 'Restore only' })[item.group] || 'Capability';
+    return `
+      <article class="requirement-card ${item.available ? 'available' : 'missing'}">
+        <div><strong>${this.escape(item.label || item.key)}</strong><span>${this.escape(group)}</span></div>
+        <span class="capability-state">${item.available ? 'Available' : 'Unavailable'}</span>
+        <p>${this.escape(item.detail || '')}</p>
+      </article>`;
   }
 
   packageCard(item, disabled) {
@@ -328,6 +460,7 @@ class SiteSafeguardPage extends HTMLElement {
     this.shadowRoot.querySelectorAll('.stage').forEach(button => button.addEventListener('click', () => this.stagePackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.download').forEach(button => button.addEventListener('click', () => this.downloadPackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.delete-package').forEach(button => button.addEventListener('click', () => this.deletePackage(button.dataset.name)));
+    this.shadowRoot.querySelectorAll('.restore-stage').forEach(button => button.addEventListener('click', () => this.restoreStage(button.dataset.id)));
     this.shadowRoot.querySelectorAll('.delete-stage').forEach(button => button.addEventListener('click', () => this.deleteStage(button.dataset.id)));
   }
 
@@ -354,6 +487,7 @@ class SiteSafeguardPage extends HTMLElement {
       .notice.error { border-color:color-mix(in srgb,var(--bad) 55%,var(--line)); color:var(--bad); background:color-mix(in srgb,var(--bad) 8%,var(--panel)); }
       .safety { display:flex; align-items:center; gap:14px; margin:16px 0; padding:15px 18px; border:1px solid color-mix(in srgb,var(--good) 45%,var(--line)); border-radius:10px; background:color-mix(in srgb,var(--good) 7%,var(--panel)); }
       .safety p { color:var(--muted); }.shield { display:grid; flex:0 0 38px; height:38px; place-items:center; border-radius:12px; background:var(--good); color:white; font-weight:900; }
+      .readiness { margin-bottom:16px; }.readiness-summary { color:var(--muted); font-size:11px; font-weight:800; }.requirement-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }.requirement-card { display:grid; grid-template-columns:1fr auto; gap:5px 14px; padding:14px 18px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }.requirement-card:nth-child(2n) { border-right:0; }.requirement-card > div { display:grid; }.requirement-card > div span { color:var(--muted); font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }.requirement-card p { grid-column:1/-1; color:var(--muted); font-size:11px; }.capability-state { align-self:start; padding:3px 7px; border-radius:999px; color:var(--good); background:color-mix(in srgb,var(--good) 12%,transparent); font-size:9px; font-weight:850; text-transform:uppercase; }.requirement-card.missing .capability-state { color:var(--bad); background:color-mix(in srgb,var(--bad) 10%,transparent); }.requirement-note { padding:12px 18px; color:var(--muted); font-size:11px; }.requirement-note strong { color:var(--text); }
       .workspace { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
       .panel { border:1px solid var(--line); border-radius:10px; background:var(--panel); }
       .create,.import { display:grid; align-content:start; gap:13px; padding:20px; }
@@ -373,8 +507,9 @@ class SiteSafeguardPage extends HTMLElement {
       .actions { display:flex; justify-content:flex-end; gap:7px; padding:0 18px 14px; }
       .inspection { margin:0 18px 16px; padding:13px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }.inspection.valid { border-color:color-mix(in srgb,var(--good) 45%,var(--line)); }.inspection.invalid { border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }.inspection-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }.inspection-grid > div { display:grid; gap:4px; }.inspection-note { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }.issues { margin:10px 0 0; padding-left:20px; }.issues.errors { color:var(--bad); }.issues.warnings { color:#d89a2b; }
       .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
+      .history { margin-top:16px; }.working-dot { color:var(--accent-2); font-size:11px; font-weight:800; }.restore-card { padding:15px 18px; border-bottom:1px solid var(--line); }.restore-card:last-child { border-bottom:0; }.restore-card.active { background:color-mix(in srgb,var(--accent) 6%,var(--panel)); }.restore-summary { display:flex; align-items:center; justify-content:space-between; gap:15px; }.restore-summary > div { display:grid; }.restore-summary small { color:var(--muted); }.restore-progress { height:5px; margin:11px 0; overflow:hidden; border-radius:999px; background:var(--panel-2); }.restore-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--good)); transition:width .35s ease; }.restore-facts { display:flex; flex-wrap:wrap; gap:9px 20px; color:var(--muted); font-size:11px; }.restore-facts strong { color:var(--text); }.restore-error { flex-basis:100%; color:var(--bad); }.restore-card details { margin-top:10px; color:var(--muted); }.restore-card summary { cursor:pointer; font-size:11px; font-weight:750; }.restore-card pre { max-height:180px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); font:10px/1.5 ui-monospace,monospace; white-space:pre-wrap; }
       @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; } }
-      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
+      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.requirement-grid { grid-template-columns:1fr; }.requirement-card { border-right:0; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
     `;
   }
 
