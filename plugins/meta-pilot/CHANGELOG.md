@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-08-18
+
+- Initialize Grav's page tree before generating Admin API reports. Grav skips
+  the public pages processor for authenticated API requests, which previously
+  left Meta Pilot's dashboard at zero with an unexpected-error message.
+
 ## 0.1.2 - 2026-08-18
 
 - Renamed the plugin-specific API permission helper so it no longer overrides

@@ -9,7 +9,7 @@ use Grav\Common\Utils;
 
 final class MetaPilotService
 {
-    private const VERSION = '0.1.2';
+    private const VERSION = '0.1.3';
 
     private Grav $grav;
     private array $config;
@@ -432,6 +432,17 @@ final class MetaPilotService
         if (!$pages || !method_exists($pages, 'all')) {
             return [];
         }
+
+        // Grav's API disables the public page tree for performance and installs
+        // only a virtual root. Page-aware API controllers opt back in through
+        // Pages::enablePages(), which flips that API-only flag and initializes
+        // the real tree. Public and CLI requests can safely call it as a no-op.
+        if (method_exists($pages, 'enablePages')) {
+            $pages->enablePages();
+        } elseif (method_exists($pages, 'init')) {
+            $pages->init();
+        }
+
         $all = $pages->all();
         return is_array($all) ? array_values($all) : iterator_to_array($all);
     }

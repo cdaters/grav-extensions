@@ -71,7 +71,7 @@ The order reduces risk and establishes reusable primitives before the editor: sa
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig
   `<picture>` helper, and reversible automatic public-HTML replacement.
-- **Meta Pilot 0.1.2:** working development release with normalized canonical,
+- **Meta Pilot 0.1.3:** working development release with normalized canonical,
   description, robots, Open Graph, X/Twitter, and JSON-LD output; XML sitemap
   and robots routes; Admin2 page diagnostics; page-editor overrides; and CLI
   report parity.
