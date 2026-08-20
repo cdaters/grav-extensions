@@ -37,7 +37,7 @@ final class ApiController extends AbstractApiController
         return ApiResponse::create((new SearchIndexService())->build(true));
     }
 
-    private function requirePermission(ServerRequestInterface $request, string $permission): void
+    protected function requirePermission(ServerRequestInterface $request, string $permission): void
     {
         $user = $this->getUser($request);
         foreach ([$permission, 'api.super', 'admin.super'] as $candidate) {

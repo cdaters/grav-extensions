@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 — 2026-08-19
+
+- Fixed an API controller method visibility conflict that could cause Admin2 authentication requests to fail with HTTP 500 while Lantern Search was enabled.
+
 ## 0.1.0 — 2026-08-19
 
 - Added incremental public-page indexing with unchanged-record reuse.

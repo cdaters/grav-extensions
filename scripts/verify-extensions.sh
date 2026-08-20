@@ -45,6 +45,10 @@ for forbidden in \
     done < <(find "$repo_root/plugins" "$repo_root/themes" -name "$forbidden" -print)
 done
 
+while IFS= read -r private_permission; do
+    [[ -z "$private_permission" ]] || report_failure "API permission guards must not privately override Grav's protected method: ${private_permission#$repo_root/}"
+done < <(grep -RIl --include='*.php' -E 'private[[:space:]]+function[[:space:]]+requirePermission[[:space:]]*\(' "$repo_root/plugins" "$repo_root/themes" || true)
+
 if command -v php >/dev/null 2>&1; then
     while IFS= read -r -d '' php_file; do
         php -l "$php_file" >/dev/null || report_failure "PHP syntax: ${php_file#$repo_root/}"
