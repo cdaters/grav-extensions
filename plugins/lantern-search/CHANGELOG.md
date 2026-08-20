@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 — 2026-08-19
+
+- Made the visitor palette follow Grav theme `data-theme` and light/dark classes immediately, with the operating-system preference retained as a fallback.
+- Replaced ambiguous text glyphs with a consistently sized SVG icon set and suppressed native browser search decorations that could produce duplicate icons.
+- Reworded and spaced the keyboard guidance so each shortcut explains its action.
+
 ## 0.1.1 — 2026-08-19
 
 - Fixed an API controller method visibility conflict that could cause Admin2 authentication requests to fail with HTTP 500 while Lantern Search was enabled.

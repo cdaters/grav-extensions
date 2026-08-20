@@ -4,7 +4,7 @@ Lantern Search is a clean-room, self-contained search plugin for Grav 2. It buil
 
 Its first engine deliberately favors shared-host portability: it needs neither SQLite FTS5 nor a hosted search service. The provider events and stored schema leave room for a future SQLite or external adapter without changing the public interface.
 
-## What 0.1.0 includes
+## What the current release includes
 
 - Incremental JSON indexing that reuses unchanged page records.
 - Public-content safety: unpublished, non-routable, modular, ACL-protected, excluded, and `noindex` pages are omitted before index storage.
@@ -20,7 +20,7 @@ Copy `lantern-search` to `user/plugins/lantern-search`, clear Grav's cache, and 
 
 ## Visitor search
 
-Visitors can select the floating **Search** control, press `/` while not typing in another field, or press `Ctrl+K` / `Command+K`. Up/Down chooses a result, Enter opens it, and Escape closes the palette.
+Visitors can select the floating **Search** control, press `/` while not typing in another field, or press `Ctrl+K` / `Command+K`. The clearly labeled keyboard guide in the palette explains that Up/Down selects a result, Enter opens it, and Escape closes search. The palette follows Grav's active `data-theme` or light/dark class and falls back to the visitor's operating-system preference.
 
 The JSON endpoint defaults to `/lantern-search/query?q=spitfire`. Optional parameters are `category`, `tag`, `language`, `template`, and `limit`; server-side bounds always apply.
 

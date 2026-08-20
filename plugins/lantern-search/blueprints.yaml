@@ -1,7 +1,7 @@
 name: Lantern Search
 slug: lantern-search
 type: plugin
-version: 0.1.1
+version: 0.1.2
 description: Incremental, relevance-ranked, ACL-safe public search with an accessible command palette for Grav 2.
 icon: lightbulb
 author:

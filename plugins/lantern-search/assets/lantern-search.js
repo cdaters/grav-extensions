@@ -2,16 +2,18 @@
   const config = window.LanternSearchConfig || {};
   if (!config.endpoint || document.querySelector('[data-lantern-search]')) return;
   const escape = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+  const searchIcon = '<svg class="lantern-icon lantern-icon-search" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>';
+  const closeIcon = '<svg class="lantern-icon lantern-icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg>';
   const root = document.createElement('div');
   root.dataset.lanternSearch = '';
   root.innerHTML = `
-    ${config.floating ? `<button class="lantern-trigger" type="button" aria-label="${escape(config.label || 'Search')}"><span aria-hidden="true">⌕</span><strong>${escape(config.label || 'Search')}</strong><kbd>${escape(config.shortcut || '/')}</kbd></button>` : ''}
+    ${config.floating ? `<button class="lantern-trigger" type="button" aria-label="${escape(config.label || 'Search')}">${searchIcon}<strong>${escape(config.label || 'Search')}</strong><kbd>${escape(config.shortcut || '/')}</kbd></button>` : ''}
     <div class="lantern-backdrop" hidden>
       <section class="lantern-dialog" role="dialog" aria-modal="true" aria-label="Site search">
-        <div class="lantern-input-row"><span aria-hidden="true">⌕</span><input type="search" autocomplete="off" spellcheck="false" placeholder="${escape(config.placeholder || 'Search this site…')}" aria-label="Search this site"><button type="button" class="lantern-close" aria-label="Close search">×</button></div>
+        <div class="lantern-input-row">${searchIcon}<input type="text" inputmode="search" role="searchbox" autocomplete="off" spellcheck="false" placeholder="${escape(config.placeholder || 'Search this site…')}" aria-label="Search this site"><button type="button" class="lantern-close" aria-label="Close search">${closeIcon}</button></div>
         <div class="lantern-status" role="status">Type to search public pages.</div>
         <ol class="lantern-results"></ol>
-        <footer><span><kbd>↑</kbd><kbd>↓</kbd> choose</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></footer>
+        <footer aria-label="Search keyboard shortcuts"><strong>Keyboard shortcuts</strong><span><kbd>Up</kbd><kbd>Down</kbd> Move through results</span><span><kbd>Enter</kbd> Open the selected result</span><span><kbd>Esc</kbd> Close search</span></footer>
       </section>
     </div>`;
   document.body.appendChild(root);
