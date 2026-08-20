@@ -1,0 +1,11 @@
+{
+  "name": "cdaters/grav-plugin-site-workshop",
+  "description": "A modular Grav 2 workshop for icons, structured frontmatter, cache warming, and automation feeds",
+  "type": "grav-plugin",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\SiteWorkshop\\": "classes/"
+    }
+  }
+}

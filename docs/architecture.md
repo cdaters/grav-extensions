@@ -12,7 +12,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 | **Page Studio** | A richer content-authoring experience | Admin 2 editor integration, Markdown/HTML modes, media browser, extensible blocks |
 | **Edge Console** | Narrow Cloudflare operations from Grav | Scoped API tokens, zone diagnostics, cache purge, development-mode controls, audit log |
 | **Lantern Search** | Fast, relevance-ranked site search | Incremental indexing, field weights, filters, excerpts, keyboard-accessible UI |
-| **Site Workshop** | Focused site-maintenance utilities | Broken-link checks, redirects, maintenance mode, health report, safe batch tools |
+| **Site Workshop** | Composable site-building utilities | Safe SVG icons, reusable frontmatter, bounded cache warming, automation feeds |
 | **Revision Ledger** | Durable content history | Automatic snapshots, diffs, author/reason metadata, retention, explicit rollback |
 | **Site Safeguard** | Backup, restore, and deployment packages | Clean profiles, manifest/checksums, staged validation, maintenance-mode promotion, rollback |
 
@@ -35,7 +35,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 - **Image Foundry → Prism Gallery:** Prism requests ordinary Grav media URLs and never depends on Image Foundry. Themes and media plugins may opt into Image Foundry's public Twig/service interface; the ordinary original URL remains the fallback.
 - **Meta Pilot → all public plugins:** Meta Pilot reads the final page and registered structured-data fragments. It does not rewrite another plugin's markup.
 - **Lantern Search → content providers:** Plugins can expose indexable records through an event. ACL-protected and unpublished records are excluded at indexing and query time.
-- **Revision Ledger → writers:** Page Studio and Site Workshop can ask Revision Ledger to checkpoint a page before a write. If Revision Ledger is absent, they still work.
+- **Revision Ledger → writers:** Page Studio and the future Frontmatter Annex module in Site Workshop can ask Revision Ledger to checkpoint a page before a write. If Revision Ledger is absent, they still work.
 - **Site Safeguard → the whole site:** Backup providers can add manifest entries, but cannot execute restore logic. Restore remains solely owned by Site Safeguard.
 - **Edge Console → caches:** Edge purge runs only after a successful local operation and must be optional. A Cloudflare failure must not corrupt local state.
 - **Asset delivery → media plugins:** Each plugin can provide its own delivery service, but it follows the same opaque-ID, short-lived-token, same-origin, range-request, and `noindex` response contract. A future shared service can replace local implementations without changing page content.
@@ -79,9 +79,14 @@ The order reduces risk and establishes reusable primitives before the editor: sa
   integrity-checked page snapshots; automatic and named checkpoints; Admin2
   comparisons; retention controls; guarded rollback; CLI parity; and a public
   checkpoint integration seam for other plugins.
+- **Lantern Search 0.1.0:** working development release with incremental,
+  ACL-aware indexing, relevance controls, a public command palette, and Admin2
+  index management.
+- **Site Workshop 0.1.0:** working development release with Icon Bench: a
+  sanitized SVG registry, original starter pack, custom-pack discovery,
+  shortcode/Twig rendering, Admin2 browsing, and CLI inspection.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Later roadmap plugins:** Lantern Search, Site Workshop, Edge Console, and
-  Page Studio remain named and bounded, not yet represented as finished
-  packages.
+- **Later roadmap plugins:** Gatehouse, Edge Console, and Page Studio remain
+  named and bounded, not yet represented as finished packages.

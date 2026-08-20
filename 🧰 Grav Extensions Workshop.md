@@ -27,6 +27,8 @@
   comparison, and deliberate rollback.
 - [[plugins/lantern-search/README|Lantern Search]] — ACL-safe incremental search,
   facets, and an accessible public command palette.
+- [[plugins/site-workshop/README|Site Workshop]] — composable site-building
+  utilities; Icon Bench is available now.
 - [[plugins/grav-commander/README|Grav Commander]] — file, archive, and guarded
   backup tools
 - [[themes/spitfire/README|Spitfire]] — update-safe Quark 2 child theme
@@ -47,6 +49,6 @@
 - [[docs/planned/revision-ledger|Revision Ledger scope record]]
 - [[docs/planned/lantern-search|Lantern Search]]
 - [[docs/planned/gatehouse|Gatehouse]]
-- [[docs/planned/site-workshop|Site Workshop]]
+- [[docs/planned/site-workshop|Site Workshop scope record]]
 - [[docs/planned/edge-console|Edge Console]]
 - [[docs/planned/page-studio|Page Studio]]

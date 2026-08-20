@@ -26,6 +26,7 @@ GitHub and filesystem readers can begin with the
 | Meta Pilot | Plugin | 0.2.0 development release | `user/plugins/meta-pilot` |
 | Revision Ledger | Plugin | 0.2.1 development release | `user/plugins/revision-ledger` |
 | Lantern Search | Plugin | 0.1.0 development release | `user/plugins/lantern-search` |
+| Site Workshop | Plugin | 0.1.0 development release; Icon Bench available | `user/plugins/site-workshop` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
@@ -43,6 +44,7 @@ travels with release ZIPs:
 - [Meta Pilot manual](plugins/meta-pilot/README.md)
 - [Revision Ledger manual](plugins/revision-ledger/README.md)
 - [Lantern Search manual](plugins/lantern-search/README.md)
+- [Site Workshop manual](plugins/site-workshop/README.md)
 - [Grav Commander manual](plugins/grav-commander/README.md)
 - [Spitfire child-theme manual](themes/spitfire/README.md)
 
@@ -99,6 +101,7 @@ Create an installable ZIP containing the required top-level extension folder:
 ./scripts/package-extension.sh plugin meta-pilot
 ./scripts/package-extension.sh plugin revision-ledger
 ./scripts/package-extension.sh plugin lantern-search
+./scripts/package-extension.sh plugin site-workshop
 ./scripts/package-extension.sh plugin grav-commander
 ./scripts/package-extension.sh theme spitfire
 ```

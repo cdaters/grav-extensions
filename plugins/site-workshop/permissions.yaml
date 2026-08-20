@@ -1,0 +1,9 @@
+actions:
+  site-workshop:
+    label: Site Workshop
+    type: access
+    actions:
+      read:
+        label: View Site Workshop and browse icons
+      manage:
+        label: Refresh Site Workshop catalogs

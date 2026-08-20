@@ -15,6 +15,7 @@ belong in that extension's own README.
 - [Meta Pilot](../plugins/meta-pilot/README.md)
 - [Revision Ledger](../plugins/revision-ledger/README.md)
 - [Lantern Search](../plugins/lantern-search/README.md)
+- [Site Workshop](../plugins/site-workshop/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 

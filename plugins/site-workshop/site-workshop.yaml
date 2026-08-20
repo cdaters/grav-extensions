@@ -1,0 +1,17 @@
+enabled: true
+admin:
+  show_sidebar: true
+modules:
+  icon_bench:
+    enabled: true
+    default_pack: workshop
+    custom_paths:
+      - theme://images/icons
+      - user://data/site-workshop/icons
+    maximum_svg_bytes: 262144
+  frontmatter_annex:
+    enabled: false
+  cache_hearth:
+    enabled: false
+  feed_relay:
+    enabled: false

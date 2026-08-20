@@ -1,0 +1,79 @@
+name: Site Workshop
+slug: site-workshop
+type: plugin
+version: 0.1.0
+description: A modular Grav 2 workshop for safe icon output, external frontmatter, cache warming, and automation feeds.
+icon: toolbox
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/site-workshop
+keywords: grav, plugin, admin2, svg, icons, shortcode, twig, cache, feed, frontmatter
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav: ['2.0']
+  api: ['1.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options: { 1: Yes, 0: No }
+      validate: { type: bool }
+
+    icon_section:
+      type: section
+      title: Icon Bench
+      text: Search, preview, and safely render SVG icons through Twig or Shortcode Core.
+      underline: true
+
+    modules.icon_bench.enabled:
+      type: toggle
+      label: Enable Icon Bench
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    modules.icon_bench.default_pack:
+      type: text
+      label: Default icon pack
+      default: workshop
+      help: Used when an icon reference does not include a pack name.
+
+    modules.icon_bench.custom_paths:
+      type: array
+      label: Custom icon-pack locations
+      value_only: true
+      default:
+        - theme://images/icons
+        - user://data/site-workshop/icons
+      help: Each immediate subdirectory becomes a pack. SVG files are sanitized before output.
+
+    modules.icon_bench.maximum_svg_bytes:
+      type: number
+      label: Maximum SVG file size in bytes
+      default: 262144
+      validate: { type: int, min: 1024, max: 1048576 }
+
+    roadmap_section:
+      type: section
+      title: Planned modules
+      text: Frontmatter Annex, Cache Hearth, and Feed Relay are intentionally unavailable until their individual safety and compatibility work is complete.
+      underline: true
