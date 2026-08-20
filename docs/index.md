@@ -14,6 +14,7 @@ belong in that extension's own README.
 - [Image Foundry](../plugins/image-foundry/README.md)
 - [Meta Pilot](../plugins/meta-pilot/README.md)
 - [Revision Ledger](../plugins/revision-ledger/README.md)
+- [Lantern Search](../plugins/lantern-search/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 

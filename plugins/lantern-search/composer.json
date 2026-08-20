@@ -1,0 +1,11 @@
+{
+  "name": "cdaters/grav-plugin-lantern-search",
+  "description": "Incremental, relevance-ranked, ACL-safe search for Grav 2",
+  "type": "grav-plugin",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\LanternSearch\\": "classes/"
+    }
+  }
+}

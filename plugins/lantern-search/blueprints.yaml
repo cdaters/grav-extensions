@@ -1,0 +1,203 @@
+name: Lantern Search
+slug: lantern-search
+type: plugin
+version: 0.1.0
+description: Incremental, relevance-ranked, ACL-safe public search with an accessible command palette for Grav 2.
+icon: lightbulb
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/lantern-search
+keywords: grav, plugin, admin2, search, relevance, index, accessibility, acl
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+  - { name: api, version: '>=1.0.0' }
+
+compatibility:
+  grav: ['2.0']
+  api: ['1.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Admin2 sidebar item
+      highlight: 1
+      default: 1
+      options: { 1: Yes, 0: No }
+      validate: { type: bool }
+
+    endpoint_section:
+      type: section
+      title: Public query endpoint
+      underline: true
+
+    route:
+      type: text
+      label: Search endpoint route
+      default: /lantern-search/query
+      help: Lantern Search returns bounded JSON results from this route.
+
+    index_section:
+      type: section
+      title: Public index policy
+      underline: true
+
+    index.storage:
+      type: text
+      label: Index storage
+      default: user://data/lantern-search
+      help: The index contains public page text only. Grav stream paths are supported.
+
+    index.auto_refresh:
+      type: toggle
+      label: Refresh a stale index on the next query
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    index.exclude_access_protected:
+      type: toggle
+      label: Exclude pages with access rules
+      help: Strongly recommended. Protected text is never written to the public index when enabled.
+      highlight: 1
+      default: 1
+      options: { 1: Exclude, 0: Include }
+
+    index.exclude_noindex:
+      type: toggle
+      label: Exclude pages marked noindex
+      highlight: 1
+      default: 1
+      options: { 1: Exclude, 0: Include }
+
+    index.exclude_routes:
+      type: array
+      label: Excluded route prefixes
+      value_only: true
+      placeholder_value: /private
+
+    ranking_section:
+      type: section
+      title: Relevance ranking
+      underline: true
+
+    search.operator:
+      type: select
+      label: Multi-word query behavior
+      default: all
+      options:
+        all: Require every word
+        any: Match any word
+
+    search.fuzzy:
+      type: toggle
+      label: Tolerate small typing mistakes
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    search.typo_tolerance:
+      type: number
+      label: Maximum edit distance
+      default: 1
+      validate: { type: int, min: 0, max: 2 }
+
+    search.weights.title:
+      type: number
+      label: Title weight
+      default: 8
+      validate: { type: number, min: 0, max: 50 }
+
+    search.weights.taxonomy:
+      type: number
+      label: Category and tag weight
+      default: 5
+      validate: { type: number, min: 0, max: 50 }
+
+    search.weights.description:
+      type: number
+      label: Description weight
+      default: 4
+      validate: { type: number, min: 0, max: 50 }
+
+    search.weights.content:
+      type: number
+      label: Page-content weight
+      default: 1
+      validate: { type: number, min: 0, max: 50 }
+
+    limits_section:
+      type: section
+      title: Query limits
+      underline: true
+
+    search.minimum_length:
+      type: number
+      label: Minimum query length
+      default: 2
+      validate: { type: int, min: 1, max: 20 }
+
+    search.maximum_length:
+      type: number
+      label: Maximum query length
+      default: 120
+      validate: { type: int, min: 20, max: 500 }
+
+    search.default_limit:
+      type: number
+      label: Default results per query
+      default: 12
+      validate: { type: int, min: 1, max: 50 }
+
+    search.maximum_limit:
+      type: number
+      label: Maximum results per query
+      default: 30
+      validate: { type: int, min: 1, max: 100 }
+
+    ui_section:
+      type: section
+      title: Public search palette
+      underline: true
+
+    ui.enabled:
+      type: toggle
+      label: Load the public search interface
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    ui.show_floating_button:
+      type: toggle
+      label: Show a floating Search button
+      highlight: 1
+      default: 1
+      options: { 1: Show, 0: Hide }
+
+    ui.button_label:
+      type: text
+      label: Search button label
+      default: Search
+
+    ui.placeholder:
+      type: text
+      label: Search field placeholder
+      default: Search this site…
+
+    ui.shortcut:
+      type: text
+      label: Keyboard shortcut
+      help: A single printable key, such as /, opens search when focus is not in a form field.
+      default: /

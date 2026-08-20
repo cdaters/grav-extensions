@@ -11,10 +11,11 @@ can never be mistaken for an installable Grav package.
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.2.1 development release; automatic public-HTML replacement available |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | 0.2.0 development release; Admin diagnostics, local exports, and public metadata output available |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | 0.2.1 development release; page-editor history drawer, automatic checkpoints, Admin2 comparisons, guarded restore, and CLI parity available |
-| 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | Specification queued |
-| 7 | Site Workshop | Focused maintenance, link checking, redirects, and health tools | Specification queued |
-| 8 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 9 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
+| 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | 0.1.0 development release; incremental index, Admin2 control center, public command palette, facets, fuzzy matching, and CLI parity available |
+| 7 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
+| 8 | Site Workshop | Focused maintenance, link checking, redirects, and health tools | Specification queued |
+| 9 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
+| 10 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
 

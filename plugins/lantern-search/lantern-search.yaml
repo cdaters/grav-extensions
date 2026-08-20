@@ -1,0 +1,32 @@
+enabled: true
+route: /lantern-search/query
+admin:
+  show_sidebar: true
+index:
+  storage: user://data/lantern-search
+  auto_refresh: true
+  exclude_access_protected: true
+  exclude_noindex: true
+  exclude_routes:
+    - /admin
+    - /login
+    - /error
+search:
+  minimum_length: 2
+  maximum_length: 120
+  default_limit: 12
+  maximum_limit: 30
+  operator: all
+  fuzzy: true
+  typo_tolerance: 1
+  weights:
+    title: 8
+    taxonomy: 5
+    description: 4
+    content: 1
+ui:
+  enabled: true
+  button_label: Search
+  placeholder: Search this site…
+  shortcut: /
+  show_floating_button: true

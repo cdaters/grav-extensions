@@ -8,7 +8,8 @@ installation path. Implemented briefs remain as scope records.
 - [Image Foundry scope record](image-foundry.md) — implemented
 - [Meta Pilot scope record](meta-pilot.md) — implemented
 - [Revision Ledger scope record](revision-ledger.md) — implemented
-- [Lantern Search](lantern-search.md)
+- [Lantern Search scope record](lantern-search.md) — implemented
+- [Gatehouse](gatehouse.md)
 - [Site Workshop](site-workshop.md)
 - [Edge Console](edge-console.md)
 - [Page Studio](page-studio.md)

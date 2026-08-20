@@ -1,0 +1,9 @@
+actions:
+  lantern-search:
+    label: Lantern Search
+    type: access
+    actions:
+      read:
+        label: View search status and test the index
+      rebuild:
+        label: Rebuild the public search index

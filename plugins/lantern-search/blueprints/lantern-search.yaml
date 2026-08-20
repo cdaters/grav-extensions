@@ -1,0 +1,23 @@
+form:
+  fields:
+    tabs:
+      fields:
+        options:
+          fields:
+            lantern_search_section:
+              type: section
+              title: Lantern Search
+              underline: true
+            header.lantern_search.enabled:
+              type: toggle
+              label: Include in public search
+              help: Protected, unpublished, non-routable, and noindex pages remain excluded regardless of this setting.
+              default: 1
+              highlight: 1
+              options: { 1: Include, 0: Exclude }
+            header.lantern_search.boost:
+              type: number
+              label: Result boost
+              help: Multiplies this page's relevance score. Use 1 for normal ranking.
+              default: 1
+              validate: { type: number, min: 0.1, max: 20 }
