@@ -10,7 +10,9 @@ modules:
       - user://data/site-workshop/icons
     maximum_svg_bytes: 262144
   frontmatter_annex:
-    enabled: false
+    enabled: true
+    storage_path: user://data/site-workshop/frontmatter
+    default_precedence: page
   cache_hearth:
     enabled: false
   feed_relay:

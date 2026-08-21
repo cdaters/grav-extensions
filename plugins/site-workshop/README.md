@@ -1,15 +1,16 @@
 # Site Workshop
 
-Site Workshop is a clean-room, modular operations plugin for Grav 2. Its first
-release provides **Icon Bench**: a safe SVG library with an Admin2 browser,
-original bundled icons, custom icon packs, Twig output, and optional Shortcode
-Core integration.
+Site Workshop is a clean-room, modular operations plugin for Grav 2. It ships
+small tools that remain useful independently:
+
+- **Icon Bench** — a safe SVG library with an Admin2 browser, original bundled
+  icons, custom icon packs, Twig output, and optional Shortcode Core output.
+- **Frontmatter Annex** — reusable YAML frontmatter blocks stored outside page
+  folders, with explicit and predictable precedence.
 
 The remaining modules are deliberately visible as roadmap items rather than
 half-working controls:
 
-- **Frontmatter Annex** — external and reusable frontmatter with explicit
-  precedence.
 - **Cache Hearth** — bounded cache warming with budgets, exclusions, and
   progress.
 - **Feed Relay** — purpose-built RSS and JSON feeds for automation services.
@@ -20,6 +21,38 @@ Copy `site-workshop` to `user/plugins/site-workshop`, clear Grav's cache, and
 grant trusted Admin roles `site-workshop.read` and `site-workshop.manage`.
 Admin2 and the API plugin provide the visual icon browser. Shortcode Core is
 optional and is needed only for `[workshop-icon]` markup.
+
+## Using Frontmatter Annex
+
+Open **Site Workshop → Frontmatter Annex**, create a kebab-case name such as
+`shared-seo`, and enter a YAML mapping:
+
+```yaml
+metadata:
+  robots: index, follow
+meta_pilot:
+  schema_type: WebPage
+cache_enable: true
+```
+
+Attach it to a page by adding this to the page's frontmatter:
+
+```yaml
+site_workshop:
+  annexes:
+    - shared-seo
+  precedence: page
+```
+
+`page` means values written directly in the page win. `annex` means the annex
+wins. When several annexes are listed, later annexes override earlier ones;
+the chosen page/annex precedence is then applied. Maps merge recursively, while
+lists and scalar values replace the earlier value. A missing or invalid annex
+is skipped and logged rather than breaking the public page.
+
+The `site_workshop` control block is reserved and cannot be supplied by an
+annex. Annexes affect the runtime page header only; they do not rewrite page
+Markdown or hide the page's actual frontmatter from its editor.
 
 ## Using Icon Bench
 
@@ -87,6 +120,9 @@ bin/plugin site-workshop icons --pack=workshop --limit=20
 - PHP DOM extension (required for safe SVG parsing)
 - Admin2 and API plugins for the visual control center
 - Shortcode Core only when shortcode output is wanted
+
+Frontmatter Annex uses Grav's bundled Symfony YAML parser and needs no optional
+plugin beyond Site Workshop itself.
 
 ## Clean-room design
 

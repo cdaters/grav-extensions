@@ -1,7 +1,7 @@
 name: Site Workshop
 slug: site-workshop
 type: plugin
-version: 0.1.0
+version: 0.2.0
 description: A modular Grav 2 workshop for safe icon output, external frontmatter, cache warming, and automation feeds.
 icon: toolbox
 author:
@@ -72,8 +72,36 @@ form:
       default: 262144
       validate: { type: int, min: 1024, max: 1048576 }
 
+    annex_section:
+      type: section
+      title: Frontmatter Annex
+      text: Maintain reusable YAML frontmatter blocks outside page folders, then attach them to pages with explicit precedence.
+      underline: true
+
+    modules.frontmatter_annex.enabled:
+      type: toggle
+      label: Enable Frontmatter Annex
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+
+    modules.frontmatter_annex.storage_path:
+      type: text
+      label: Annex storage location
+      default: user://data/site-workshop/frontmatter
+      help: Keep this under user://data unless you have a specific deployment requirement.
+
+    modules.frontmatter_annex.default_precedence:
+      type: select
+      label: Default precedence
+      default: page
+      options:
+        page: Page wins
+        annex: Annex wins
+      help: Individual pages can override this choice in their site_workshop frontmatter block.
+
     roadmap_section:
       type: section
       title: Planned modules
-      text: Frontmatter Annex, Cache Hearth, and Feed Relay are intentionally unavailable until their individual safety and compatibility work is complete.
+      text: Cache Hearth and Feed Relay are intentionally unavailable until their individual safety and compatibility work is complete.
       underline: true

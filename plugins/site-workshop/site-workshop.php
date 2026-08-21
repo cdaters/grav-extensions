@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
+use Grav\Plugin\SiteWorkshop\Service\FrontmatterAnnexService;
 use Grav\Plugin\SiteWorkshop\Service\IconBenchService;
 use RocketTheme\Toolbox\Event\Event;
 use Twig\TwigFunction;
@@ -19,6 +20,7 @@ final class SiteWorkshopPlugin extends Plugin
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
             'onTwigExtensions' => ['onTwigExtensions', 0],
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
+            'onPageInitialized' => ['onPageInitialized', 1000],
             'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
@@ -42,8 +44,23 @@ final class SiteWorkshopPlugin extends Plugin
     public function onPluginsInitialized(): void
     {
         require_once __DIR__ . '/classes/Service/IconBenchService.php';
+        require_once __DIR__ . '/classes/Service/FrontmatterAnnexService.php';
         if (!isset($this->grav['siteWorkshop.icons'])) {
             $this->grav['siteWorkshop.icons'] = static fn (): IconBenchService => new IconBenchService();
+        }
+        if (!isset($this->grav['siteWorkshop.annexes'])) {
+            $this->grav['siteWorkshop.annexes'] = static fn (): FrontmatterAnnexService => new FrontmatterAnnexService();
+        }
+    }
+
+    public function onPageInitialized(): void
+    {
+        if ($this->isAdmin() || !$this->config->get('plugins.site-workshop.modules.frontmatter_annex.enabled', true)) {
+            return;
+        }
+        $page = $this->grav['page'] ?? null;
+        if (is_object($page)) {
+            $this->annexes()->applyToPage($page);
         }
     }
 
@@ -76,6 +93,9 @@ final class SiteWorkshopPlugin extends Plugin
             $group->get('/status', [$controller, 'status']);
             $group->get('/icons', [$controller, 'icons']);
             $group->post('/icons/refresh', [$controller, 'refreshIcons']);
+            $group->get('/annexes', [$controller, 'annexes']);
+            $group->post('/annexes', [$controller, 'saveAnnex']);
+            $group->delete('/annexes/{slug}', [$controller, 'deleteAnnex']);
         });
     }
 
@@ -117,6 +137,12 @@ final class SiteWorkshopPlugin extends Plugin
     {
         $service = $this->grav['siteWorkshop.icons'] ?? null;
         return $service instanceof IconBenchService ? $service : new IconBenchService();
+    }
+
+    private function annexes(): FrontmatterAnnexService
+    {
+        $service = $this->grav['siteWorkshop.annexes'] ?? null;
+        return $service instanceof FrontmatterAnnexService ? $service : new FrontmatterAnnexService();
     }
 
     private function userCan(object $user, string $permission): bool

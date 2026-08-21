@@ -26,7 +26,7 @@ GitHub and filesystem readers can begin with the
 | Meta Pilot | Plugin | 0.2.0 development release | `user/plugins/meta-pilot` |
 | Revision Ledger | Plugin | 0.2.1 development release | `user/plugins/revision-ledger` |
 | Lantern Search | Plugin | 0.1.0 development release | `user/plugins/lantern-search` |
-| Site Workshop | Plugin | 0.1.0 development release; Icon Bench available | `user/plugins/site-workshop` |
+| Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 

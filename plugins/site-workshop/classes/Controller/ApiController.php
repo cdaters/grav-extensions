@@ -8,6 +8,7 @@ use Grav\Plugin\Api\Controllers\AbstractApiController;
 use Grav\Plugin\Api\Exceptions\ForbiddenException;
 use Grav\Plugin\Api\Response\ApiResponse;
 use Grav\Plugin\SiteWorkshop\Service\IconBenchService;
+use Grav\Plugin\SiteWorkshop\Service\FrontmatterAnnexService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -35,6 +36,26 @@ final class ApiController extends AbstractApiController
     {
         $this->requirePermission($request, 'site-workshop.manage');
         return ApiResponse::create((new IconBenchService())->refresh());
+    }
+
+    public function annexes(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requirePermission($request, 'site-workshop.read');
+        $service = new FrontmatterAnnexService();
+        return ApiResponse::create(['items' => $service->list(), 'status' => $service->status()]);
+    }
+
+    public function saveAnnex(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requirePermission($request, 'site-workshop.manage');
+        return ApiResponse::create((new FrontmatterAnnexService())->save($this->getRequestBody($request)));
+    }
+
+    public function deleteAnnex(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requirePermission($request, 'site-workshop.manage');
+        $slug = rawurldecode((string) $this->getRouteParam($request, 'slug'));
+        return ApiResponse::create((new FrontmatterAnnexService())->delete($slug));
     }
 
     protected function requirePermission(ServerRequestInterface $request, string $permission): void

@@ -28,7 +28,7 @@ final class IconBenchService
         $count = array_sum(array_map(static fn (array $pack): int => count($pack['icons']), $packs));
 
         return [
-            'version' => '0.1.0',
+            'version' => '0.2.0',
             'settings_url' => '/plugins/site-workshop',
             'modules' => [
                 'icon_bench' => [
@@ -38,7 +38,7 @@ final class IconBenchService
                 ],
                 'frontmatter_annex' => [
                     'label' => 'Frontmatter Annex',
-                    'status' => 'planned',
+                    'status' => (new FrontmatterAnnexService($this->grav))->enabled() ? 'available' : 'disabled',
                     'description' => 'External, reusable frontmatter sources with explicit precedence.',
                 ],
                 'cache_hearth' => [
@@ -71,6 +71,7 @@ final class IconBenchService
                 'twig_available' => true,
                 'dom_sanitizer_available' => class_exists(DOMDocument::class),
             ],
+            'frontmatter_annex' => (new FrontmatterAnnexService($this->grav))->status(),
         ];
     }
 
