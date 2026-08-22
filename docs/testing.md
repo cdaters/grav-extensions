@@ -77,6 +77,21 @@ blueprint still defaults them to disabled while highlighting the selected
 Enabled state, and that editable path lists normalize duplicate and malformed
 entries. It is read-only and does not print configuration contents.
 
+### Site Safeguard staging cleanup contract
+
+Run against the disposable DDEV fixture:
+
+```bash
+./scripts/test-site-safeguard-stage-cleanup.sh \
+  ~/Documents/Spitfire/custom-plugins/file-vault-ddev
+```
+
+The runner creates a uniquely named disposable directory inside the configured
+staging root, verifies that it is classified as unrecognized and never
+restorable, removes it through Site Safeguard's containment-checked service,
+and proves that a parent-traversal identifier is denied. A cleanup trap removes
+the disposable directory if an assertion fails.
+
 ### Suite coverage inventory
 
 | Extension | Highest-value black-box boundaries | State |

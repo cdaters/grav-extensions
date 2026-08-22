@@ -276,7 +276,10 @@ complete on the destination.
   verified rollback stage automatically.
 - Isolated stages retain private `0700` directory permissions. During restore,
   non-preserved Grav directories are normalized to `0755` and verified so
-  split-process web servers can deliver theme, plugin, media, and Admin assets.
+  split-process web servers can traverse theme, plugin, media, and Admin paths.
+  Intentionally web-deliverable files (CSS, JavaScript, fonts, images, and page
+  media) also receive any missing read bits; private configuration/data modes
+  remain unchanged.
 
 ## Known limitations of 0.3
 

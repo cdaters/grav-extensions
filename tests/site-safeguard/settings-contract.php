@@ -53,6 +53,14 @@ if ($statusVersion === '' || $statusVersion !== $blueprintVersion) {
     ));
 }
 
+$service = new Grav\Plugin\SiteSafeguard\Service\SafeguardService();
+$modePolicy = new ReflectionMethod($service, 'restoredFileMode');
+$publicMode = (int) $modePolicy->invoke($service, 'user/themes/spitfire/css/custom.css', 0600);
+$privateMode = (int) $modePolicy->invoke($service, 'user/config/plugins/example.yaml', 0600);
+if ($publicMode !== 0644 || $privateMode !== 0600) {
+    throw new RuntimeException('Restore file-mode policy did not separate public assets from private configuration.');
+}
+
 $normalised = Grav\Plugin\SiteSafeguardPlugin::normaliseConfiguredPaths([
     'cache',
     '/cache/',
@@ -75,4 +83,6 @@ echo json_encode([
     'toggle_default' => 'disabled',
     'toggle_highlight' => 'enabled',
     'path_lists' => 'normalized',
+    'public_asset_mode' => decoct($publicMode),
+    'private_config_mode' => decoct($privateMode),
 ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), PHP_EOL;

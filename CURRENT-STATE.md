@@ -20,8 +20,9 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Site Safeguard 0.3.5 closes the protected-download failures found while moving
-the SpitfireBBS.com site between production and DDEV:
+Site Safeguard 0.3.7 closes the protected-download and shared-host restore
+failures found while moving the SpitfireBBS.com site between production and
+DDEV:
 
 - tickets are short-lived, replay-bounded, HMAC-signed, and stateless;
 - browser HEAD probes and range retries cannot consume a ticket;
@@ -37,7 +38,14 @@ the SpitfireBBS.com site between production and DDEV:
 - HTTP HEAD, single-range, full download, expiry/tamper denial, and safe error
   references are implemented; and
 - the regression is preserved by the external DDEV runner
-  `scripts/test-site-safeguard-download.sh`.
+  `scripts/test-site-safeguard-download.sh`;
+- restrictive hosts that reject raw `DELETE` requests use the API's supported
+  method-override fallback, and action failures are brought into view;
+- unrelated directories beneath the staging root are explicitly classified as
+  unrecognized and non-restorable; and
+- restored public assets receive missing read bits while private config/data
+  retain their source modes, preventing LiteSpeed/nginx 403 responses when a
+  DDEV/macOS source mount records CSS/JavaScript/fonts/images as `0600`.
 
 Decision 0003 establishes external black-box contract coverage as a suite-wide
 rule. `docs/testing.md` contains the risk-ordered coverage inventory.
@@ -52,14 +60,17 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   `spitfire-file-vault.ddev.site`, returns HTTP 200 for HEAD and 206 for a
   128-byte range, and streams bytes from the protected ZIP.
 - The latest portable package was independently inspected and staged:
-  `safeguard-localhost-portable_site-20260822-210027-1328e6.zip`, SHA-256
-  `5d278172cfd21c59c4b44e02e88ccc3407ab1b1a340085d0a0dcc1e4f4caf850`;
+  `safeguard-localhost-portable_site-20260822-212126-ca6c9c.zip`, SHA-256
+  `a2a9ce8ffb8ef094a2441128a9fdacf54ecedc7b28a040c3ee55bb5e9c847c5d`;
   see the latest `docs/SESSION-LOG.md` entry for the stage identifier.
 - Live Admin2 restore settings were confirmed durable after a fresh page load.
   Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
   **Enabled** state; 0.3.5 highlighted **Disabled**, which made a successful
   enablement look visually inactive. The orange field marker is Admin2's saved
   override indicator, not an error.
+- The DDEV settings contract proves public restored asset mode `0644` versus
+  private configuration mode `0600`; the disposable staging cleanup contract
+  proves unrecognized classification, contained removal, and traversal denial.
 
 ## Active milestone
 

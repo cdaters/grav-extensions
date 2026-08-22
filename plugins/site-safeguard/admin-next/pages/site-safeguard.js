@@ -110,10 +110,20 @@ class SiteSafeguardPage extends HTMLElement {
 
   async api(path, options = {}) {
     const isForm = options.body instanceof FormData;
-    const response = await fetch(this.apiUrl(path), {
+    const method = String(options.method || 'GET').toUpperCase();
+    const url = this.apiUrl(path);
+    const request = {
       ...options,
       headers: { ...this.getAuthHeaders(!isForm), ...(options.headers || {}) },
-    });
+    };
+    let response = await fetch(url, request);
+    if (response.status === 405 && ['DELETE', 'PATCH', 'PUT'].includes(method)) {
+      response = await fetch(url, {
+        ...request,
+        method: 'POST',
+        headers: { ...request.headers, 'X-HTTP-Method-Override': method },
+      });
+    }
     const raw = await response.text();
     let payload = {};
     try { payload = raw ? JSON.parse(raw) : {}; } catch (_) { payload = { message: raw }; }
@@ -137,6 +147,13 @@ class SiteSafeguardPage extends HTMLElement {
     } finally {
       this.state.busy = false;
       this.render();
+      if (this.state.error) {
+        requestAnimationFrame(() => {
+          const notice = this.shadowRoot.querySelector('.notice.error');
+          notice?.focus({ preventScroll: true });
+          notice?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
     }
   }
 
@@ -224,13 +241,16 @@ class SiteSafeguardPage extends HTMLElement {
     }, 'Deleting package…');
   }
 
-  async deleteStage(id) {
-    if (!confirm(`Delete isolated stage ${id}? The running site will not be changed.`)) return;
+  async deleteStage(id, recognized = true) {
+    const prompt = recognized
+      ? `Delete isolated stage ${id}? The running site will not be changed.`
+      : `Remove unrecognized directory ${id} from Site Safeguard's isolated staging area? The running site and external plugin data will not be changed.`;
+    if (!confirm(prompt)) return;
     await this.run(async () => {
       await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}`, { method: 'DELETE' });
       this.state.status = await this.api('/site-safeguard/status');
-      this.state.message = 'Stage deleted.';
-    }, 'Deleting stage…');
+      this.state.message = recognized ? 'Stage deleted.' : 'Unrecognized staging directory removed.';
+    }, recognized ? 'Deleting stage…' : 'Removing unrecognized staging directory…');
   }
 
   async restoreStage(id) {
@@ -319,7 +339,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.6')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.7')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
@@ -329,7 +349,7 @@ class SiteSafeguardPage extends HTMLElement {
           <div class="path"><span>Package directory</span><code>${this.escape(status.package_path || '—')}</code></div>
         </section>
 
-        ${this.state.error ? `<div class="notice error">${this.escape(this.state.error)}</div>` : ''}
+        ${this.state.error ? `<div class="notice error" role="alert" tabindex="-1">${this.escape(this.state.error)}</div>` : ''}
         ${this.state.message ? `<div class="notice">${this.escape(this.state.message)}</div>` : ''}
 
         <section class="safety">
@@ -379,12 +399,12 @@ class SiteSafeguardPage extends HTMLElement {
         <section class="panel stages">
           <header class="section-head"><div><span class="eyebrow">ISOLATED STAGING</span><h2>Verified stages</h2></div><code>${this.escape(status.stage_path || '')}</code></header>
           ${stages.length ? stages.map(stage => `
-            <article class="stage-row">
-              <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.record?.package || 'Unknown package')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
-              <span class="badge good">${stage.verified ? 'Verified' : 'Unknown'}</span>
+            <article class="stage-row ${stage.recognized ? '' : 'unrecognized'}">
+              <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.recognized ? (stage.record?.package || 'Recognized stage') : 'Unrecognized directory — not a recovery stage')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
+              <span class="badge ${stage.verified ? 'good' : 'warn'}">${stage.verified ? 'Verified' : (stage.recognized ? 'Unverified' : 'Unrecognized')}</span>
               <div class="stage-actions">
-                ${stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : `<span class="cli-ready">${status.restore_enabled ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled') : 'Restore disabled'}</span>`}
-                <button class="danger delete-stage" data-id="${this.escape(stage.id)}" ${disabled}>Delete stage</button>
+                ${stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : `<span class="cli-ready">${stage.recognized ? (status.restore_enabled ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled') : 'Restore disabled') : 'Not restorable'}</span>`}
+                <button class="danger delete-stage" data-id="${this.escape(stage.id)}" data-recognized="${stage.recognized ? 'true' : 'false'}" ${disabled}>${stage.recognized ? 'Delete stage' : 'Remove directory'}</button>
               </div>
             </article>`).join('') : '<div class="empty compact">No isolated stages.</div>'}
         </section>
@@ -512,7 +532,7 @@ class SiteSafeguardPage extends HTMLElement {
     this.shadowRoot.querySelectorAll('.download').forEach(button => button.addEventListener('click', () => this.downloadPackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.delete-package').forEach(button => button.addEventListener('click', () => this.deletePackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.restore-stage').forEach(button => button.addEventListener('click', () => this.restoreStage(button.dataset.id)));
-    this.shadowRoot.querySelectorAll('.delete-stage').forEach(button => button.addEventListener('click', () => this.deleteStage(button.dataset.id)));
+    this.shadowRoot.querySelectorAll('.delete-stage').forEach(button => button.addEventListener('click', () => this.deleteStage(button.dataset.id, button.dataset.recognized === 'true')));
   }
 
   styles() {
@@ -520,7 +540,7 @@ class SiteSafeguardPage extends HTMLElement {
       :host { display:block; }
       * { box-sizing:border-box; }
       button,input,select,textarea { font:inherit; }
-      .shell { --bg:#10151d; --panel:#151c26; --panel-2:#1b2430; --text:#edf3fa; --muted:#93a2b5; --line:#2a3544; --accent:#9a4cff; --accent-2:#bd85ff; --good:#38ca8b; --bad:#ff6262; min-height:calc(100vh - 120px); padding:24px; border-radius:12px; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,sans-serif; }
+      .shell { --bg:#10151d; --panel:#151c26; --panel-2:#1b2430; --text:#edf3fa; --muted:#93a2b5; --line:#2a3544; --accent:#9a4cff; --accent-2:#bd85ff; --good:#38ca8b; --warn:#e7aa46; --bad:#ff6262; min-height:calc(100vh - 120px); padding:24px; border-radius:12px; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,sans-serif; }
       .shell.light { --bg:#f6f7fa; --panel:#fff; --panel-2:#f0f2f6; --text:#20252d; --muted:#687383; --line:#dce0e7; --accent:#7428d8; --accent-2:#7428d8; --good:#087d52; --bad:#b62d2d; }
       .hero { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:28px; border:1px solid var(--line); border-radius:12px 12px 0 0; background:linear-gradient(120deg,var(--panel),color-mix(in srgb,var(--accent) 12%,var(--panel))); }
       h1,h2,p { margin:0; } h1 { margin:.2rem 0 .35rem; font-size:30px; } h2 { margin:.15rem 0 0; font-size:19px; }
@@ -553,11 +573,11 @@ class SiteSafeguardPage extends HTMLElement {
       .section-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid var(--line); }.section-head code { color:var(--muted); font-size:11px; }
       .package-card { border-bottom:1px solid var(--line); }.package-card:last-child { border-bottom:0; }.package-main { display:flex; align-items:center; gap:13px; padding:14px 18px 8px; }.file-icon { display:grid; flex:0 0 48px; height:48px; place-items:center; border:1px solid var(--line); border-radius:9px; color:var(--accent-2); font:800 11px ui-monospace,monospace; background:var(--panel-2); }
       .package-copy { display:grid; flex:1; min-width:0; gap:2px; }.package-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.package-copy small { color:var(--muted); }.package-copy code { overflow:hidden; color:var(--muted); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
-      .badge { padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; }.badge.good { border-color:color-mix(in srgb,var(--good) 40%,var(--line)); color:var(--good); background:color-mix(in srgb,var(--good) 10%,transparent); }.badge.bad { color:var(--bad); }
+      .badge { padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; }.badge.good { border-color:color-mix(in srgb,var(--good) 40%,var(--line)); color:var(--good); background:color-mix(in srgb,var(--good) 10%,transparent); }.badge.warn { border-color:color-mix(in srgb,var(--warn) 45%,var(--line)); color:var(--warn); background:color-mix(in srgb,var(--warn) 9%,transparent); }.badge.bad { color:var(--bad); }
       .package-note { margin:0 18px 13px 83px; padding:10px 12px; border-left:2px solid var(--accent); background:var(--panel-2); }.package-note span,.inspection-note span { color:var(--accent-2); font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }.package-note p,.inspection-note p { margin:3px 0 0; color:var(--text); font-size:12px; line-height:1.5; white-space:pre-wrap; }.package-note.empty-note p { color:var(--muted); font-style:italic; }
       .actions { display:flex; justify-content:flex-end; gap:7px; padding:0 18px 14px; }
       .inspection { margin:0 18px 16px; padding:13px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }.inspection.valid { border-color:color-mix(in srgb,var(--good) 45%,var(--line)); }.inspection.invalid { border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }.inspection-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }.inspection-grid > div { display:grid; gap:4px; }.inspection-note { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }.issues { margin:10px 0 0; padding-left:20px; }.issues.errors { color:var(--bad); }.issues.warnings { color:#d89a2b; }
-      .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
+      .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row.unrecognized { background:color-mix(in srgb,var(--warn) 5%,transparent); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
       .history { margin-top:16px; }.working-dot { color:var(--accent-2); font-size:11px; font-weight:800; }.restore-card { padding:15px 18px; border-bottom:1px solid var(--line); }.restore-card:last-child { border-bottom:0; }.restore-card.active { background:color-mix(in srgb,var(--accent) 6%,var(--panel)); }.restore-summary { display:flex; align-items:center; justify-content:space-between; gap:15px; }.restore-summary > div { display:grid; }.restore-summary small { color:var(--muted); }.restore-progress { height:5px; margin:11px 0; overflow:hidden; border-radius:999px; background:var(--panel-2); }.restore-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--good)); transition:width .35s ease; }.restore-facts { display:flex; flex-wrap:wrap; gap:9px 20px; color:var(--muted); font-size:11px; }.restore-facts strong { color:var(--text); }.restore-error { flex-basis:100%; color:var(--bad); }.restore-card details { margin-top:10px; color:var(--muted); }.restore-card summary { cursor:pointer; font-size:11px; font-weight:750; }.restore-card pre { max-height:180px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); font:10px/1.5 ui-monospace,monospace; white-space:pre-wrap; }
       @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; } }
       @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.requirement-grid { grid-template-columns:1fr; }.requirement-card { border-right:0; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }

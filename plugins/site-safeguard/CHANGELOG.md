@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.7 — 2026-08-22
+
+- Retry blocked `DELETE`, `PATCH`, and `PUT` requests as the API's supported
+  `POST` plus `X-HTTP-Method-Override` form, restoring package/stage cleanup on
+  shared hosts that reject mutation verbs before PHP receives them.
+- Classify directories without a valid stage record as **Unrecognized** rather
+  than presenting them as an unknown recovery package. They are explicitly not
+  restorable and use a distinct **Remove directory** action and warning style.
+- Bring action failures into view as accessible alerts instead of leaving the
+  explanation above a deeply scrolled Package Library or Isolated Staging row.
+- Add a disposable staging-root regression that proves unrecognized-directory
+  classification, recursive cleanup, and parent-traversal denial.
+- Normalize intentionally web-deliverable restored files so CSS, JavaScript,
+  fonts, images, and page media remain readable by a split LiteSpeed/nginx
+  static worker even when a DDEV/macOS source mount records them as `0600`.
+  Private configuration and data files retain their original modes.
+
 ## 0.3.6 — 2026-08-22
 
 - Highlight the selected **Enabled** state for both restore switches in Admin2.

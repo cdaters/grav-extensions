@@ -104,3 +104,29 @@ suite inventory incremental and risk ordered.
   healthy/empty sections may start collapsed, while warning, failure, active,
   or unrecognized states open automatically. Environment Readiness receives an
   accessible green/amber/red aggregate header treatment with text and icon.
+- Diagnosed the first live restore's unstyled public page from outside the
+  server: the HTML returned HTTP 200, while restored Quark2, Spitfire, Image
+  Foundry, Prism Gallery, and Lantern Search CSS/JavaScript returned LiteSpeed
+  HTTP 403. The recovery manifest proved the failed public assets were recorded
+  as mode `0600`; a working Form stylesheet was `0644`.
+- Released Site Safeguard 0.3.7 to add missing read bits only to intentionally
+  web-deliverable restored files. Private configuration/data retains its source
+  mode. Directory normalization from the earlier split-process repair remains
+  enforced independently.
+- Added API mutation-method fallback for shared hosts, visible accessible action
+  errors, explicit unrecognized/non-restorable staging-directory presentation,
+  and a distinct Remove directory action. This repairs the live symptom where
+  clicking Delete stage appeared to do nothing.
+- Verified PHP and JavaScript syntax, repository hygiene, settings/version/mode
+  policy, disposable unrecognized-directory cleanup and traversal denial, and
+  the existing external download contract. Packaged `site-safeguard-0.3.7.zip`
+  with SHA-256
+  `70eafa30dcdc95fbdc0708702a91b9e2771c7ff6f0d3c6e982488e4cc09cf621`.
+- Preserved the superseded 0.3.6 recovery ZIP in protected archive storage,
+  then created, independently inspected, and staged
+  `safeguard-localhost-portable_site-20260822-212126-ca6c9c.zip`, SHA-256
+  `a2a9ce8ffb8ef094a2441128a9fdacf54ecedc7b28a040c3ee55bb5e9c847c5d`.
+  It contains 6,800 checked files and 6,798 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260822-212126-ca6c9c-581e2d`; the
+  running DDEV site was not modified.

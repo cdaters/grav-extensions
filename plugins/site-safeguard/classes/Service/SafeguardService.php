@@ -18,7 +18,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.3.6';
+    private const VERSION = '0.3.7';
 
     private Grav $grav;
     private array $config;
@@ -529,6 +529,7 @@ class SafeguardService
 
             $stats = [
                 'files_copied' => 0,
+                'public_files_normalized' => 0,
                 'directories_created' => 0,
                 'directories_normalized' => 0,
                 'entries_removed' => 0,
@@ -571,6 +572,7 @@ class SafeguardService
                     $rollbackChecksums = (array) ($rollbackInspection['checksums']['files'] ?? []);
                     $rollbackStats = [
                         'files_copied' => 0,
+                        'public_files_normalized' => 0,
                         'directories_created' => 0,
                         'directories_normalized' => 0,
                         'entries_removed' => 0,
@@ -1074,12 +1076,17 @@ class SafeguardService
                 $record = $decoded;
             }
         }
+        $recognized = (int) ($record['schema'] ?? 0) === 1
+            && (string) ($record['id'] ?? '') === basename($path)
+            && (string) ($record['package'] ?? '') !== ''
+            && preg_match('/^[a-f0-9]{64}$/', (string) ($record['package_sha256'] ?? '')) === 1;
         return [
             'id' => basename($path),
             'path' => $path,
             'modified' => (int) filemtime($path),
             'record' => $record,
-            'verified' => (bool) ($record['verified'] ?? false),
+            'recognized' => $recognized,
+            'verified' => $recognized && (bool) ($record['verified'] ?? false),
             'promotion_ready' => false,
         ];
     }
@@ -1431,7 +1438,20 @@ class SafeguardService
                 @unlink($temporary);
                 throw new ValidationException('Unable to restore file: ' . $childRelative);
             }
-            @chmod($temporary, fileperms($sourcePath) & 0777);
+            $sourceMode = fileperms($sourcePath);
+            if ($sourceMode === false) {
+                @unlink($temporary);
+                throw new ValidationException('Unable to read staged file permissions: ' . $childRelative);
+            }
+            $sourceMode &= 0777;
+            $restoredMode = $this->restoredFileMode($childRelative, $sourceMode);
+            if (!@chmod($temporary, $restoredMode)) {
+                @unlink($temporary);
+                throw new ValidationException('Unable to set restored file permissions: ' . $childRelative);
+            }
+            if ($restoredMode !== $sourceMode) {
+                $stats['public_files_normalized'] = (int) ($stats['public_files_normalized'] ?? 0) + 1;
+            }
             if (!rename($temporary, $destinationPath)) {
                 @unlink($temporary);
                 throw new ValidationException('Unable to publish restored file: ' . $childRelative);
@@ -1477,6 +1497,39 @@ class SafeguardService
         if ($verified === false || ($verified & 0555) !== 0555) {
             throw new ValidationException('Restored directory is not web-traversable: ' . $relative);
         }
+    }
+
+    private function restoredFileMode(string $relative, int $sourceMode): int
+    {
+        $mode = $sourceMode & 0777;
+        if (!$this->isPublicAssetPath($relative)) {
+            return $mode;
+        }
+
+        // DDEV/macOS bind mounts can report tracked web assets as 0600 inside
+        // the container. Keeping that source mode on a split-process host lets
+        // PHP boot successfully while LiteSpeed/nginx returns 403 for CSS, JS,
+        // fonts, images, and page media. Add read bits only for file types that
+        // are intentionally web-deliverable; private config/data keeps its
+        // original mode.
+        return $mode | 0444;
+    }
+
+    private function isPublicAssetPath(string $relative): bool
+    {
+        $name = strtolower(basename($relative));
+        if (in_array($name, ['.htaccess', 'web.config', 'robots.txt'], true)) {
+            return true;
+        }
+
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        return in_array($extension, [
+            'css', 'js', 'mjs', 'cjs', 'map', 'json', 'webmanifest', 'xml',
+            'jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'ico',
+            'woff', 'woff2', 'ttf', 'otf', 'eot',
+            'mp3', 'ogg', 'wav', 'm4a', 'mp4', 'webm',
+            'txt', 'pdf', 'zip', 'doc', 'docx', 'rtf', 'html', 'htm',
+        ], true);
     }
 
     private function pruneAbsentDirectory(string $path, string $relative, array $preserve, array &$stats): void
