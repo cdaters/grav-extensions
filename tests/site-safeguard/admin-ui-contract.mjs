@@ -52,13 +52,14 @@ globalThis.customElements = {
   define: (tag, constructor) => registry.set(tag, constructor),
 };
 globalThis.MutationObserver = class { observe() {} disconnect() {} };
+globalThis.requestAnimationFrame = callback => callback();
 
 vm.runInThisContext(source, { filename: sourcePath });
 const Page = registry.get('site-safeguard-contract-page');
 assert.ok(Page, 'Admin2 custom element should register');
 
 const healthyStatus = {
-  version: '0.3.8',
+  version: '0.3.9',
   profiles: [],
   packages: [],
   stages: [],
@@ -97,7 +98,14 @@ assert.match(page.shadowRoot.innerHTML, /required check needs attention/);
 
 const requests = [];
 page.api = async (requestPath, options = {}) => {
-  requests.push({ path: requestPath, method: options.method || 'GET' });
+  requests.push({
+    path: requestPath,
+    method: options.method || 'GET',
+    override: options.headers?.['X-HTTP-Method-Override'] || '',
+  });
+  if (requestPath.endsWith('/delete')) {
+    throw new Error(`No route matches 'POST ${requestPath}'.`);
+  }
   return requestPath === '/site-safeguard/status' ? structuredClone(healthyStatus) : {};
 };
 
@@ -110,6 +118,12 @@ await page.deletePackage(packageName);
 assert.deepEqual(requests[0], {
   path: `/site-safeguard/packages/${packageName}/delete`,
   method: 'POST',
+  override: '',
+});
+assert.deepEqual(requests[1], {
+  path: `/site-safeguard/packages/${packageName}`,
+  method: 'POST',
+  override: 'DELETE',
 });
 assert.equal(page.state.message, 'Package deleted.');
 
@@ -124,6 +138,12 @@ await page.deleteStage(stageId, false);
 assert.deepEqual(requests[0], {
   path: `/site-safeguard/stages/${stageId}/delete`,
   method: 'POST',
+  override: '',
+});
+assert.deepEqual(requests[1], {
+  path: `/site-safeguard/stages/${stageId}`,
+  method: 'POST',
+  override: 'DELETE',
 });
 assert.equal(page.state.message, 'Unrecognized staging directory removed.');
 
@@ -132,9 +152,20 @@ page.cancelDestructiveAction();
 assert.equal(page.state.armedAction, '');
 assert.equal(page.state.message, 'Deletion cancelled. Nothing was removed.');
 
+let deniedRequests = 0;
+page.api = async () => {
+  deniedRequests += 1;
+  throw new Error('Missing required permission: site-safeguard.stage');
+};
+await assert.rejects(
+  () => page.deleteResource('/new-action', '/compatible-action'),
+  /Missing required permission/
+);
+assert.equal(deniedRequests, 1, 'authorization and unrelated failures must never be retried');
+
 console.log(JSON.stringify({
   version: healthyStatus.version,
-  delete_transport: 'POST action routes',
+  delete_transport: 'POST action routes with stale-route fallback',
   delete_confirmation: 'two click',
   disclosures: ['readiness', 'packages', 'stages', 'history'],
   readiness_states: ['ready', 'warning', 'error'],

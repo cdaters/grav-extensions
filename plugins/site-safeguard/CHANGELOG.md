@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.9 — 2026-08-22
+
+- Recover automatically when Admin2 has loaded the updated dashboard but a
+  long-running production PHP worker still exposes Site Safeguard's preceding
+  API route table. A missing explicit POST action route is retried through the
+  established authenticated package/stage route with
+  `X-HTTP-Method-Override: DELETE`.
+- Extend the Admin UI contract with the production-observed stale-route
+  response and prove both package and stage deletion reach the compatible
+  fallback without weakening two-click confirmation or authorization.
+
 ## 0.3.8 — 2026-08-22
 
 - Replace native browser confirmation dialogs for package and stage deletion

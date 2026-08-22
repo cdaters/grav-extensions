@@ -103,10 +103,13 @@ Run on the repository host:
 The isolated browser-component harness proves that package and stage removal
 require two deliberate clicks, that the first click cannot call an API, and
 that the confirmed action uses the shared-host-safe authenticated POST route.
-It also verifies semantic disclosure defaults, remembered choices, and the
-green/amber/red Environment Readiness aggregate states. The disposable DDEV
-staging cleanup contract remains the filesystem-boundary proof that actual
-contained removal succeeds and parent traversal is refused.
+It injects the production-observed stale-route response and proves that both
+package and stage removal retry through the established authenticated route
+with method override. It also verifies semantic disclosure defaults,
+remembered choices, and the green/amber/red Environment Readiness aggregate
+states. The disposable DDEV staging cleanup contract remains the filesystem-
+boundary proof that actual contained removal succeeds and parent traversal is
+refused.
 
 ### Suite coverage inventory
 

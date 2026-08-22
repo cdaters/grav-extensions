@@ -20,7 +20,7 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Site Safeguard 0.3.8 closes the protected-download, shared-host restore, and
+Site Safeguard 0.3.9 closes the protected-download, shared-host restore, and
 Admin destructive-action failures found while moving the SpitfireBBS.com site
 between production and DDEV:
 
@@ -42,6 +42,10 @@ between production and DDEV:
 - package and stage deletion use visible in-page two-click confirmation and
   explicit authenticated POST action routes, so a blocked native dialog or a
   host that rejects raw `DELETE` cannot make the control silently inert;
+- a production worker still holding the preceding route table is detected from
+  its exact missing-route response and retried through the already-established
+  authenticated package/stage route with method override, avoiding a PHP-FPM
+  restart during a rolling plugin upload;
 - unrelated directories beneath the staging root are explicitly classified as
   unrecognized and non-restorable; and
 - restored public assets receive missing read bits while private config/data
@@ -66,8 +70,8 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   `spitfire-file-vault.ddev.site`, returns HTTP 200 for HEAD and 206 for a
   128-byte range, and streams bytes from the protected ZIP.
 - The latest portable package was independently inspected and staged:
-  `safeguard-localhost-portable_site-20260822-214109-3fc01e.zip`, SHA-256
-  `821e9947f49e048114e539b3636d8f70551c922f077d38478a5d91121f4e7761`;
+  `safeguard-localhost-portable_site-20260822-215150-d6aded.zip`, SHA-256
+  `062214c0208cb34ec667759d48d147648fa05da5a3e79b8bdf2dde2b94a96f77`;
   see the latest `docs/SESSION-LOG.md` entry for the stage identifier.
 - Live Admin2 restore settings were confirmed durable after a fresh page load.
   Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
@@ -78,11 +82,12 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   private configuration mode `0600`; the disposable staging cleanup contract
   proves unrecognized classification, contained removal, and traversal denial.
 - The Admin UI behavior contract proves that the first destructive click makes
-  no request, the confirmation click uses a POST action route, cancellation is
-  non-mutating, disclosure preferences persist, and readiness renders ready,
-  warning, and error states. An unauthenticated external POST to the DDEV route
-  returns 401 rather than 404/405, proving that Grav registered the route and
-  applied its authentication boundary.
+  no request, the confirmation click uses a POST action route, a stale route
+  table falls back through authenticated method override, cancellation is non-
+  mutating, disclosure preferences persist, and readiness renders ready,
+  warning, and error states. Unauthenticated external POSTs to both DDEV route
+  forms return 401 rather than 404/405, proving that Grav registered the routes
+  and applied its authentication boundary.
 
 ## Active milestone
 

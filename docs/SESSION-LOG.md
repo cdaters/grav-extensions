@@ -168,3 +168,33 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-214109-3fc01e-499bb8`; the
   running DDEV site was not modified.
+- Live 0.3.8 confirmation reached the server but returned `No route matches
+  'POST /site-safeguard/stages/image-foundry-data/delete'` even after Grav's
+  cache was cleared. The updated service version and dashboard were loaded,
+  while the route response proved a long-running production PHP worker still
+  held the preceding route registration. Grav cache invalidation cannot reset
+  PHP-FPM's in-memory opcode state.
+- Released Site Safeguard 0.3.9 with a narrowly matched rolling-update fallback:
+  only an explicit missing-route response from the new POST action is retried
+  through the pre-existing authenticated package/stage route using
+  `X-HTTP-Method-Override: DELETE`. Authorization and contained service deletion
+  remain unchanged; unrelated API errors are not retried.
+- Extended the Admin UI contract with the exact production error and proved
+  package and stage fallback requests use POST plus method override only after
+  the explicit action route is absent. External DDEV probes returned 401 for
+  both route forms, proving both arrive at the authentication boundary rather
+  than failing route matching. Settings/version/mode, disposable cleanup,
+  traversal denial, protected download, PHP/JavaScript syntax, repository
+  hygiene, and public/Admin HTTP checks all remained green after ZIP install.
+- Packaged `site-safeguard-0.3.9.zip`, SHA-256
+  `7046c645312bebacd8d03a635efe9aa45a194a449cf83829ee507914b4d7ae66`.
+  Preserved the superseded DDEV package
+  `safeguard-localhost-portable_site-20260819-012539-d93801.zip` in the existing
+  protected archive directory rather than deleting it at the retention limit.
+- Created, independently inspected, and staged the final 0.3.9 recovery package
+  `safeguard-localhost-portable_site-20260822-215150-d6aded.zip`, SHA-256
+  `062214c0208cb34ec667759d48d147648fa05da5a3e79b8bdf2dde2b94a96f77`.
+  It contains 6,800 checked files and 6,798 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260822-215150-d6aded-f8fdac`; the running
+  DDEV site was not modified.

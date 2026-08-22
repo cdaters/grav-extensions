@@ -238,7 +238,11 @@ class SiteSafeguardPage extends HTMLElement {
     if (!this.armDestructiveAction(key, `Click Confirm delete to permanently remove ${name}. Existing stages and live-site files will not be changed.`)) return;
     this.state.armedAction = '';
     await this.run(async () => {
-      await this.api(`/site-safeguard/packages/${encodeURIComponent(name)}/delete`, { method: 'POST', body: '{}' });
+      const encodedName = encodeURIComponent(name);
+      await this.deleteResource(
+        `/site-safeguard/packages/${encodedName}/delete`,
+        `/site-safeguard/packages/${encodedName}`
+      );
       delete this.state.inspections[name];
       this.state.status = await this.api('/site-safeguard/status');
       this.state.message = 'Package deleted.';
@@ -253,10 +257,27 @@ class SiteSafeguardPage extends HTMLElement {
     if (!this.armDestructiveAction(key, prompt)) return;
     this.state.armedAction = '';
     await this.run(async () => {
-      await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}/delete`, { method: 'POST', body: '{}' });
+      const encodedId = encodeURIComponent(id);
+      await this.deleteResource(
+        `/site-safeguard/stages/${encodedId}/delete`,
+        `/site-safeguard/stages/${encodedId}`
+      );
       this.state.status = await this.api('/site-safeguard/status');
       this.state.message = recognized ? 'Stage deleted.' : 'Unrecognized staging directory removed.';
     }, recognized ? 'Deleting stage…' : 'Removing unrecognized staging directory…');
+  }
+
+  async deleteResource(actionPath, compatiblePath) {
+    try {
+      return await this.api(actionPath, { method: 'POST', body: '{}' });
+    } catch (error) {
+      if (!/no route matches|route[^.]*not found/i.test(error?.message || '')) throw error;
+      return this.api(compatiblePath, {
+        method: 'POST',
+        headers: { 'X-HTTP-Method-Override': 'DELETE' },
+        body: '{}',
+      });
+    }
   }
 
   armDestructiveAction(key, message) {
@@ -403,7 +424,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.8')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.9')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">

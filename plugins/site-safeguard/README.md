@@ -172,7 +172,11 @@ changes only the selected action to **Confirm delete** (or **Confirm removal**
 for an unrecognized staging directory) and displays the exact scope. Select
 **Cancel** to disarm it. The dashboard uses explicit authenticated POST action
 routes so shared hosts and edge security layers do not need to pass raw HTTP
-`DELETE` requests through to Grav.
+`DELETE` requests through to Grav. During a rolling update, if a long-running
+PHP worker still has the preceding route table, Admin2 automatically retries
+through the established package/stage route using the API's authenticated
+method-override form. The operator does not need to restart PHP just to finish
+the cleanup.
 
 ## CLI
 
