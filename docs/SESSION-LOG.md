@@ -74,3 +74,14 @@ suite inventory incremental and risk ordered.
   archive, DDEV home/Admin responses, and all three documentation routes.
   Packaged `site-safeguard-0.3.6.zip` with SHA-256
   `082ed544bb651dff690d527acb4b80c759aec27b3d0aeced753aef041d97762b`.
+- Preserved the superseded localhost package
+  `safeguard-localhost-portable_site-20260818-231120-89a778.zip` by moving it
+  from the 12-item active library into `/var/www/site-safeguard-packages-archive`;
+  nothing was deleted.
+- Created and independently inspected the final DDEV recovery package
+  `safeguard-localhost-portable_site-20260822-205443-ec1c47.zip`, SHA-256
+  `344fe550df3d2fe14908f141700fcd56e8c5f15a366160a58cb21d02fdb52ba7`.
+  It contains 6,800 checked files and 6,798 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260822-205443-ec1c47-763400`; creating
+  the stage did not modify the running site.

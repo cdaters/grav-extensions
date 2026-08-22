@@ -51,8 +51,10 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 - The externally requested DDEV route remains on
   `spitfire-file-vault.ddev.site`, returns HTTP 200 for HEAD and 206 for a
   128-byte range, and streams bytes from the protected ZIP.
-- The latest portable package was independently inspected and staged; see the
-  latest `docs/SESSION-LOG.md` entry for its exact name and hash.
+- The latest portable package was independently inspected and staged:
+  `safeguard-localhost-portable_site-20260822-205443-ec1c47.zip`, SHA-256
+  `344fe550df3d2fe14908f141700fcd56e8c5f15a366160a58cb21d02fdb52ba7`;
+  see the latest `docs/SESSION-LOG.md` entry for the stage identifier.
 - Live Admin2 restore settings were confirmed durable after a fresh page load.
   Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
   **Enabled** state; 0.3.5 highlighted **Disabled**, which made a successful
