@@ -99,3 +99,8 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-210027-1328e6-8c6e14`; the
   running site was not modified.
+- Recorded the next-version Admin2 disclosure design: Environment Readiness,
+  Package Library, Isolated Staging, and Recovery Journal become collapsible;
+  healthy/empty sections may start collapsed, while warning, failure, active,
+  or unrecognized states open automatically. Environment Readiness receives an
+  accessible green/amber/red aggregate header treatment with text and icon.

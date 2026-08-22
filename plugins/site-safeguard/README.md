@@ -303,6 +303,11 @@ complete on the destination.
 The next recovery milestones are deliberately separated from the tested 0.3
 restore core:
 
+- **Admin2 dashboard disclosures:** make Environment Readiness, Package
+  Library, Isolated Staging, and Recovery Journal collapsible with
+  attention-aware defaults. Give the readiness header an accessible
+  green/amber/red aggregate status treatment and automatically expose sections
+  containing warnings, failures, active work, or unrecognized staging content.
 - **Recovery Assistant:** a small, independently authenticated, single-use
   Kickstart-style application that can inspect a package, test hosting
   prerequisites, restore without depending on the installed site, surface the
