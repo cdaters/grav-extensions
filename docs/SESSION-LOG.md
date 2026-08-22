@@ -70,18 +70,32 @@ suite inventory incremental and risk ordered.
   live-style DDEV settings enabled, disabled-by-default blueprint behavior,
   enabled-state highlighting, and path-list normalization. The existing
   same-origin/range/exact-byte download contract also remained green.
+- Corrected a release-metadata mismatch found from the DDEV dashboard: the
+  blueprint was 0.3.6 but the service status constant and JavaScript fallback
+  still reported 0.3.5. The settings contract now refuses any future mismatch
+  between the blueprint and dashboard-reported versions.
 - Verified all Site Safeguard PHP in DDEV, the repository preflight, the ZIP
   archive, DDEV home/Admin responses, and all three documentation routes.
-  Packaged `site-safeguard-0.3.6.zip` with SHA-256
-  `082ed544bb651dff690d527acb4b80c759aec27b3d0aeced753aef041d97762b`.
+  The initial 0.3.6 archive was superseded after the dashboard-version mismatch
+  was found. The corrected `site-safeguard-0.3.6.zip` has SHA-256
+  `31d51b0aeecd077ae2963d4649946044cb1f091630199c7e2700152c7a644d52`.
 - Preserved the superseded localhost package
   `safeguard-localhost-portable_site-20260818-231120-89a778.zip` by moving it
   from the 12-item active library into `/var/www/site-safeguard-packages-archive`;
   nothing was deleted.
-- Created and independently inspected the final DDEV recovery package
+- Created and independently inspected the initial 0.3.6 DDEV recovery package
   `safeguard-localhost-portable_site-20260822-205443-ec1c47.zip`, SHA-256
   `344fe550df3d2fe14908f141700fcd56e8c5f15a366160a58cb21d02fdb52ba7`.
   It contains 6,800 checked files and 6,798 checksum records. Its verified,
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-205443-ec1c47-763400`; creating
-  the stage did not modify the running site.
+  the stage did not modify the running site. The package was later moved to the
+  protected archive when the display-version mismatch made it obsolete.
+- Rebuilt, independently inspected, and staged the corrected final recovery
+  package `safeguard-localhost-portable_site-20260822-210027-1328e6.zip`,
+  SHA-256
+  `5d278172cfd21c59c4b44e02e88ccc3407ab1b1a340085d0a0dcc1e4f4caf850`.
+  It contains 6,800 checked files and 6,798 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260822-210027-1328e6-8c6e14`; the
+  running site was not modified.

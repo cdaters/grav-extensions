@@ -11,6 +11,8 @@
 - Normalize and deduplicate the editable preserve/exclude path lists whenever
   Site Safeguard settings are saved. Runtime path validation and mandatory
   preservation remain independently enforced.
+- Keep the dashboard service version and JavaScript fallback synchronized with
+  the package blueprint, and verify that contract in a fresh Grav process.
 
 ## 0.3.5 — 2026-08-22
 

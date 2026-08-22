@@ -17,6 +17,7 @@ $grav->setup();
 
 $pluginRoot = $root . '/user/plugins/site-safeguard';
 $blueprint = Symfony\Component\Yaml\Yaml::parseFile($pluginRoot . '/blueprints.yaml');
+$blueprintVersion = (string) ($blueprint['version'] ?? '');
 $expectedEnabled = filter_var(
     getenv('SITE_SAFEGUARD_EXPECT_RESTORE') ?: 'false',
     FILTER_VALIDATE_BOOLEAN
@@ -42,6 +43,16 @@ foreach (['restore_enabled', 'admin_restore_enabled'] as $field) {
 }
 
 require_once $pluginRoot . '/site-safeguard.php';
+require_once $pluginRoot . '/classes/Service/SafeguardService.php';
+$statusVersion = (string) ((new Grav\Plugin\SiteSafeguard\Service\SafeguardService())->status()['version'] ?? '');
+if ($statusVersion === '' || $statusVersion !== $blueprintVersion) {
+    throw new RuntimeException(sprintf(
+        'Dashboard status version %s does not match blueprint version %s.',
+        $statusVersion !== '' ? $statusVersion : '(empty)',
+        $blueprintVersion !== '' ? $blueprintVersion : '(empty)'
+    ));
+}
+
 $normalised = Grav\Plugin\SiteSafeguardPlugin::normaliseConfiguredPaths([
     'cache',
     '/cache/',
@@ -57,7 +68,8 @@ if ($normalised !== $expectedPaths) {
 }
 
 echo json_encode([
-    'version' => (string) ($blueprint['version'] ?? ''),
+    'version' => $blueprintVersion,
+    'dashboard_version' => $statusVersion,
     'restore_enabled' => $expectedEnabled,
     'admin_restore_enabled' => $expectedEnabled,
     'toggle_default' => 'disabled',

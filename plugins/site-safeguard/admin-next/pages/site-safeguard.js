@@ -319,7 +319,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.5')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.6')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
