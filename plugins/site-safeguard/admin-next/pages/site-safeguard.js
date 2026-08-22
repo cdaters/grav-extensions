@@ -199,8 +199,18 @@ class SiteSafeguardPage extends HTMLElement {
   async downloadPackage(name) {
     await this.run(async () => {
       const result = await this.api(`/site-safeguard/packages/${encodeURIComponent(name)}/download-token`, { method: 'POST', body: '{}' });
-      this.state.message = 'The protected package download is starting…';
-      window.location.assign(result.url);
+      const downloadUrl = new URL(result.path || result.url, window.location.origin);
+      downloadUrl.protocol = window.location.protocol;
+      downloadUrl.host = window.location.host;
+      const link = document.createElement('a');
+      link.href = downloadUrl.toString();
+      link.download = name;
+      link.rel = 'noreferrer';
+      link.style.display = 'none';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      this.state.message = 'The protected package download is starting. You can retry it briefly if the browser or connection interrupts the transfer.';
     }, 'Preparing protected download…');
   }
 
@@ -309,7 +319,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.1')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.5')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">

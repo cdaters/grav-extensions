@@ -1,7 +1,7 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.3.1
+version: 0.3.5
 description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:
@@ -106,6 +106,16 @@ form:
         type: int
         min: 1
         max: 100
+
+    download_token_ttl:
+      type: number
+      label: Protected download-link lifetime in seconds
+      help: Short-lived links remain valid during this window so browser safety checks, HTTP range requests, and interrupted-download retries do not invalidate a recovery transfer.
+      default: 180
+      validate:
+        type: int
+        min: 30
+        max: 900
 
     restore_enabled:
       type: toggle

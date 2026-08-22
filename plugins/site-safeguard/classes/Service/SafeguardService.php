@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grav\Plugin\SiteSafeguard\Service;
 
 use Grav\Common\Grav;
+use Grav\Common\Security;
 use Grav\Plugin\Api\Exceptions\ForbiddenException;
 use Grav\Plugin\Api\Exceptions\NotFoundException;
 use Grav\Plugin\Api\Exceptions\ValidationException;
@@ -17,7 +18,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.3.1';
+    private const VERSION = '0.3.5';
 
     private Grav $grav;
     private array $config;
@@ -633,38 +634,206 @@ class SafeguardService
         $path = $this->packagePath($name);
         $now = time();
         $ttl = max(30, min(900, (int) ($this->config['download_token_ttl'] ?? 180)));
-        $token = bin2hex(random_bytes(24));
-        $this->mutateTokens(function (array &$tokens) use ($token, $path, $now, $ttl): void {
-            foreach ($tokens as $key => $record) {
-                if (!is_array($record) || (int) ($record['expires'] ?? 0) <= $now) {
-                    unset($tokens[$key]);
-                }
-            }
-            $tokens[$token] = ['name' => basename($path), 'expires' => $now + $ttl];
-        });
+        $expires = $now + $ttl;
+        $payload = $this->base64UrlEncode($this->json([
+            'v' => 2,
+            'n' => basename($path),
+            'd' => $this->downloadDirectoryLocator(dirname($path)),
+            'h' => $this->requestHost(),
+            'e' => $expires,
+            'r' => bin2hex(random_bytes(8)),
+        ]));
+        $signature = $this->base64UrlEncode(hash_hmac(
+            'sha256',
+            'site-safeguard-download-v2.' . $payload,
+            Security::getNonceKey(),
+            true
+        ));
+        $token = 'v2.' . $payload . '.' . $signature;
+        $route = '/' . trim(
+            rtrim((string) $this->grav['uri']->rootUrl(false), '/')
+            . '/site-safeguard/download?token=' . rawurlencode($token),
+            '/'
+        );
 
         return [
             'token' => $token,
-            'url' => rtrim((string) $this->grav['uri']->rootUrl(true), '/') . '/site-safeguard/download?token=' . rawurlencode($token),
-            'expires_at' => gmdate('c', $now + $ttl),
+            'path' => $route,
+            'url' => $route,
+            'expires_at' => gmdate('c', $expires),
         ];
     }
 
-    public function consumeDownloadToken(string $token): array
+    public function resolveDownloadToken(string $token): array
     {
+        if (str_starts_with($token, 'v1.') || str_starts_with($token, 'v2.')) {
+            return $this->resolveSignedDownloadToken($token);
+        }
+
+        // Accept unexpired 0.3.1/0.3.2 server-side tickets during a rolling
+        // update. Newly issued tickets are stateless and do not use this file.
         if (!preg_match('/^[a-f0-9]{48}$/', $token)) {
             throw new ForbiddenException('Invalid package token.');
         }
-        $record = $this->mutateTokens(function (array &$tokens) use ($token): mixed {
+        $now = time();
+        $record = $this->mutateTokens(function (array &$tokens) use ($token, $now): mixed {
             $record = $tokens[$token] ?? null;
-            unset($tokens[$token]);
+            foreach ($tokens as $key => $candidate) {
+                if (!is_array($candidate) || (int) ($candidate['expires'] ?? 0) <= $now) {
+                    unset($tokens[$key]);
+                }
+            }
             return $record;
         });
-        if (!is_array($record) || (int) ($record['expires'] ?? 0) <= time()) {
+        if (!is_array($record) || (int) ($record['expires'] ?? 0) <= $now) {
             throw new ForbiddenException('Expired package token.');
         }
         $path = $this->packagePath((string) ($record['name'] ?? ''));
         return ['path' => $path, 'name' => basename($path)];
+    }
+
+    private function resolveSignedDownloadToken(string $token): array
+    {
+        if (strlen($token) > 4096) {
+            throw new ForbiddenException('Invalid signed package ticket.');
+        }
+        $parts = explode('.', $token);
+        if (count($parts) !== 3 || !in_array($parts[0], ['v1', 'v2'], true)
+            || !preg_match('/^[A-Za-z0-9_-]+$/', $parts[1])
+            || !preg_match('/^[A-Za-z0-9_-]{43}$/', $parts[2])) {
+            throw new ForbiddenException('Invalid signed package ticket.');
+        }
+
+        $expected = $this->base64UrlEncode(hash_hmac(
+            'sha256',
+            'site-safeguard-download-' . $parts[0] . '.' . $parts[1],
+            Security::getNonceKey(),
+            true
+        ));
+        if (!hash_equals($expected, $parts[2])) {
+            throw new ForbiddenException('Invalid signed package ticket.');
+        }
+
+        $decoded = $this->base64UrlDecode($parts[1]);
+        $record = $decoded === null ? null : json_decode($decoded, true);
+        $ticketVersion = $parts[0] === 'v2' ? 2 : 1;
+        if (!is_array($record) || (int) ($record['v'] ?? 0) !== $ticketVersion
+            || !is_string($record['n'] ?? null)
+            || (isset($record['d']) && !is_string($record['d']))
+            || ($ticketVersion === 2 && !is_string($record['h'] ?? null))
+            || !is_int($record['e'] ?? null)
+            || !is_string($record['r'] ?? null)
+            || !preg_match('/^[a-f0-9]{16}$/', $record['r'])) {
+            throw new ForbiddenException('Invalid signed package ticket.');
+        }
+        if ($record['e'] <= time()) {
+            throw new ForbiddenException('Expired signed package ticket.');
+        }
+        if ($ticketVersion === 2 && !hash_equals($record['h'], $this->requestHost())) {
+            throw new ForbiddenException('Signed package ticket belongs to another host.');
+        }
+
+        $path = isset($record['d'])
+            ? $this->packagePathFromDownloadTicket($record['n'], $record['d'])
+            : $this->packagePath($record['n']);
+        return ['path' => $path, 'name' => basename($path)];
+    }
+
+    private function downloadDirectoryLocator(string $directory): string
+    {
+        $rootParts = explode('/', trim($this->root, '/'));
+        $directoryParts = explode('/', trim(str_replace('\\', '/', $directory), '/'));
+        $common = 0;
+        $maximum = min(count($rootParts), count($directoryParts));
+        while ($common < $maximum && $rootParts[$common] === $directoryParts[$common]) {
+            $common++;
+        }
+
+        if ($common === 0) {
+            return str_replace('\\', '/', $directory);
+        }
+
+        $relative = array_merge(
+            array_fill(0, count($rootParts) - $common, '..'),
+            array_slice($directoryParts, $common)
+        );
+        return implode('/', $relative) ?: '.';
+    }
+
+    private function requestHost(): string
+    {
+        $host = strtolower(rtrim(trim((string) ($_SERVER['HTTP_HOST'] ?? '')), '.'));
+        if ($host === '') {
+            $request = $this->grav['request'] ?? null;
+            if (is_object($request) && method_exists($request, 'getUri')) {
+                $uri = $request->getUri();
+                $host = strtolower((string) $uri->getHost());
+                $port = $uri->getPort();
+                if ($port !== null) {
+                    $host .= ':' . $port;
+                }
+            }
+        }
+        if ($host === '' || strlen($host) > 255 || !preg_match('/^[a-z0-9._:\[\]-]+$/', $host)) {
+            throw new RuntimeException('Unable to bind the package ticket to a valid request host.');
+        }
+        return $host;
+    }
+
+    private function packagePathFromDownloadTicket(string $name, string $locator): string
+    {
+        if ($name !== basename($name) || !preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*\.zip$/', $name)) {
+            throw new ValidationException('Invalid package filename.');
+        }
+        $locator = trim(str_replace('\\', '/', $locator));
+        if ($locator === '' || strlen($locator) > 2048 || str_contains($locator, "\0")) {
+            throw new ForbiddenException('Invalid package-directory locator.');
+        }
+
+        $directory = str_starts_with($locator, '/') || preg_match('/^[A-Za-z]:\//', $locator)
+            ? $locator
+            : $this->root . '/' . $locator;
+        $real = realpath($directory);
+        if ($real === false || !is_dir($real)) {
+            throw new NotFoundException('Package directory not found.');
+        }
+        $real = rtrim(str_replace('\\', '/', $real), '/');
+        if ($real === $this->root || str_starts_with($real . '/', $this->root . '/')) {
+            throw new ForbiddenException('Package directory must remain outside the public Grav root.');
+        }
+
+        $path = $real . '/' . $name;
+        if (!is_file($path)) {
+            throw new NotFoundException('Package not found.');
+        }
+        return $path;
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+    }
+
+    private function base64UrlDecode(string $value): ?string
+    {
+        $remainder = strlen($value) % 4;
+        if ($remainder !== 0) {
+            $value .= str_repeat('=', 4 - $remainder);
+        }
+        $decoded = base64_decode(strtr($value, '-_', '+/'), true);
+        return $decoded === false ? null : $decoded;
+    }
+
+    /**
+     * Kept for integrations written against Site Safeguard 0.3.1.
+     *
+     * Download tickets remain usable until their short expiry so browser HEAD
+     * probes, HTTP range requests, and a failed transfer retry cannot destroy
+     * the authorization before the package has been saved.
+     */
+    public function consumeDownloadToken(string $token): array
+    {
+        return $this->resolveDownloadToken($token);
     }
 
     private function addPath(ZipArchive $zip, string $absolute, string $relative, array $profile, array &$checksums, array &$stats, array &$warnings): void
@@ -980,6 +1149,7 @@ class SafeguardService
             'backup',
             'backups',
             'file-vault-files',
+            'user/config/security-private.php',
             'user/config/plugins/site-safeguard.yaml',
         ], $configured)));
     }

@@ -21,6 +21,9 @@ belong in that extension's own README.
 
 ## Maintain the suite
 
+- [Current state and exact next action](../CURRENT-STATE.md)
+- [Working agreement and resume procedure](../AGENTS.md)
+- [Append-only session log](SESSION-LOG.md)
 - [Architecture](architecture.md)
 - [Development workflow](development.md)
 - [Security model](security-model.md)

@@ -25,7 +25,8 @@ adds the missing portability and recovery evidence:
 - imported-package inspection before retention;
 - extraction only into a unique staging directory outside the public site;
 - a second checksum pass against the extracted stage; and
-- protected, one-time package download URLs;
+- protected, short-lived package download URLs with browser-probe, retry, and
+  HTTP range-request support;
 - file mode and modification-time preservation; and
 - rollback-first full-site restoration with a durable recovery journal.
 
@@ -95,6 +96,8 @@ production commonly preserves environment files and runtime folders. The
 destination's `user/config/plugins/site-safeguard.yaml` is host-local and
 preserved by default, preventing a transferred package from replacing the
 destination's package paths and restore safety settings.
+Grav's `user/config/security-private.php` is also always preserved so a restore
+cannot silently copy one host's nonce/HMAC identity onto another installation.
 
 ## Package profiles
 
@@ -127,8 +130,10 @@ Grav site; inspection checks for `index.php`, `system/`, and `user/`.
 2. Create the package. Source files are hashed while the ZIP is assembled.
 3. Select **Inspect**. Site Safeguard reopens the archive, validates its
    structure, and independently hashes every archived file.
-4. Download the package through its short-lived, one-time URL and transfer it to
-   another site using a protected channel.
+4. Download the package through its short-lived protected URL and transfer it
+   to another site using a protected channel. The URL remains usable only until
+   its configured expiry so a browser safety probe, range request, or interrupted
+   transfer can retry without destroying the authorization.
 5. On the destination, drop the ZIP onto **Validate another package**.
 6. Inspect it again, then select **Create stage**.
 7. The package is extracted outside the running Grav root and every staged file
@@ -242,10 +247,16 @@ complete on the destination.
 - Entry count, package bytes, and expanded bytes are bounded.
 - Deep hashing occurs only after structural validation succeeds.
 - Stage deletion is containment-checked and cannot target the stage root itself.
-- Package downloads use 48-character random, short-lived, single-use tokens and
-  no-store/no-referrer response headers. Token read-modify-write operations are
-  serialized with a filesystem lock, and token data stays beside the protected
-  packages rather than inside the site backup source.
+- Package downloads use HMAC-signed, short-lived stateless tickets plus
+  no-store/no-referrer response headers. A ticket remains valid only until its
+  bounded expiry so browser HEAD probes, worker/process changes, and HTTP range
+  retries cannot destroy the authorization before the package is saved. The
+  signature uses Grav's private per-site nonce key; the ticket contains only the
+  package filename, protected-directory locator, issuing host, expiry, version,
+  and a random nonce. Its route remains on the issuing browser origin and replay
+  through another host is rejected. Invalid tickets never
+  expose a protected path; storage and package-resolution failures are written
+  only to the Grav log under a safe browser-visible reference code.
 - The Admin inspection response reports checksum totals and validation results;
   it does not send the potentially large per-file checksum map to the browser.
 - A restore requires an exact confirmation phrase and a non-blocking global

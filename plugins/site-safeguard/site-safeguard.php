@@ -53,20 +53,45 @@ class SiteSafeguardPlugin extends Plugin
 
     public function onPackageDownload(): void
     {
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (!in_array($method, ['GET', 'HEAD'], true)) {
+            http_response_code(405);
+            header('Allow: GET, HEAD');
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            echo 'Method not allowed.';
+            exit;
+        }
+
         $token = (string) ($_GET['token'] ?? '');
         try {
-            $file = (new SafeguardService())->consumeDownloadToken($token);
+            $file = (new SafeguardService())->resolveDownloadToken($token);
         } catch (\Throwable $e) {
+            $reference = $this->downloadErrorReference($e);
+            $uri = $this->grav['uri'] ?? null;
+            $environment = is_object($uri) && method_exists($uri, 'environment')
+                ? (string) $uri->environment()
+                : 'unknown';
+            if ($reference !== 'SS-DL-01') {
+                $this->grav['log']->error(sprintf(
+                    '[Site Safeguard] Package download denied (%s; environment=%s; method=%s): %s: %s',
+                    $reference,
+                    $environment,
+                    $method,
+                    $e::class,
+                    $e->getMessage()
+                ));
+            }
             http_response_code(403);
             header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
             header('Pragma: no-cache');
             header('X-Content-Type-Options: nosniff');
             header('Referrer-Policy: no-referrer');
-            echo 'This package link is invalid or expired.';
+            header('X-Site-Safeguard-Error: ' . $reference);
+            echo 'This package link is invalid or expired. Reference: ' . $reference;
             exit;
         }
 
-        $this->streamAndExit((string) $file['path'], (string) $file['name']);
+        $this->streamAndExit((string) $file['path'], (string) $file['name'], $method === 'HEAD');
     }
 
     public function onApiRegisterRoutes(Event $event): void
@@ -139,7 +164,17 @@ class SiteSafeguardPlugin extends Plugin
         return false;
     }
 
-    private function streamAndExit(string $path, string $name): void
+    private function downloadErrorReference(\Throwable $error): string
+    {
+        return match (true) {
+            $error instanceof \Grav\Plugin\Api\Exceptions\ForbiddenException => 'SS-DL-01',
+            $error instanceof \Grav\Plugin\Api\Exceptions\NotFoundException => 'SS-DL-02',
+            $error instanceof \RuntimeException => 'SS-DL-03',
+            default => 'SS-DL-01',
+        };
+    }
+
+    private function streamAndExit(string $path, string $name, bool $headersOnly = false): void
     {
         if (!is_file($path) || !is_readable($path)) {
             http_response_code(404);
@@ -154,22 +189,75 @@ class SiteSafeguardPlugin extends Plugin
             @ob_end_clean();
         }
 
+        $size = (int) filesize($path);
+        $start = 0;
+        $end = max(0, $size - 1);
+        $status = 200;
+        $range = trim((string) ($_SERVER['HTTP_RANGE'] ?? ''));
+        if ($range !== '') {
+            if (!preg_match('/^bytes=(\d*)-(\d*)$/', $range, $matches)
+                || ($matches[1] === '' && $matches[2] === '')) {
+                http_response_code(416);
+                header('Content-Range: bytes */' . $size);
+                header('Accept-Ranges: bytes');
+                exit;
+            }
+
+            if ($matches[1] === '') {
+                $suffix = min($size, max(0, (int) $matches[2]));
+                $start = max(0, $size - $suffix);
+            } else {
+                $start = (int) $matches[1];
+            }
+            if ($matches[2] !== '') {
+                $end = min($end, (int) $matches[2]);
+            }
+            if ($start >= $size || $end < $start) {
+                http_response_code(416);
+                header('Content-Range: bytes */' . $size);
+                header('Accept-Ranges: bytes');
+                exit;
+            }
+            $status = 206;
+        }
+
+        $length = $end - $start + 1;
         $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '_', $name) ?: 'site-safeguard.zip';
+        http_response_code($status);
         header('Content-Type: application/zip');
-        header('Content-Length: ' . (string) filesize($path));
+        header('Content-Length: ' . $length);
         header('Content-Disposition: attachment; filename="' . $safeName . '"; filename*=UTF-8\'\'' . rawurlencode($name));
+        header('Accept-Ranges: bytes');
+        if ($status === 206) {
+            header(sprintf('Content-Range: bytes %d-%d/%d', $start, $end, $size));
+        }
         header('Cache-Control: private, no-store, max-age=0');
         header('Pragma: no-cache');
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: no-referrer');
+
+        if ($headersOnly) {
+            exit;
+        }
 
         $handle = fopen($path, 'rb');
         if ($handle === false) {
             http_response_code(500);
             exit;
         }
-        while (!feof($handle)) {
-            echo fread($handle, 1024 * 1024);
+        if ($start > 0 && fseek($handle, $start) !== 0) {
+            fclose($handle);
+            http_response_code(500);
+            exit;
+        }
+        $remaining = $length;
+        while ($remaining > 0 && !feof($handle)) {
+            $chunk = fread($handle, min(1024 * 1024, $remaining));
+            if ($chunk === false || $chunk === '') {
+                break;
+            }
+            echo $chunk;
+            $remaining -= strlen($chunk);
             flush();
         }
         fclose($handle);

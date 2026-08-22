@@ -25,6 +25,7 @@ restore_preserve_paths:
   - backup
   - backups
   - file-vault-files
+  - user/config/security-private.php
   - user/config/plugins/site-safeguard.yaml
 
 exclude_paths:

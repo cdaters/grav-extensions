@@ -15,13 +15,28 @@ No community plugin is required to read or maintain the documentation.
 GitHub and filesystem readers can begin with the
 [documentation index](docs/index.md).
 
+## Resuming and recovering development
+
+The Git repository and its tracked documentation are the durable project
+record. Begin with [AGENTS.md](AGENTS.md) and
+[CURRENT-STATE.md](CURRENT-STATE.md), then follow the resume procedure recorded
+there. Durable rationale lives in [architecture decisions](docs/decisions/README.md),
+and meaningful chronology is appended to
+[the session log](docs/SESSION-LOG.md). Do not rely on conversation history as
+the only record of a bug, test result, decision, or next action.
+
+At a meaningful checkpoint, update the current state, append the session log,
+run applicable quality and black-box gates, commit a coherent scope, and push
+the tracked checkpoint to `origin`. Runtime packages, protected site data,
+credentials, and DDEV volumes remain outside Git and need separate backups.
+
 ## Included extensions
 
 | Extension | Type | Status | Install directory |
 | --- | --- | --- | --- |
 | File Vault | Plugin | Development release | `user/plugins/file-vault` |
 | Prism Gallery | Plugin | Development release | `user/plugins/prism-gallery` |
-| Site Safeguard | Plugin | 0.3.1 development release | `user/plugins/site-safeguard` |
+| Site Safeguard | Plugin | 0.3.5 development release | `user/plugins/site-safeguard` |
 | Image Foundry | Plugin | 0.2.1 development release | `user/plugins/image-foundry` |
 | Meta Pilot | Plugin | 0.2.0 development release | `user/plugins/meta-pilot` |
 | Revision Ledger | Plugin | 0.2.1 development release | `user/plugins/revision-ledger` |
@@ -109,6 +124,11 @@ Create an installable ZIP containing the required top-level extension folder:
 Generated archives are written to `dist/` and are intentionally ignored.
 
 The complete checklist is in [docs/releasing.md](docs/releasing.md).
+
+Security-sensitive and state-changing extension boundaries also require
+external black-box regression coverage. The suite-wide contract, current
+coverage inventory, and DDEV runners are documented in
+[Testing and verification](docs/testing.md).
 
 ## Licensing
 

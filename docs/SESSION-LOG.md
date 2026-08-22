@@ -1,0 +1,49 @@
+# Grav Extensions session log
+
+This is an append-only chronology of meaningful work, discoveries, tests, and
+checkpoints. `CURRENT-STATE.md` remains authoritative for the active state.
+
+## 2026-08-22 — Site Safeguard protected-download boundary and continuity checkpoint
+
+- Reproduced the original download failure in DDEV: a browser HEAD request
+  consumed Site Safeguard's one-use token before the real GET.
+- Released the first repair with reusable bounded tickets and HTTP range
+  support, then used production-visible safe references to separate subsequent
+  failures instead of treating every error as an expired token.
+- Replaced filesystem token state with HMAC-signed stateless tickets so PHP or
+  LiteSpeed worker changes cannot lose authorization between requests.
+- Removed a JavaScript `fetch(HEAD)` attachment probe after Safari surfaced it
+  as a generic `Load failed` network exception before the actual download.
+- Diagnosed `SS-DL-02`: a ticket created from DDEV was sent to
+  `spitfirebbs.com` because the restored site retained production canonical URL
+  state. The live server correctly could not find the DDEV package named in the
+  valid ticket.
+- Corrected the API contract to return a root-relative route and made Admin2
+  retain `window.location`'s origin. DDEV now stays on
+  `spitfire-file-vault.ddev.site`; production stays on `spitfirebbs.com`.
+- Bound new tickets to the actual request host and made the destination Grav
+  nonce/HMAC key an always-preserved restore path, adding defense if two
+  installations temporarily share a key after an older transfer.
+- Bound the issuing protected-directory locator into the signed ticket and
+  revalidated its outside-webroot containment at delivery, closing the
+  base/Admin versus hostname/public configuration-scope split.
+- Added Decision 0003, the suite coverage inventory, a DDEV black-box runner,
+  `AGENTS.md`, and `CURRENT-STATE.md` after reviewing Spitfire-NG's durable
+  continuity pattern. The repository, not conversation memory, is now the
+  canonical handoff.
+- Verified PHP and JavaScript syntax, root-relative URL generation,
+  cross-environment resolution, external HTTP 200 HEAD, external HTTP 206 range
+  delivery, exact ZIP hashes, modified-ticket denial, repository hygiene, ZIP
+  integrity, package inspection, and isolated staging.
+- Created and verified portable package
+  `safeguard-localhost-portable_site-20260822-204008-fc93f4.zip` with SHA-256
+  `9ce11f46492854fd6c8bebfc9809c6d2da0386310a9bac2d61f4753572c39d8f`;
+  6,800 files were checked, 6,798 checksum records matched, and the verified
+  stage is `safeguard-localhost-portable_site-20260822-204008-fc93f4-43be53`.
+- Archived superseded intermediate DDEV packages instead of deleting them.
+
+### Next action
+
+Add File Vault's independent protected-delivery black-box contract, beginning
+with denial/authorization and exact-byte/range behavior. Keep the remaining
+suite inventory incremental and risk ordered.

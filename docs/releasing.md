@@ -8,7 +8,9 @@ Each extension versions and ships independently.
 2. Update `version:` in the package `blueprints.yaml`.
 3. Update the package `CHANGELOG.md` and README.
 4. Run `./scripts/verify-extensions.sh`.
-5. Test install and upgrade behavior in Grav.
+5. Run the extension's applicable black-box boundary contracts from
+   [Testing and verification](testing.md).
+6. Test install and upgrade behavior in Grav.
 
 ## Build
 

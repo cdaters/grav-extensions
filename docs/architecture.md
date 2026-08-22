@@ -29,6 +29,11 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 9. **Site-agnostic defaults.** No Spitfire names, colors, routes, or content live in plugin defaults. A site may override labels and presentation through configuration and CSS variables.
 10. **Portable packaging.** Release archives omit `.ddev`, `.DS_Store`, `__MACOSX`, caches, logs, sessions, and host-specific secrets.
 11. **Protected asset convention.** Plugins that expose original local files use opaque identifiers and just-in-time, expiring same-site URLs. Public thumbnails and previews may remain content-hashed derivatives. Protection is deterrence and access control—not a claim that browser-visible media cannot be saved.
+12. **Black-box boundary evidence.** Security-sensitive and state-changing
+    boundaries require external regression tests that enter through the real
+    public interface and verify durable results. In-process service success is
+    not sufficient proof of browser, HTTP, filesystem, archive, cache, or
+    process behavior.
 
 ## Integration boundaries
 
@@ -62,11 +67,13 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Prism Gallery 0.2.1:** working development release with Quark 2 modular
   integration, shortcodes, mixed media, and opaque just-in-time local-media
   delivery.
-- **Site Safeguard 0.3.1:** working development release for checksummed portable
+- **Site Safeguard 0.3.5:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
   rollback-first full-site restore through a detached Admin-launched CLI worker
   or manual CLI fallback, with fresh-process boot checks and verified
-  production-safe directory permissions.
+  production-safe directory permissions, signed stateless same-origin package
+  delivery, environment-scope-independent resolution, and external download
+  regression coverage.
 - **Image Foundry 0.2.1:** working development release with original-preserving
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig

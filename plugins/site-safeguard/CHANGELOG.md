@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.3.5 — 2026-08-22
+
+- Bind the protected package-directory locator into the HMAC-signed ticket so
+  an Admin2 request using the base/Default configuration and a public download
+  request using the hostname environment resolve the same verified ZIP.
+- Return a root-relative download route and have Admin2 explicitly retain the
+  browser's current origin, preventing a restored production canonical URL from
+  sending a DDEV package ticket to the live site (or vice versa).
+- Bind newly issued tickets to the actual request host and reject cross-host
+  replay even if two restored installations temporarily share a Grav nonce key.
+- Always preserve `user/config/security-private.php` at the destination during
+  restore so future transfers keep each host's nonce/HMAC identity local.
+- Re-resolve and containment-check the signed directory on every download; it
+  must exist outside the public Grav root and the requested basename must still
+  be a retained ZIP.
+
+## 0.3.4 — 2026-08-22
+
+- Start the signed download directly after the authenticated ticket request.
+  Safari can report a generic `Load failed` network exception when JavaScript
+  probes an attachment response with `fetch(HEAD)`, even though the signed URL
+  itself is valid; the probe is unnecessary now that tickets are stateless and
+  reusable until expiry.
+
+## 0.3.3 — 2026-08-22
+
+- Replace filesystem-backed download tokens with short-lived, HMAC-signed
+  stateless tickets so a LiteSpeed worker change, shared-host process split, or
+  token-file visibility issue cannot invalidate a newly created link.
+- Retain compatibility with unexpired 0.3.1/0.3.2 tokens during an update.
+- Verify a ticket with a non-consuming HEAD request before moving the browser
+  into the download and keep failures inside the Site Safeguard dashboard.
+- Attach a safe reference code to download failures and record the detailed
+  cause in the Grav log without logging the ticket or protected file path.
+
+## 0.3.2 — 2026-08-22
+
+- Keep protected download tickets valid until their short configured expiry so
+  browser HEAD probes no longer consume the authorization before the real GET.
+- Add single-range HTTP responses and `Accept-Ranges` headers so large recovery
+  packages can resume without restarting from byte zero.
+- Start Admin2 downloads through a temporary same-origin download link instead
+  of navigating the operator away from the recovery dashboard.
+- Expose the bounded 30–900 second download-link lifetime in plugin settings.
+
 ## 0.3.1 — 2026-08-19
 
 - Added direct navigation from the Site Safeguard dashboard to plugin settings.
