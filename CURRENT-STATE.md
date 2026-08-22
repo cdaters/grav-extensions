@@ -20,9 +20,9 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Site Safeguard 0.3.7 closes the protected-download and shared-host restore
-failures found while moving the SpitfireBBS.com site between production and
-DDEV:
+Site Safeguard 0.3.8 closes the protected-download, shared-host restore, and
+Admin destructive-action failures found while moving the SpitfireBBS.com site
+between production and DDEV:
 
 - tickets are short-lived, replay-bounded, HMAC-signed, and stateless;
 - browser HEAD probes and range retries cannot consume a ticket;
@@ -39,13 +39,19 @@ DDEV:
   references are implemented; and
 - the regression is preserved by the external DDEV runner
   `scripts/test-site-safeguard-download.sh`;
-- restrictive hosts that reject raw `DELETE` requests use the API's supported
-  method-override fallback, and action failures are brought into view;
+- package and stage deletion use visible in-page two-click confirmation and
+  explicit authenticated POST action routes, so a blocked native dialog or a
+  host that rejects raw `DELETE` cannot make the control silently inert;
 - unrelated directories beneath the staging root are explicitly classified as
   unrecognized and non-restorable; and
 - restored public assets receive missing read bits while private config/data
   retain their source modes, preventing LiteSpeed/nginx 403 responses when a
   DDEV/macOS source mount records CSS/JavaScript/fonts/images as `0600`.
+
+Environment Readiness, Package Library, Isolated Staging, and Recovery Journal
+are collapsible with remembered browser preferences and attention-aware
+defaults. Environment Readiness pairs a textual aggregate result and icon with
+green, amber, or red presentation.
 
 Decision 0003 establishes external black-box contract coverage as a suite-wide
 rule. `docs/testing.md` contains the risk-ordered coverage inventory.
@@ -60,8 +66,8 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   `spitfire-file-vault.ddev.site`, returns HTTP 200 for HEAD and 206 for a
   128-byte range, and streams bytes from the protected ZIP.
 - The latest portable package was independently inspected and staged:
-  `safeguard-localhost-portable_site-20260822-212126-ca6c9c.zip`, SHA-256
-  `a2a9ce8ffb8ef094a2441128a9fdacf54ecedc7b28a040c3ee55bb5e9c847c5d`;
+  `safeguard-localhost-portable_site-20260822-214109-3fc01e.zip`, SHA-256
+  `821e9947f49e048114e539b3636d8f70551c922f077d38478a5d91121f4e7761`;
   see the latest `docs/SESSION-LOG.md` entry for the stage identifier.
 - Live Admin2 restore settings were confirmed durable after a fresh page load.
   Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
@@ -71,6 +77,12 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 - The DDEV settings contract proves public restored asset mode `0644` versus
   private configuration mode `0600`; the disposable staging cleanup contract
   proves unrecognized classification, contained removal, and traversal denial.
+- The Admin UI behavior contract proves that the first destructive click makes
+  no request, the confirmation click uses a POST action route, cancellation is
+  non-mutating, disclosure preferences persist, and readiness renders ready,
+  warning, and error states. An unauthenticated external POST to the DDEV route
+  returns 401 rather than 404/405, proving that Grav registered the route and
+  applied its authentication boundary.
 
 ## Active milestone
 

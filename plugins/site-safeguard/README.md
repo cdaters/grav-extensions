@@ -59,6 +59,12 @@ installation or update and distinguishes required, recommended, optional, and
 restore-only items. Missing Sodium does not prevent ZIP or unencrypted SSA use.
 Secure archives will fail with guidance instead of silently downgrading.
 
+Environment Readiness, Package Library, Isolated Staging, and Recovery Journal
+are collapsible. Healthy or quiet sections start collapsed where appropriate;
+warnings, failures, active work, and unrecognized staging content remain
+visible. The browser remembers the operator's disclosure choices. Readiness
+always states its aggregate result in text as well as green, amber, or red.
+
 ## Installation
 
 Copy the complete folder to:
@@ -160,6 +166,13 @@ instead of being retained in the package library.
 The configured package-retention limit is a hard stop, not an automatic prune.
 When the limit is reached, an operator must explicitly decide which obsolete
 package to delete before another can be created or imported.
+
+Package and stage deletion use an in-page two-click safeguard. The first click
+changes only the selected action to **Confirm delete** (or **Confirm removal**
+for an unrecognized staging directory) and displays the exact scope. Select
+**Cancel** to disarm it. The dashboard uses explicit authenticated POST action
+routes so shared hosts and edge security layers do not need to pass raw HTTP
+`DELETE` requests through to Grav.
 
 ## CLI
 
@@ -306,11 +319,6 @@ complete on the destination.
 The next recovery milestones are deliberately separated from the tested 0.3
 restore core:
 
-- **Admin2 dashboard disclosures:** make Environment Readiness, Package
-  Library, Isolated Staging, and Recovery Journal collapsible with
-  attention-aware defaults. Give the readiness header an accessible
-  green/amber/red aggregate status treatment and automatically expose sections
-  containing warnings, failures, active work, or unrecognized staging content.
 - **Recovery Assistant:** a small, independently authenticated, single-use
   Kickstart-style application that can inspect a package, test hosting
   prerequisites, restore without depending on the installed site, surface the

@@ -111,6 +111,8 @@ class SiteSafeguardPlugin extends Plugin
             $group->post('/packages/{name}/stage', [$controller, 'stagePackage']);
             $group->post('/stages/{id}/restore', [$controller, 'restoreStage']);
             $group->post('/packages/{name}/download-token', [$controller, 'createDownloadToken']);
+            $group->post('/packages/{name}/delete', [$controller, 'deletePackage']);
+            $group->post('/stages/{id}/delete', [$controller, 'deleteStage']);
             $group->delete('/packages/{name}', [$controller, 'deletePackage']);
             $group->delete('/stages/{id}', [$controller, 'deleteStage']);
         });

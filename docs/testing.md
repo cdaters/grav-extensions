@@ -92,11 +92,27 @@ restorable, removes it through Site Safeguard's containment-checked service,
 and proves that a parent-traversal identifier is denied. A cleanup trap removes
 the disposable directory if an assertion fails.
 
+### Site Safeguard Admin UI contract
+
+Run on the repository host:
+
+```bash
+./scripts/test-site-safeguard-admin-ui.sh
+```
+
+The isolated browser-component harness proves that package and stage removal
+require two deliberate clicks, that the first click cannot call an API, and
+that the confirmed action uses the shared-host-safe authenticated POST route.
+It also verifies semantic disclosure defaults, remembered choices, and the
+green/amber/red Environment Readiness aggregate states. The disposable DDEV
+staging cleanup contract remains the filesystem-boundary proof that actual
+contained removal succeeds and parent traversal is refused.
+
 ### Suite coverage inventory
 
 | Extension | Highest-value black-box boundaries | State |
 | --- | --- | --- |
-| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore settings, restore worker | download and settings contracts implemented; restore contract next |
+| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore settings, destructive Admin actions, restore worker | download, settings, stage-cleanup, and Admin UI contracts implemented; restore contract next |
 | File Vault | anonymous/authenticated ACL delivery, range/resume, analytics, external storage | required |
 | Prism Gallery | authorized media enumeration, derivative delivery, missing/corrupt media | required |
 | Image Foundry | source immutability, derivative cache, purge containment, concurrent generation | required |

@@ -130,3 +130,41 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-212126-ca6c9c-581e2d`; the
   running DDEV site was not modified.
+- Follow-up live testing showed that every package/stage delete control in
+  Site Safeguard 0.3.7 still appeared inert. All destructive controls depended
+  on a native browser confirmation dialog before any request was sent, and the
+  dashboard still preferred a raw HTTP `DELETE` request. The 0.3.7 retry could
+  not help when the dialog never completed or when an edge rejected a method
+  with a status other than the single handled response.
+- Released Site Safeguard 0.3.8 with visible two-click package/stage removal,
+  a local Cancel action, and explicit authenticated POST deletion routes while
+  retaining REST-style DELETE routes for compatible API clients. The first
+  click is now provably non-mutating and only arms the selected row.
+- Implemented the planned collapsible Environment Readiness, Package Library,
+  Isolated Staging, and Recovery Journal sections. Browser preferences persist;
+  attention-aware defaults expose warnings and active/failed work. Readiness
+  uses an icon, result text, and green/amber/red aggregate treatment.
+- Added `scripts/test-site-safeguard-admin-ui.sh` and its isolated component
+  harness. It verifies two-click deletion, Cancel, POST action paths,
+  disclosure defaults/persistence, and readiness states. The DDEV cleanup
+  contract again removed a disposable unrecognized directory and denied parent
+  traversal. An external unauthenticated POST reached the new deletion route
+  and returned 401, confirming route registration plus the auth boundary.
+- Installed the packaged 0.3.8 ZIP over 0.3.7 in DDEV, cleared Grav caches, and
+  passed PHP syntax, JavaScript syntax, repository hygiene, settings/version/
+  mode, stage cleanup, protected download, Admin UI, public HTTP 200, and Admin
+  HTTP 200 checks. The in-app browser reached the DDEV Admin login cleanly but
+  had no signed-in session, so authenticated visual click-through remains a
+  short operator confirmation after upload.
+- Packaged `site-safeguard-0.3.8.zip`, SHA-256
+  `8b8a54570f7a6c4f6b790d396950414200cc5324c0ba78d48f23ad5ce4342611`.
+  To honor the 12-package hard stop without deletion, moved the superseded
+  `safeguard-localhost-portable_site-20260819-003204-2f5ff6.zip` into the
+  existing protected archive directory.
+- Created and independently inspected the final DDEV handoff package
+  `safeguard-localhost-portable_site-20260822-214109-3fc01e.zip`, SHA-256
+  `821e9947f49e048114e539b3636d8f70551c922f077d38478a5d91121f4e7761`.
+  It contains 6,800 checked files and 6,798 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260822-214109-3fc01e-499bb8`; the
+  running DDEV site was not modified.

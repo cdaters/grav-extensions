@@ -16,9 +16,9 @@ A standalone Recovery Console, SSA/SSS archive engineering, scheduled backups,
 encrypted off-site providers, and explicit external-data-set support remain
 roadmap work. Admin restore and its CLI fallback share the same recovery engine.
 
-## Next-version Admin2 presentation
+## Admin2 presentation (implemented in 0.3.8)
 
-Make the following dashboard sections collapsible:
+The following dashboard sections are collapsible:
 
 - **Environment Readiness**
 - **Package Library**

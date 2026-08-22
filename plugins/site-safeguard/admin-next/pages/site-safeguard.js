@@ -14,6 +14,8 @@ class SiteSafeguardPage extends HTMLElement {
       error: '',
       theme: 'dark',
       restoreOperation: '',
+      armedAction: '',
+      disclosures: this.loadDisclosurePreferences(),
     };
     this.themeObserver = null;
     this.themeMedia = null;
@@ -117,7 +119,7 @@ class SiteSafeguardPage extends HTMLElement {
       headers: { ...this.getAuthHeaders(!isForm), ...(options.headers || {}) },
     };
     let response = await fetch(url, request);
-    if (response.status === 405 && ['DELETE', 'PATCH', 'PUT'].includes(method)) {
+    if ([403, 405, 501].includes(response.status) && ['DELETE', 'PATCH', 'PUT'].includes(method)) {
       response = await fetch(url, {
         ...request,
         method: 'POST',
@@ -232,9 +234,11 @@ class SiteSafeguardPage extends HTMLElement {
   }
 
   async deletePackage(name) {
-    if (!confirm(`Permanently delete ${name}? This does not delete an existing stage or any live-site files.`)) return;
+    const key = `package:${name}`;
+    if (!this.armDestructiveAction(key, `Click Confirm delete to permanently remove ${name}. Existing stages and live-site files will not be changed.`)) return;
+    this.state.armedAction = '';
     await this.run(async () => {
-      await this.api(`/site-safeguard/packages/${encodeURIComponent(name)}`, { method: 'DELETE' });
+      await this.api(`/site-safeguard/packages/${encodeURIComponent(name)}/delete`, { method: 'POST', body: '{}' });
       delete this.state.inspections[name];
       this.state.status = await this.api('/site-safeguard/status');
       this.state.message = 'Package deleted.';
@@ -242,15 +246,59 @@ class SiteSafeguardPage extends HTMLElement {
   }
 
   async deleteStage(id, recognized = true) {
+    const key = `stage:${id}`;
     const prompt = recognized
-      ? `Delete isolated stage ${id}? The running site will not be changed.`
-      : `Remove unrecognized directory ${id} from Site Safeguard's isolated staging area? The running site and external plugin data will not be changed.`;
-    if (!confirm(prompt)) return;
+      ? `Click Confirm delete to remove isolated stage ${id}. The running site will not be changed.`
+      : `Click Confirm removal to remove ${id} from Site Safeguard's isolated staging area. The running site and external plugin data will not be changed.`;
+    if (!this.armDestructiveAction(key, prompt)) return;
+    this.state.armedAction = '';
     await this.run(async () => {
-      await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}/delete`, { method: 'POST', body: '{}' });
       this.state.status = await this.api('/site-safeguard/status');
       this.state.message = recognized ? 'Stage deleted.' : 'Unrecognized staging directory removed.';
     }, recognized ? 'Deleting stage…' : 'Removing unrecognized staging directory…');
+  }
+
+  armDestructiveAction(key, message) {
+    if (this.state.armedAction === key) return true;
+    this.state.armedAction = key;
+    this.state.error = '';
+    this.state.message = message;
+    this.render();
+    return false;
+  }
+
+  cancelDestructiveAction() {
+    this.state.armedAction = '';
+    this.state.message = 'Deletion cancelled. Nothing was removed.';
+    this.state.error = '';
+    this.render();
+  }
+
+  loadDisclosurePreferences() {
+    try {
+      const preferences = JSON.parse(localStorage.getItem('site_safeguard_disclosures') || '{}');
+      return preferences && typeof preferences === 'object' ? preferences : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  disclosureOpen(section, defaultOpen) {
+    const preference = this.state.disclosures?.[section];
+    return typeof preference === 'boolean' ? preference : Boolean(defaultOpen);
+  }
+
+  toggleDisclosure(section, defaultOpen) {
+    const disclosures = {
+      ...(this.state.disclosures || {}),
+      [section]: !this.disclosureOpen(section, defaultOpen),
+    };
+    this.state.disclosures = disclosures;
+    try {
+      localStorage.setItem('site_safeguard_disclosures', JSON.stringify(disclosures));
+    } catch (_) {}
+    this.render();
   }
 
   async restoreStage(id) {
@@ -329,6 +377,22 @@ class SiteSafeguardPage extends HTMLElement {
     const history = status.restore_history || [];
     const requirements = status.environment_requirements || [];
     const disabled = (this.state.busy || this.state.restoreOperation) ? 'disabled' : '';
+    const missingRequired = requirements.filter(item => item.group === 'required' && !item.available);
+    const missingAdvisory = requirements.filter(item => ['recommended', 'restore'].includes(item.group) && !item.available);
+    const readinessTone = missingRequired.length ? 'error' : (missingAdvisory.length ? 'warning' : 'ready');
+    const readinessLabel = missingRequired.length
+      ? `${missingRequired.length} required ${missingRequired.length === 1 ? 'check needs' : 'checks need'} attention`
+      : (missingAdvisory.length
+        ? `${missingAdvisory.length} ${missingAdvisory.length === 1 ? 'capability is' : 'capabilities are'} unavailable`
+        : 'All checks passed');
+    const readinessOpen = this.disclosureOpen('readiness', readinessTone !== 'ready');
+    const packagesOpen = this.disclosureOpen('packages', true);
+    const stagesNeedAttention = stages.some(stage => !stage.verified || !stage.recognized);
+    const stagesOpen = this.disclosureOpen('stages', stages.length > 0 || stagesNeedAttention);
+    const historyNeedsAttention = history.some(operation => operation.state !== 'completed');
+    const historyOpen = this.disclosureOpen('history', Boolean(this.state.restoreOperation) || historyNeedsAttention);
+    const verifiedStageCount = stages.filter(stage => stage.verified).length;
+    const unrecognizedStageCount = stages.filter(stage => !stage.recognized).length;
 
     this.shadowRoot.innerHTML = `
       <style>${this.styles()}</style>
@@ -339,7 +403,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.7')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.8')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
@@ -358,12 +422,14 @@ class SiteSafeguardPage extends HTMLElement {
         </section>
 
         ${requirements.length ? `
-        <section class="panel readiness">
-          <header class="section-head"><div><span class="eyebrow">ENVIRONMENT READINESS</span><h2>Host capabilities</h2></div><span class="readiness-summary">${requirements.filter(item => item.group === 'required' && !item.available).length ? 'Action required' : 'Minimum requirements passed'}</span></header>
-          <div class="requirement-grid">
-            ${requirements.map(item => this.requirementCard(item)).join('')}
+        <section class="panel readiness readiness-${readinessTone}">
+          ${this.disclosureHeader('readiness', 'ENVIRONMENT READINESS', 'Host capabilities', readinessLabel, readinessOpen, readinessTone)}
+          <div class="section-body" id="readiness-panel" ${readinessOpen ? '' : 'hidden'}>
+            <div class="requirement-grid">
+              ${requirements.map(item => this.requirementCard(item)).join('')}
+            </div>
+            <p class="requirement-note"><strong>Required</strong> capabilities power the current ZIP workflow. <strong>Recommended</strong> capabilities prepare this host for SSA/SSS. Missing optional capabilities never cause a silent cryptographic downgrade.</p>
           </div>
-          <p class="requirement-note"><strong>Required</strong> capabilities power the current ZIP workflow. <strong>Recommended</strong> capabilities prepare this host for SSA/SSS. Missing optional capabilities never cause a silent cryptographic downgrade.</p>
         </section>` : ''}
 
         <section class="workspace">
@@ -392,31 +458,55 @@ class SiteSafeguardPage extends HTMLElement {
         </section>
 
         <section class="panel packages">
-          <header class="section-head"><div><span class="eyebrow">PACKAGE LIBRARY</span><h2>Recovery packages</h2></div><button class="quiet" id="refresh" ${disabled}>Refresh</button></header>
-          ${packages.length ? packages.map(item => this.packageCard(item, disabled)).join('') : '<div class="empty">No packages yet. Create a portable package or import one for validation.</div>'}
+          ${this.disclosureHeader('packages', 'PACKAGE LIBRARY', 'Recovery packages', `${packages.length} ${packages.length === 1 ? 'package' : 'packages'}`, packagesOpen, '', `<button class="quiet" id="refresh" ${disabled}>Refresh</button>`)}
+          <div class="section-body" id="packages-panel" ${packagesOpen ? '' : 'hidden'}>
+            ${packages.length ? packages.map(item => this.packageCard(item, disabled)).join('') : '<div class="empty">No packages yet. Create a portable package or import one for validation.</div>'}
+          </div>
         </section>
 
         <section class="panel stages">
-          <header class="section-head"><div><span class="eyebrow">ISOLATED STAGING</span><h2>Verified stages</h2></div><code>${this.escape(status.stage_path || '')}</code></header>
-          ${stages.length ? stages.map(stage => `
+          ${this.disclosureHeader('stages', 'ISOLATED STAGING', 'Verified stages', `${verifiedStageCount} verified${unrecognizedStageCount ? ` · ${unrecognizedStageCount} unrecognized` : ''}`, stagesOpen, stagesNeedAttention ? 'warning' : '', `<code>${this.escape(status.stage_path || '')}</code>`)}
+          <div class="section-body" id="stages-panel" ${stagesOpen ? '' : 'hidden'}>
+            ${stages.length ? stages.map(stage => `
             <article class="stage-row ${stage.recognized ? '' : 'unrecognized'}">
               <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.recognized ? (stage.record?.package || 'Recognized stage') : 'Unrecognized directory — not a recovery stage')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
               <span class="badge ${stage.verified ? 'good' : 'warn'}">${stage.verified ? 'Verified' : (stage.recognized ? 'Unverified' : 'Unrecognized')}</span>
               <div class="stage-actions">
                 ${stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : `<span class="cli-ready">${stage.recognized ? (status.restore_enabled ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled') : 'Restore disabled') : 'Not restorable'}</span>`}
-                <button class="danger delete-stage" data-id="${this.escape(stage.id)}" data-recognized="${stage.recognized ? 'true' : 'false'}" ${disabled}>${stage.recognized ? 'Delete stage' : 'Remove directory'}</button>
+                ${this.state.armedAction === `stage:${stage.id}` ? `<button class="quiet cancel-delete" ${disabled}>Cancel</button>` : ''}
+                <button class="danger delete-stage ${this.state.armedAction === `stage:${stage.id}` ? 'armed' : ''}" data-id="${this.escape(stage.id)}" data-recognized="${stage.recognized ? 'true' : 'false'}" ${disabled}>${this.state.armedAction === `stage:${stage.id}` ? (stage.recognized ? 'Confirm delete' : 'Confirm removal') : (stage.recognized ? 'Delete stage' : 'Remove directory')}</button>
               </div>
             </article>`).join('') : '<div class="empty compact">No isolated stages.</div>'}
+          </div>
         </section>
 
         <section class="panel history">
-          <header class="section-head"><div><span class="eyebrow">RECOVERY JOURNAL</span><h2>Restore operations</h2></div>${this.state.restoreOperation ? '<span class="working-dot">Following active restore…</span>' : ''}</header>
-          ${history.length ? history.map(operation => this.restoreCard(operation)).join('') : '<div class="empty compact">No restore operations recorded.</div>'}
+          ${this.disclosureHeader('history', 'RECOVERY JOURNAL', 'Restore operations', `${history.length} ${history.length === 1 ? 'operation' : 'operations'}`, historyOpen, historyNeedsAttention ? 'warning' : '', this.state.restoreOperation ? '<span class="working-dot">Following active restore…</span>' : '')}
+          <div class="section-body" id="history-panel" ${historyOpen ? '' : 'hidden'}>
+            ${history.length ? history.map(operation => this.restoreCard(operation)).join('') : '<div class="empty compact">No restore operations recorded.</div>'}
+          </div>
         </section>
       </main>
     `;
 
     this.bind();
+  }
+
+  disclosureHeader(section, eyebrow, title, summary, open, tone = '', extra = '') {
+    const panelId = `${section}-panel`;
+    const stateLabel = open ? 'Collapse' : 'Expand';
+    const statusIcon = ({ ready: '✓', warning: '!', error: '×' })[tone] || '';
+    return `
+      <header class="section-head ${tone ? `status-${tone}` : ''}">
+        <div><span class="eyebrow">${this.escape(eyebrow)}</span><h2>${this.escape(title)}</h2></div>
+        <div class="section-head-actions">
+          <span class="section-summary">${statusIcon ? `<span class="status-icon" aria-hidden="true">${statusIcon}</span>` : ''}${this.escape(summary)}</span>
+          ${extra}
+          <button type="button" class="disclosure-toggle" data-section="${this.escape(section)}" data-default-open="${open ? 'true' : 'false'}" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${panelId}" aria-label="${stateLabel} ${this.escape(title)}" title="${stateLabel} ${this.escape(title)}">
+            <span aria-hidden="true">${open ? '⌃' : '⌄'}</span>
+          </button>
+        </div>
+      </header>`;
   }
 
   restoreCard(operation) {
@@ -465,6 +555,7 @@ class SiteSafeguardPage extends HTMLElement {
     const note = String(manifest.note || '').trim();
     const inspection = this.state.inspections[item.name];
     const canStage = inspection?.valid && profile.deployable;
+    const deleteArmed = this.state.armedAction === `package:${item.name}`;
     return `
       <article class="package-card">
         <div class="package-main">
@@ -484,7 +575,8 @@ class SiteSafeguardPage extends HTMLElement {
           <button class="inspect" data-name="${this.escape(item.name)}" ${disabled}>Inspect</button>
           <button class="stage" data-name="${this.escape(item.name)}" ${disabled || !canStage ? 'disabled' : ''}>Create stage</button>
           <button class="download" data-name="${this.escape(item.name)}" ${disabled}>Download</button>
-          <button class="danger delete-package" data-name="${this.escape(item.name)}" ${disabled}>Delete</button>
+          ${deleteArmed ? `<button class="quiet cancel-delete" ${disabled}>Cancel</button>` : ''}
+          <button class="danger delete-package ${deleteArmed ? 'armed' : ''}" data-name="${this.escape(item.name)}" ${disabled}>${deleteArmed ? 'Confirm delete' : 'Delete'}</button>
         </div>
         ${inspection ? this.inspectionPanel(inspection) : ''}
       </article>`;
@@ -533,6 +625,8 @@ class SiteSafeguardPage extends HTMLElement {
     this.shadowRoot.querySelectorAll('.delete-package').forEach(button => button.addEventListener('click', () => this.deletePackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.restore-stage').forEach(button => button.addEventListener('click', () => this.restoreStage(button.dataset.id)));
     this.shadowRoot.querySelectorAll('.delete-stage').forEach(button => button.addEventListener('click', () => this.deleteStage(button.dataset.id, button.dataset.recognized === 'true')));
+    this.shadowRoot.querySelectorAll('.cancel-delete').forEach(button => button.addEventListener('click', () => this.cancelDestructiveAction()));
+    this.shadowRoot.querySelectorAll('.disclosure-toggle').forEach(button => button.addEventListener('click', () => this.toggleDisclosure(button.dataset.section, button.dataset.defaultOpen === 'true')));
   }
 
   styles() {
@@ -567,10 +661,10 @@ class SiteSafeguardPage extends HTMLElement {
       textarea { resize:vertical; }.profile-help { min-height:42px; font-size:12px; }
       button { min-height:38px; padding:8px 12px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); cursor:pointer; font-weight:750; }
       button:hover:not(:disabled) { border-color:var(--accent); } button:disabled { cursor:not-allowed; opacity:.45; }
-      .primary { border-color:var(--accent); background:var(--accent); color:#fff; }.danger { color:var(--bad); }.quiet { background:transparent; }
+      .primary { border-color:var(--accent); background:var(--accent); color:#fff; }.danger { color:var(--bad); }.danger.armed { border-color:var(--bad); background:var(--bad); color:#fff; }.quiet { background:transparent; }
       .drop { min-height:147px; place-content:center; place-items:center; gap:4px; padding:20px; border:1px dashed var(--accent); border-radius:10px; background:color-mix(in srgb,var(--accent) 7%,var(--panel-2)); cursor:pointer; text-align:center; text-transform:none; }
       .drop.over { background:color-mix(in srgb,var(--accent) 16%,var(--panel-2)); }.drop input { max-width:230px; margin-top:9px; color:var(--muted); }.drop small { color:var(--muted); font-weight:500; }.upload-icon { display:grid; width:34px; height:34px; place-items:center; border-radius:9px; background:var(--accent); color:#fff; font-size:21px; }
-      .section-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid var(--line); }.section-head code { color:var(--muted); font-size:11px; }
+      .section-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid var(--line); transition:background-color .2s ease,border-color .2s ease; }.section-head code { max-width:420px; overflow:hidden; color:var(--muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }.section-head.status-ready { border-bottom-color:color-mix(in srgb,var(--good) 38%,var(--line)); background:color-mix(in srgb,var(--good) 7%,var(--panel)); }.section-head.status-warning { border-bottom-color:color-mix(in srgb,var(--warn) 42%,var(--line)); background:color-mix(in srgb,var(--warn) 7%,var(--panel)); }.section-head.status-error { border-bottom-color:color-mix(in srgb,var(--bad) 42%,var(--line)); background:color-mix(in srgb,var(--bad) 7%,var(--panel)); }.section-head-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; }.section-summary { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; font-weight:800; }.status-icon { display:inline-grid; width:18px; height:18px; place-items:center; border:1px solid currentColor; border-radius:999px; font-size:11px; line-height:1; }.status-ready .section-summary { color:var(--good); }.status-warning .section-summary { color:var(--warn); }.status-error .section-summary { color:var(--bad); }.disclosure-toggle { display:grid; width:38px; min-width:38px; padding:0; place-items:center; border-radius:999px; background:transparent; font-size:18px; line-height:1; }.disclosure-toggle:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }.section-body[hidden] { display:none!important; }
       .package-card { border-bottom:1px solid var(--line); }.package-card:last-child { border-bottom:0; }.package-main { display:flex; align-items:center; gap:13px; padding:14px 18px 8px; }.file-icon { display:grid; flex:0 0 48px; height:48px; place-items:center; border:1px solid var(--line); border-radius:9px; color:var(--accent-2); font:800 11px ui-monospace,monospace; background:var(--panel-2); }
       .package-copy { display:grid; flex:1; min-width:0; gap:2px; }.package-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.package-copy small { color:var(--muted); }.package-copy code { overflow:hidden; color:var(--muted); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
       .badge { padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; }.badge.good { border-color:color-mix(in srgb,var(--good) 40%,var(--line)); color:var(--good); background:color-mix(in srgb,var(--good) 10%,transparent); }.badge.warn { border-color:color-mix(in srgb,var(--warn) 45%,var(--line)); color:var(--warn); background:color-mix(in srgb,var(--warn) 9%,transparent); }.badge.bad { color:var(--bad); }
@@ -580,7 +674,7 @@ class SiteSafeguardPage extends HTMLElement {
       .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row.unrecognized { background:color-mix(in srgb,var(--warn) 5%,transparent); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
       .history { margin-top:16px; }.working-dot { color:var(--accent-2); font-size:11px; font-weight:800; }.restore-card { padding:15px 18px; border-bottom:1px solid var(--line); }.restore-card:last-child { border-bottom:0; }.restore-card.active { background:color-mix(in srgb,var(--accent) 6%,var(--panel)); }.restore-summary { display:flex; align-items:center; justify-content:space-between; gap:15px; }.restore-summary > div { display:grid; }.restore-summary small { color:var(--muted); }.restore-progress { height:5px; margin:11px 0; overflow:hidden; border-radius:999px; background:var(--panel-2); }.restore-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--good)); transition:width .35s ease; }.restore-facts { display:flex; flex-wrap:wrap; gap:9px 20px; color:var(--muted); font-size:11px; }.restore-facts strong { color:var(--text); }.restore-error { flex-basis:100%; color:var(--bad); }.restore-card details { margin-top:10px; color:var(--muted); }.restore-card summary { cursor:pointer; font-size:11px; font-weight:750; }.restore-card pre { max-height:180px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); font:10px/1.5 ui-monospace,monospace; white-space:pre-wrap; }
       @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; } }
-      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.requirement-grid { grid-template-columns:1fr; }.requirement-card { border-right:0; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
+      @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.section-head { align-items:flex-start; flex-wrap:wrap; }.section-head-actions { width:100%; justify-content:space-between; }.section-head code { max-width:55vw; }.requirement-grid { grid-template-columns:1fr; }.requirement-card { border-right:0; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
     `;
   }
 

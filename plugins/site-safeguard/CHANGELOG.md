@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.8 — 2026-08-22
+
+- Replace native browser confirmation dialogs for package and stage deletion
+  with visible, reversible two-click controls in Admin2. The first click arms
+  only the selected item; **Cancel** or navigating away removes that intent.
+- Add explicit POST deletion actions while retaining the REST-style DELETE
+  routes, avoiding shared-host/CDN rejection of mutation verbs before Grav can
+  authorize and process the request.
+- Make Environment Readiness, Package Library, Isolated Staging, and Recovery
+  Journal collapsible with keyboard-operable semantic controls and remembered
+  per-browser preferences.
+- Give Environment Readiness an accessible green, amber, or red aggregate
+  header state with a textual result. Attention states open by default, while
+  a healthy readiness panel and an all-complete journal start collapsed.
+- Add an Admin UI behavior contract covering two-click deletion, POST action
+  routes, disclosure defaults, persistence, and readiness status presentation.
+
 ## 0.3.7 — 2026-08-22
 
 - Retry blocked `DELETE`, `PATCH`, and `PUT` requests as the API's supported
