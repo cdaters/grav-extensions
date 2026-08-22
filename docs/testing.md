@@ -60,11 +60,28 @@ binding, scope-independent package resolution, HEAD, a 128-byte range, a
 complete SHA-256-identical ZIP, and denial of a modified ticket. It never
 prints the ticket or protected path.
 
+### Site Safeguard settings contract
+
+After deliberately enabling or disabling both restore switches in the DDEV
+Admin2 settings page, verify their durable state through a separate fresh Grav
+process:
+
+```bash
+./scripts/test-site-safeguard-settings.sh \
+  ~/Documents/Spitfire/custom-plugins/file-vault-ddev enabled
+```
+
+Use `disabled` as the second argument when testing the safe defaults. The
+runner confirms that both effective values survive a fresh boot, that the
+blueprint still defaults them to disabled while highlighting the selected
+Enabled state, and that editable path lists normalize duplicate and malformed
+entries. It is read-only and does not print configuration contents.
+
 ### Suite coverage inventory
 
 | Extension | Highest-value black-box boundaries | State |
 | --- | --- | --- |
-| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore worker | download contract implemented; restore contract next |
+| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore settings, restore worker | download and settings contracts implemented; restore contract next |
 | File Vault | anonymous/authenticated ACL delivery, range/resume, analytics, external storage | required |
 | Prism Gallery | authorized media enumeration, derivative delivery, missing/corrupt media | required |
 | Image Foundry | source immutability, derivative cache, purge containment, concurrent generation | required |

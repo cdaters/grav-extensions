@@ -53,6 +53,11 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   128-byte range, and streams bytes from the protected ZIP.
 - The latest portable package was independently inspected and staged; see the
   latest `docs/SESSION-LOG.md` entry for its exact name and hash.
+- Live Admin2 restore settings were confirmed durable after a fresh page load.
+  Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
+  **Enabled** state; 0.3.5 highlighted **Disabled**, which made a successful
+  enablement look visually inactive. The orange field marker is Admin2's saved
+  override indicator, not an error.
 
 ## Active milestone
 

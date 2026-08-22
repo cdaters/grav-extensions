@@ -99,6 +99,14 @@ destination's package paths and restore safety settings.
 Grav's `user/config/security-private.php` is also always preserved so a restore
 cannot silently copy one host's nonce/HMAC identity onto another installation.
 
+After saving either restore switch in Admin2, verify that **Enabled** is the
+purple selected option. An orange circular marker beside the label means the
+value is a saved override of Site Safeguard's disabled-by-default setting; it
+does not indicate an error. Admin2 may briefly retain the pre-save form styling,
+so reload the settings page or leave it and return before diagnosing a failed
+save. The durable check is that **Enabled** remains selected after that fresh
+load and the orange override marker is present.
+
 ## Package profiles
 
 ### Portable site

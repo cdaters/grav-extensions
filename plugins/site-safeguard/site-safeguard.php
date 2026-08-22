@@ -19,6 +19,7 @@ class SiteSafeguardPlugin extends Plugin
             'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
+            'onAdminSave' => ['onAdminSave', 0],
         ];
     }
 
@@ -151,6 +152,51 @@ class SiteSafeguardPlugin extends Plugin
             'icon' => 'fa-shield-halved',
             'page_type' => 'component',
         ];
+    }
+
+    public function onAdminSave(Event $event): void
+    {
+        $admin = $this->grav['admin'] ?? null;
+        $route = is_object($admin) && property_exists($admin, 'route')
+            ? trim((string) $admin->route, '/')
+            : '';
+        if ($route !== 'plugins/' . self::SLUG) {
+            return;
+        }
+
+        $object = $event['object'] ?? null;
+        if (!is_object($object) || !method_exists($object, 'get') || !method_exists($object, 'set')) {
+            return;
+        }
+
+        foreach (['restore_preserve_paths', 'exclude_paths'] as $field) {
+            $paths = $object->get($field);
+            if (is_array($paths)) {
+                $object->set($field, self::normaliseConfiguredPaths($paths));
+            }
+        }
+    }
+
+    /**
+     * Keep Admin-managed path lists readable and deterministic. Runtime checks
+     * still validate every path independently before any package or restore.
+     *
+     * @param array<mixed> $paths
+     * @return list<string>
+     */
+    public static function normaliseConfiguredPaths(array $paths): array
+    {
+        $normalised = [];
+        foreach ($paths as $path) {
+            $path = trim(str_replace('\\', '/', (string) $path), '/');
+            if ($path === '' || $path === '.' || str_contains($path, "\0")
+                || preg_match('#(^|/)\.\.(/|$)#', $path)) {
+                continue;
+            }
+            $normalised[] = $path;
+        }
+
+        return array_values(array_unique($normalised));
     }
 
     private function userCan(object $user, string $permission): bool

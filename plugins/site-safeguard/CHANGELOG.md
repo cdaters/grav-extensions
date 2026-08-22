@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.6 — 2026-08-22
+
+- Highlight the selected **Enabled** state for both restore switches in Admin2.
+  Version 0.3.5 highlighted the safe default (**Disabled**) instead, so a
+  successfully persisted enablement appeared gray and looked as though Save
+  had turned it off.
+- Document Admin2's saved-override marker and the reload check that distinguishes
+  a transient form-state display from a configuration write failure.
+- Normalize and deduplicate the editable preserve/exclude path lists whenever
+  Site Safeguard settings are saved. Runtime path validation and mandatory
+  preservation remain independently enforced.
+
 ## 0.3.5 — 2026-08-22
 
 - Bind the protected package-directory locator into the HMAC-signed ticket so

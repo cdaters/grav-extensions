@@ -47,3 +47,30 @@ checkpoints. `CURRENT-STATE.md` remains authoritative for the active state.
 Add File Vault's independent protected-delivery black-box contract, beginning
 with denial/authorization and exact-byte/range behavior. Keep the remaining
 suite inventory incremental and risk ordered.
+
+## 2026-08-22 — Site Safeguard restore-toggle presentation repair
+
+- Confirmed from a fresh live Admin2 settings load that both restore settings
+  had persisted; the orange markers were Admin2's saved-override indicators.
+- Traced the apparent reset to Site Safeguard's blueprint: both dangerous-by-
+  default switches used `highlight: 0`, so Admin2 colored **Disabled** purple
+  and rendered a successfully selected **Enabled** state gray. This looked like
+  the setting had turned itself off even though the saved value was true.
+- Changed both restore switches to `highlight: 1` in Site Safeguard 0.3.6 so
+  the enabled selection follows the same visual convention as the surrounding
+  settings. The underlying default remains disabled and every restore guard is
+  unchanged.
+- Reviewed the current public Grav Admin2 and Form issue trackers. No reported
+  issue matched this restore-toggle behavior or the earlier raw contact-field
+  attribute regression; the toggle problem was local blueprint presentation,
+  not a known upstream persistence failure.
+- Documented the fresh-load verification procedure and the meaning of the
+  orange override marker in the plugin README and current-state handoff.
+- Added a read-only DDEV settings contract. A fresh Grav process confirmed both
+  live-style DDEV settings enabled, disabled-by-default blueprint behavior,
+  enabled-state highlighting, and path-list normalization. The existing
+  same-origin/range/exact-byte download contract also remained green.
+- Verified all Site Safeguard PHP in DDEV, the repository preflight, the ZIP
+  archive, DDEV home/Admin responses, and all three documentation routes.
+  Packaged `site-safeguard-0.3.6.zip` with SHA-256
+  `082ed544bb651dff690d527acb4b80c759aec27b3d0aeced753aef041d97762b`.

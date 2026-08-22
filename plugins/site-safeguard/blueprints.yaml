@@ -1,7 +1,7 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.3.5
+version: 0.3.6
 description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:
@@ -121,7 +121,7 @@ form:
       type: toggle
       label: Allow full-site restore
       help: Restore requires a verified deployable stage, an exact confirmation phrase, and an automatically verified rollback package. The replacement itself always runs in PHP CLI.
-      highlight: 0
+      highlight: 1
       default: 0
       options:
         1: Enabled
@@ -133,7 +133,7 @@ form:
       type: toggle
       label: Allow Restore button in Admin2
       help: Launches the CLI restore as a detached worker after a separately authorized Admin user types the exact confirmation phrase. Leave disabled if the host cannot safely run detached PHP CLI processes.
-      highlight: 0
+      highlight: 1
       default: 0
       options:
         1: Enabled
