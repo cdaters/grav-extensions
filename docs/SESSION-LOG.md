@@ -256,3 +256,20 @@ suite inventory incremental and risk ordered.
   ZIP integrity, and public/Admin HTTP 200 checks.
 - Packaged `site-safeguard-0.3.11.zip`, SHA-256
   `2d9c967f0b7360a0c85928740d577cbf43d86618d9820cbe11f503e8b9f5fd0d`.
+
+## 2026-08-23 — Grav Commander blueprint parser repair
+
+- Confirmed the production-downloaded `blueprints.yaml` was byte-identical to
+  the canonical Grav Commander source and reproduced Grav's parser failure at
+  line 222, column 195 with an independent YAML parser.
+- Quoted the `backup.path` help scalar, whose embedded `Recommended:` text was
+  invalid inside the previous unquoted value. A second parser pass exposed and
+  repaired the same latent defect in the archive-name help text's `Useful
+  tokens:` clause. The actual file contained no Markdown fences or malformed
+  metadata URLs; those artifacts existed only in a chat-rendered paste.
+- Added YAML syntax parsing for all plugin and theme `.yaml`/`.yml` files to the
+  repository preflight, closing the validation gap that allowed the invalid
+  blueprint to reach production.
+- Recorded the repair in Grav Commander's traveling changelog and updated the
+  repository validation guidance. The active File Vault black-box milestone is
+  unchanged.

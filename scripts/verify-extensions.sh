@@ -45,6 +45,16 @@ for forbidden in \
     done < <(find "$repo_root/plugins" "$repo_root/themes" -name "$forbidden" -print)
 done
 
+if command -v ruby >/dev/null 2>&1; then
+    while IFS= read -r -d '' yaml_file; do
+        if ! ruby -rpsych -e 'Psych.parse_file(ARGV.fetch(0))' "$yaml_file" >/dev/null; then
+            report_failure "YAML syntax: ${yaml_file#$repo_root/}"
+        fi
+    done < <(find "$repo_root/plugins" "$repo_root/themes" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0)
+else
+    echo "NOTICE: Ruby is not installed on the host; YAML syntax checks were skipped."
+fi
+
 while IFS= read -r private_permission; do
     [[ -z "$private_permission" ]] || report_failure "API permission guards must not privately override Grav's protected method: ${private_permission#$repo_root/}"
 done < <(grep -RIl --include='*.php' -E 'private[[:space:]]+function[[:space:]]+requirePermission[[:space:]]*\(' "$repo_root/plugins" "$repo_root/themes" || true)

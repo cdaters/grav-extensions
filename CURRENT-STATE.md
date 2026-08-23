@@ -20,6 +20,13 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+An urgent Grav Commander follow-up corrected the canonical source of the live
+blueprint failure: the `backup.path` and archive-name help text now quote their
+colon-bearing scalars. Repository preflight now syntax-parses every extension
+YAML file so the same defect is rejected before packaging or deployment. The
+standalone Commander repository remains synchronized through the documented
+subtree workflow.
+
 Site Safeguard 0.3.11 closes the protected-download, shared-host restore, and
 Admin destructive-action failures found while moving the SpitfireBBS.com site
 between production and DDEV:
@@ -66,6 +73,10 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Every plugin and theme YAML file passes a real parser, and the Grav Commander
+  blueprint preserves its expected metadata, form, and field structure.
+- The Grav Commander package passes ZIP integrity and contains the repaired
+  blueprint at the required top-level plugin path.
 - Site Safeguard PHP files pass PHP 8.3 syntax checks in DDEV.
 - Admin JavaScript passes Node syntax parsing.
 - Cross-environment ticket resolution passes when the simulated public package

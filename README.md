@@ -100,7 +100,8 @@ version, changelog, tags, and GPM identity.
 
 ## Validate and package
 
-Validate repository structure and PHP syntax (when PHP is available):
+Validate repository structure, YAML syntax (when Ruby is available), and PHP
+syntax (when PHP is available):
 
 ```bash
 ./scripts/verify-extensions.sh
