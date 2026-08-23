@@ -15,6 +15,7 @@ class SiteSafeguardPage extends HTMLElement {
       theme: 'dark',
       restoreOperation: '',
       armedAction: '',
+      restorePhrase: '',
       disclosures: this.loadDisclosurePreferences(),
     };
     this.themeObserver = null;
@@ -207,7 +208,9 @@ class SiteSafeguardPage extends HTMLElement {
   }
 
   async stagePackage(name) {
-    if (!confirm('Validate this package again and extract it into an isolated directory outside the running site? The live site will not be changed.')) return;
+    const key = `create-stage:${name}`;
+    if (!this.armAction(key, `Click Confirm stage to validate ${name} again and extract it outside the running site. The live site will not be changed.`)) return;
+    this.state.armedAction = '';
     await this.run(async () => {
       await this.api(`/site-safeguard/packages/${encodeURIComponent(name)}/stage`, { method: 'POST', body: '{}' });
       this.state.status = await this.api('/site-safeguard/status');
@@ -235,7 +238,7 @@ class SiteSafeguardPage extends HTMLElement {
 
   async deletePackage(name) {
     const key = `package:${name}`;
-    if (!this.armDestructiveAction(key, `Click Confirm delete to permanently remove ${name}. Existing stages and live-site files will not be changed.`)) return;
+    if (!this.armAction(key, `Click Confirm delete to permanently remove ${name}. Existing stages and live-site files will not be changed.`)) return;
     this.state.armedAction = '';
     await this.run(async () => {
       const encodedName = encodeURIComponent(name);
@@ -254,7 +257,7 @@ class SiteSafeguardPage extends HTMLElement {
     const prompt = recognized
       ? `Click Confirm delete to remove isolated stage ${id}. The running site will not be changed.`
       : `Click Confirm removal to remove ${id} from Site Safeguard's isolated staging area. The running site and external plugin data will not be changed.`;
-    if (!this.armDestructiveAction(key, prompt)) return;
+    if (!this.armAction(key, prompt)) return;
     this.state.armedAction = '';
     await this.run(async () => {
       const encodedId = encodeURIComponent(id);
@@ -280,7 +283,7 @@ class SiteSafeguardPage extends HTMLElement {
     }
   }
 
-  armDestructiveAction(key, message) {
+  armAction(key, message) {
     if (this.state.armedAction === key) return true;
     this.state.armedAction = key;
     this.state.error = '';
@@ -289,9 +292,15 @@ class SiteSafeguardPage extends HTMLElement {
     return false;
   }
 
-  cancelDestructiveAction() {
+  cancelArmedAction() {
+    const action = this.state.armedAction;
     this.state.armedAction = '';
-    this.state.message = 'Deletion cancelled. Nothing was removed.';
+    this.state.restorePhrase = '';
+    this.state.message = action.startsWith('create-stage:')
+      ? 'Stage creation cancelled. The package and running site were unchanged.'
+      : (action.startsWith('restore:')
+        ? 'Restore cancelled. The running site was unchanged.'
+        : 'Deletion cancelled. Nothing was removed.');
     this.state.error = '';
     this.render();
   }
@@ -324,15 +333,26 @@ class SiteSafeguardPage extends HTMLElement {
 
   async restoreStage(id) {
     const phrase = this.state.status?.restore_confirmation || 'RESTORE THIS SITE';
-    const entered = prompt(`This will replace the running Grav site from the verified stage. Site Safeguard will first create and verify a rollback package.\n\nType ${phrase} to continue:`);
-    if (entered === null) return;
-    if (entered.trim() !== phrase) {
-      this.state.error = 'Restore cancelled: the confirmation phrase did not match.';
+    const key = `restore:${id}`;
+    if (this.state.armedAction !== key) {
+      this.state.armedAction = key;
+      this.state.restorePhrase = '';
+      this.state.error = '';
+      this.state.message = `Restore is not running. Type ${phrase} in the stage row, then select Confirm restore.`;
+      this.render();
+      requestAnimationFrame(() => this.shadowRoot.querySelector('.restore-phrase')?.focus());
+      return;
+    }
+    const entered = this.state.restorePhrase.trim();
+    if (entered !== phrase) {
+      this.state.error = `Restore not launched: type ${phrase} exactly.`;
+      this.state.message = '';
       this.render();
       return;
     }
-    if (!confirm('Final confirmation: launch the rollback-first restore now? Admin may be temporarily unavailable while files are replaced.')) return;
 
+    this.state.armedAction = '';
+    this.state.restorePhrase = '';
     await this.run(async () => {
       const result = await this.api(`/site-safeguard/stages/${encodeURIComponent(id)}/restore`, {
         method: 'POST',
@@ -424,7 +444,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.9')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.10')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
@@ -488,16 +508,7 @@ class SiteSafeguardPage extends HTMLElement {
         <section class="panel stages">
           ${this.disclosureHeader('stages', 'ISOLATED STAGING', 'Verified stages', `${verifiedStageCount} verified${unrecognizedStageCount ? ` · ${unrecognizedStageCount} unrecognized` : ''}`, stagesOpen, stagesNeedAttention ? 'warning' : '', `<code>${this.escape(status.stage_path || '')}</code>`)}
           <div class="section-body" id="stages-panel" ${stagesOpen ? '' : 'hidden'}>
-            ${stages.length ? stages.map(stage => `
-            <article class="stage-row ${stage.recognized ? '' : 'unrecognized'}">
-              <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.recognized ? (stage.record?.package || 'Recognized stage') : 'Unrecognized directory — not a recovery stage')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
-              <span class="badge ${stage.verified ? 'good' : 'warn'}">${stage.verified ? 'Verified' : (stage.recognized ? 'Unverified' : 'Unrecognized')}</span>
-              <div class="stage-actions">
-                ${stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : `<span class="cli-ready">${stage.recognized ? (status.restore_enabled ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled') : 'Restore disabled') : 'Not restorable'}</span>`}
-                ${this.state.armedAction === `stage:${stage.id}` ? `<button class="quiet cancel-delete" ${disabled}>Cancel</button>` : ''}
-                <button class="danger delete-stage ${this.state.armedAction === `stage:${stage.id}` ? 'armed' : ''}" data-id="${this.escape(stage.id)}" data-recognized="${stage.recognized ? 'true' : 'false'}" ${disabled}>${this.state.armedAction === `stage:${stage.id}` ? (stage.recognized ? 'Confirm delete' : 'Confirm removal') : (stage.recognized ? 'Delete stage' : 'Remove directory')}</button>
-              </div>
-            </article>`).join('') : '<div class="empty compact">No isolated stages.</div>'}
+            ${stages.length ? stages.map(stage => this.stageRow(stage, status, disabled)).join('') : '<div class="empty compact">No isolated stages.</div>'}
           </div>
         </section>
 
@@ -528,6 +539,40 @@ class SiteSafeguardPage extends HTMLElement {
           </button>
         </div>
       </header>`;
+  }
+
+  stageRow(stage, status, disabled) {
+    const deleteArmed = this.state.armedAction === `stage:${stage.id}`;
+    const restoreArmed = this.state.armedAction === `restore:${stage.id}`;
+    const canRestore = stage.verified && status.restore_enabled && status.admin_restore_enabled && status.restore_launcher_available;
+    const phrase = status.restore_confirmation || 'RESTORE THIS SITE';
+    const restoreReady = this.state.restorePhrase.trim() === phrase;
+    const restoreState = stage.recognized
+      ? (status.restore_enabled
+        ? (status.admin_restore_enabled ? this.escape(status.restore_launcher_message || 'CLI restore ready') : 'Admin Restore disabled')
+        : 'Restore disabled')
+      : 'Not restorable';
+    return `
+      <article class="stage-row ${stage.recognized ? '' : 'unrecognized'}">
+        <div><strong>${this.escape(stage.id)}</strong><small>${this.escape(stage.recognized ? (stage.record?.package || 'Recognized stage') : 'Unrecognized directory — not a recovery stage')} · ${this.formatDate(stage.modified * 1000)}</small>${stage.verified && status.restore_enabled ? `<code class="restore-command">CLI fallback: bin/plugin site-safeguard restore ${this.escape(stage.id)} --confirm="RESTORE THIS SITE"</code>` : ''}</div>
+        <span class="badge ${stage.verified ? 'good' : 'warn'}">${stage.verified ? 'Verified' : (stage.recognized ? 'Unverified' : 'Unrecognized')}</span>
+        <div class="stage-actions">
+          ${canRestore && !restoreArmed ? `<button class="primary restore-stage" data-id="${this.escape(stage.id)}" ${disabled}>Restore</button>` : (!restoreArmed ? `<span class="cli-ready">${restoreState}</span>` : '<span class="cli-ready">Confirmation required below</span>')}
+          ${deleteArmed ? `<button class="quiet cancel-action" ${disabled}>Cancel</button>` : ''}
+          <button class="danger delete-stage ${deleteArmed ? 'armed' : ''}" data-id="${this.escape(stage.id)}" data-recognized="${stage.recognized ? 'true' : 'false'}" ${(disabled || restoreArmed) ? 'disabled' : ''}>${deleteArmed ? (stage.recognized ? 'Confirm delete' : 'Confirm removal') : (stage.recognized ? 'Delete stage' : 'Remove directory')}</button>
+        </div>
+        ${restoreArmed ? `
+          <div class="restore-confirmation" role="group" aria-label="Confirm full-site restore">
+            <div><strong>Confirm full-site restore</strong><p>Site Safeguard will verify the stage, create and verify a rollback package, then launch the detached restore worker. The running site is not changed until that protected preparation succeeds.</p></div>
+            <label>Type <code>${this.escape(phrase)}</code> exactly
+              <input class="restore-phrase" data-id="${this.escape(stage.id)}" type="text" autocomplete="off" spellcheck="false" value="${this.escape(this.state.restorePhrase)}">
+            </label>
+            <div class="restore-confirm-actions">
+              <button class="quiet cancel-action">Cancel</button>
+              <button class="primary confirm-restore" data-id="${this.escape(stage.id)}" ${restoreReady ? '' : 'disabled'}>Confirm restore</button>
+            </div>
+          </div>` : ''}
+      </article>`;
   }
 
   restoreCard(operation) {
@@ -576,6 +621,7 @@ class SiteSafeguardPage extends HTMLElement {
     const note = String(manifest.note || '').trim();
     const inspection = this.state.inspections[item.name];
     const canStage = inspection?.valid && profile.deployable;
+    const stageArmed = this.state.armedAction === `create-stage:${item.name}`;
     const deleteArmed = this.state.armedAction === `package:${item.name}`;
     return `
       <article class="package-card">
@@ -594,10 +640,11 @@ class SiteSafeguardPage extends HTMLElement {
         </div>
         <div class="actions">
           <button class="inspect" data-name="${this.escape(item.name)}" ${disabled}>Inspect</button>
-          <button class="stage" data-name="${this.escape(item.name)}" ${disabled || !canStage ? 'disabled' : ''}>Create stage</button>
+          ${stageArmed ? `<button class="quiet cancel-action" ${disabled}>Cancel</button>` : ''}
+          <button class="stage ${stageArmed ? 'armed-safe' : ''}" data-name="${this.escape(item.name)}" ${disabled || !canStage ? 'disabled' : ''}>${stageArmed ? 'Confirm stage' : 'Create stage'}</button>
           <button class="download" data-name="${this.escape(item.name)}" ${disabled}>Download</button>
-          ${deleteArmed ? `<button class="quiet cancel-delete" ${disabled}>Cancel</button>` : ''}
-          <button class="danger delete-package ${deleteArmed ? 'armed' : ''}" data-name="${this.escape(item.name)}" ${disabled}>${deleteArmed ? 'Confirm delete' : 'Delete'}</button>
+          ${deleteArmed ? `<button class="quiet cancel-action" ${disabled}>Cancel</button>` : ''}
+          <button class="danger delete-package ${deleteArmed ? 'armed' : ''}" data-name="${this.escape(item.name)}" ${(disabled || stageArmed) ? 'disabled' : ''}>${deleteArmed ? 'Confirm delete' : 'Delete'}</button>
         </div>
         ${inspection ? this.inspectionPanel(inspection) : ''}
       </article>`;
@@ -645,8 +692,14 @@ class SiteSafeguardPage extends HTMLElement {
     this.shadowRoot.querySelectorAll('.download').forEach(button => button.addEventListener('click', () => this.downloadPackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.delete-package').forEach(button => button.addEventListener('click', () => this.deletePackage(button.dataset.name)));
     this.shadowRoot.querySelectorAll('.restore-stage').forEach(button => button.addEventListener('click', () => this.restoreStage(button.dataset.id)));
+    this.shadowRoot.querySelectorAll('.confirm-restore').forEach(button => button.addEventListener('click', () => this.restoreStage(button.dataset.id)));
     this.shadowRoot.querySelectorAll('.delete-stage').forEach(button => button.addEventListener('click', () => this.deleteStage(button.dataset.id, button.dataset.recognized === 'true')));
-    this.shadowRoot.querySelectorAll('.cancel-delete').forEach(button => button.addEventListener('click', () => this.cancelDestructiveAction()));
+    this.shadowRoot.querySelectorAll('.cancel-action').forEach(button => button.addEventListener('click', () => this.cancelArmedAction()));
+    this.shadowRoot.querySelectorAll('.restore-phrase').forEach(input => input.addEventListener('input', event => {
+      this.state.restorePhrase = event.target.value;
+      const button = event.target.closest('.restore-confirmation')?.querySelector('.confirm-restore');
+      if (button) button.disabled = event.target.value.trim() !== (this.state.status?.restore_confirmation || 'RESTORE THIS SITE');
+    }));
     this.shadowRoot.querySelectorAll('.disclosure-toggle').forEach(button => button.addEventListener('click', () => this.toggleDisclosure(button.dataset.section, button.dataset.defaultOpen === 'true')));
   }
 
@@ -682,7 +735,7 @@ class SiteSafeguardPage extends HTMLElement {
       textarea { resize:vertical; }.profile-help { min-height:42px; font-size:12px; }
       button { min-height:38px; padding:8px 12px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); cursor:pointer; font-weight:750; }
       button:hover:not(:disabled) { border-color:var(--accent); } button:disabled { cursor:not-allowed; opacity:.45; }
-      .primary { border-color:var(--accent); background:var(--accent); color:#fff; }.danger { color:var(--bad); }.danger.armed { border-color:var(--bad); background:var(--bad); color:#fff; }.quiet { background:transparent; }
+      .primary { border-color:var(--accent); background:var(--accent); color:#fff; }.armed-safe { border-color:var(--good); background:color-mix(in srgb,var(--good) 15%,var(--panel-2)); color:var(--good); }.danger { color:var(--bad); }.danger.armed { border-color:var(--bad); background:var(--bad); color:#fff; }.quiet { background:transparent; }
       .drop { min-height:147px; place-content:center; place-items:center; gap:4px; padding:20px; border:1px dashed var(--accent); border-radius:10px; background:color-mix(in srgb,var(--accent) 7%,var(--panel-2)); cursor:pointer; text-align:center; text-transform:none; }
       .drop.over { background:color-mix(in srgb,var(--accent) 16%,var(--panel-2)); }.drop input { max-width:230px; margin-top:9px; color:var(--muted); }.drop small { color:var(--muted); font-weight:500; }.upload-icon { display:grid; width:34px; height:34px; place-items:center; border-radius:9px; background:var(--accent); color:#fff; font-size:21px; }
       .section-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid var(--line); transition:background-color .2s ease,border-color .2s ease; }.section-head code { max-width:420px; overflow:hidden; color:var(--muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }.section-head.status-ready { border-bottom-color:color-mix(in srgb,var(--good) 38%,var(--line)); background:color-mix(in srgb,var(--good) 7%,var(--panel)); }.section-head.status-warning { border-bottom-color:color-mix(in srgb,var(--warn) 42%,var(--line)); background:color-mix(in srgb,var(--warn) 7%,var(--panel)); }.section-head.status-error { border-bottom-color:color-mix(in srgb,var(--bad) 42%,var(--line)); background:color-mix(in srgb,var(--bad) 7%,var(--panel)); }.section-head-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; }.section-summary { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; font-weight:800; }.status-icon { display:inline-grid; width:18px; height:18px; place-items:center; border:1px solid currentColor; border-radius:999px; font-size:11px; line-height:1; }.status-ready .section-summary { color:var(--good); }.status-warning .section-summary { color:var(--warn); }.status-error .section-summary { color:var(--bad); }.disclosure-toggle { display:grid; width:38px; min-width:38px; padding:0; place-items:center; border-radius:999px; background:transparent; font-size:18px; line-height:1; }.disclosure-toggle:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }.section-body[hidden] { display:none!important; }
@@ -692,9 +745,9 @@ class SiteSafeguardPage extends HTMLElement {
       .package-note { margin:0 18px 13px 83px; padding:10px 12px; border-left:2px solid var(--accent); background:var(--panel-2); }.package-note span,.inspection-note span { color:var(--accent-2); font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }.package-note p,.inspection-note p { margin:3px 0 0; color:var(--text); font-size:12px; line-height:1.5; white-space:pre-wrap; }.package-note.empty-note p { color:var(--muted); font-style:italic; }
       .actions { display:flex; justify-content:flex-end; gap:7px; padding:0 18px 14px; }
       .inspection { margin:0 18px 16px; padding:13px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }.inspection.valid { border-color:color-mix(in srgb,var(--good) 45%,var(--line)); }.inspection.invalid { border-color:color-mix(in srgb,var(--bad) 45%,var(--line)); }.inspection-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }.inspection-grid > div { display:grid; gap:4px; }.inspection-note { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }.issues { margin:10px 0 0; padding-left:20px; }.issues.errors { color:var(--bad); }.issues.warnings { color:#d89a2b; }
-      .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row.unrecognized { background:color-mix(in srgb,var(--warn) 5%,transparent); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
+      .stages { margin-top:16px; }.stage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--line); }.stage-row.unrecognized { background:color-mix(in srgb,var(--warn) 5%,transparent); }.stage-row:last-child { border-bottom:0; }.stage-row > div { display:grid; }.stage-row small { color:var(--muted); }.restore-command { margin-top:5px; overflow:auto; color:var(--accent-2); font-size:10px; white-space:nowrap; }.stage-actions { display:flex!important; align-items:center; gap:10px; }.cli-ready { color:var(--muted); font-size:11px; font-weight:750; }.restore-confirmation { grid-column:1/-1; display:grid!important; grid-template-columns:minmax(240px,1.5fr) minmax(260px,1fr) auto; align-items:end; gap:14px; margin-top:3px; padding:14px; border:1px solid color-mix(in srgb,var(--bad) 50%,var(--line)); border-radius:9px; background:color-mix(in srgb,var(--bad) 6%,var(--panel-2)); }.restore-confirmation p { margin-top:4px; color:var(--muted); font-size:11px; }.restore-confirmation label { color:var(--text); text-transform:none; }.restore-confirmation label code { color:var(--bad); font-size:11px; }.restore-phrase { width:100%; min-height:40px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; outline:none; background:var(--panel); color:var(--text); font:12px ui-monospace,monospace; }.restore-phrase:focus { border-color:var(--bad); box-shadow:0 0 0 2px color-mix(in srgb,var(--bad) 18%,transparent); }.restore-confirm-actions { display:flex!important; gap:8px; }.empty { padding:38px 20px; color:var(--muted); text-align:center; }.empty.compact { padding:22px; }
       .history { margin-top:16px; }.working-dot { color:var(--accent-2); font-size:11px; font-weight:800; }.restore-card { padding:15px 18px; border-bottom:1px solid var(--line); }.restore-card:last-child { border-bottom:0; }.restore-card.active { background:color-mix(in srgb,var(--accent) 6%,var(--panel)); }.restore-summary { display:flex; align-items:center; justify-content:space-between; gap:15px; }.restore-summary > div { display:grid; }.restore-summary small { color:var(--muted); }.restore-progress { height:5px; margin:11px 0; overflow:hidden; border-radius:999px; background:var(--panel-2); }.restore-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--good)); transition:width .35s ease; }.restore-facts { display:flex; flex-wrap:wrap; gap:9px 20px; color:var(--muted); font-size:11px; }.restore-facts strong { color:var(--text); }.restore-error { flex-basis:100%; color:var(--bad); }.restore-card details { margin-top:10px; color:var(--muted); }.restore-card summary { cursor:pointer; font-size:11px; font-weight:750; }.restore-card pre { max-height:180px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:7px; background:var(--panel-2); color:var(--text); font:10px/1.5 ui-monospace,monospace; white-space:pre-wrap; }
-      @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; } }
+      @media (max-width:950px) { .metrics { grid-template-columns:1fr 1fr; }.metrics > div:nth-child(2) { border-right:0; }.metrics .path { grid-column:1/-1; border-top:1px solid var(--line); }.workspace { grid-template-columns:1fr; }.inspection-grid { grid-template-columns:1fr 1fr; }.restore-confirmation { grid-template-columns:1fr; align-items:stretch; }.restore-confirm-actions { justify-content:flex-end; } }
       @media (max-width:620px) { .shell { padding:12px; }.hero { align-items:flex-start; flex-direction:column; }.hero-state { width:100%; }.metrics { grid-template-columns:1fr; }.metrics > div { border-right:0; border-bottom:1px solid var(--line); }.metrics > div:last-child { border-bottom:0; }.metrics .path { grid-column:auto; }.section-head { align-items:flex-start; flex-wrap:wrap; }.section-head-actions { width:100%; justify-content:space-between; }.section-head code { max-width:55vw; }.requirement-grid { grid-template-columns:1fr; }.requirement-card { border-right:0; }.package-main { align-items:flex-start; flex-wrap:wrap; }.package-copy { flex-basis:calc(100% - 65px); }.package-note { margin-left:18px; }.actions { justify-content:stretch; flex-wrap:wrap; }.actions button { flex:1; }.inspection-grid { grid-template-columns:1fr; }.stage-row { grid-template-columns:1fr auto; }.stage-actions { grid-column:1/-1; flex-wrap:wrap; }.stage-actions button { flex:1; } }
     `;
   }

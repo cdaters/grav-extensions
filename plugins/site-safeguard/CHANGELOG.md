@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.10 — 2026-08-22
+
+- Remove the remaining native browser dialog dependency from **Create stage**.
+  The first click now arms only that inspected package and presents an in-page
+  **Confirm stage** action; Cancel leaves the package and running site intact.
+- Replace restore's native `prompt()` plus `confirm()` sequence with a visible
+  stage-row confirmation panel. The operator must deliberately open it, type
+  the exact restore phrase, and select **Confirm restore** before the API can be
+  called.
+- Extend the Admin UI contract to forbid native dialog calls, prove the first
+  stage/restore clicks and a wrong restore phrase are non-mutating, verify
+  cancellation, and confirm the exact authorized request bodies.
+
 ## 0.3.9 — 2026-08-22
 
 - Recover automatically when Admin2 has loaded the updated dashboard but a

@@ -59,7 +59,7 @@ const Page = registry.get('site-safeguard-contract-page');
 assert.ok(Page, 'Admin2 custom element should register');
 
 const healthyStatus = {
-  version: '0.3.9',
+  version: '0.3.10',
   profiles: [],
   packages: [],
   stages: [],
@@ -71,6 +71,7 @@ const healthyStatus = {
 };
 
 const page = new Page();
+assert.doesNotMatch(source, /\b(?:confirm|prompt)\s*\(/, 'Admin actions must not depend on native browser dialogs');
 page.state.status = structuredClone(healthyStatus);
 page.render();
 assert.match(page.shadowRoot.innerHTML, /readiness readiness-ready/);
@@ -96,6 +97,71 @@ page.render();
 assert.match(page.shadowRoot.innerHTML, /readiness readiness-error/);
 assert.match(page.shadowRoot.innerHTML, /required check needs attention/);
 
+const packageName = 'safeguard-example.zip';
+const stageRequests = [];
+page.api = async (requestPath, options = {}) => {
+  stageRequests.push({ path: requestPath, method: options.method || 'GET' });
+  return requestPath === '/site-safeguard/status' ? structuredClone(healthyStatus) : {};
+};
+await page.stagePackage(packageName);
+assert.equal(page.state.armedAction, `create-stage:${packageName}`);
+assert.match(page.state.message, /Click Confirm stage/);
+assert.equal(stageRequests.length, 0, 'first create-stage click must not call the API');
+page.state.inspections[packageName] = { valid: true };
+const armedPackageCard = page.packageCard({
+  name: packageName,
+  manifest: { profile: { label: 'Portable site', deployable: true } },
+  size: 1,
+  modified: 1,
+  sha256: 'a'.repeat(64),
+}, '');
+assert.match(armedPackageCard, /Confirm stage/);
+assert.match(armedPackageCard, /cancel-action/);
+await page.stagePackage(packageName);
+assert.deepEqual(stageRequests[0], {
+  path: `/site-safeguard/packages/${packageName}/stage`,
+  method: 'POST',
+});
+assert.equal(page.state.message, 'Verified stage created. The running site was not modified.');
+
+const restoreStageId = 'verified-stage';
+const restorePhrase = 'RESTORE THIS SITE';
+const restoreStatus = {
+  ...structuredClone(healthyStatus),
+  restore_confirmation: restorePhrase,
+  restore_enabled: true,
+  admin_restore_enabled: true,
+  restore_launcher_available: true,
+  stages: [{ id: restoreStageId, recognized: true, verified: true, modified: 1, record: { package: packageName } }],
+};
+const restoreRequests = [];
+page.scheduleRestorePoll = () => {};
+page.state.status = restoreStatus;
+page.api = async (requestPath, options = {}) => {
+  restoreRequests.push({ path: requestPath, method: options.method || 'GET', body: options.body || '' });
+  if (requestPath.endsWith('/restore')) return { operation: { id: 'restore-operation' } };
+  return requestPath === '/site-safeguard/status' ? structuredClone(restoreStatus) : {};
+};
+await page.restoreStage(restoreStageId);
+assert.equal(page.state.armedAction, `restore:${restoreStageId}`);
+assert.equal(restoreRequests.length, 0, 'opening restore confirmation must not call the API');
+assert.match(page.shadowRoot.innerHTML, /Confirm full-site restore/);
+assert.match(page.shadowRoot.innerHTML, /class="restore-phrase"/);
+page.state.restorePhrase = 'WRONG';
+await page.restoreStage(restoreStageId);
+assert.equal(restoreRequests.length, 0, 'an incorrect restore phrase must not call the API');
+assert.match(page.state.error, /type RESTORE THIS SITE exactly/);
+page.state.restorePhrase = restorePhrase;
+await page.restoreStage(restoreStageId);
+assert.deepEqual(restoreRequests[0], {
+  path: `/site-safeguard/stages/${restoreStageId}/restore`,
+  method: 'POST',
+  body: JSON.stringify({ confirmation: restorePhrase }),
+});
+assert.equal(page.state.restoreOperation, 'restore-operation');
+
+page.state.status = structuredClone(healthyStatus);
+
 const requests = [];
 page.api = async (requestPath, options = {}) => {
   requests.push({
@@ -109,7 +175,6 @@ page.api = async (requestPath, options = {}) => {
   return requestPath === '/site-safeguard/status' ? structuredClone(healthyStatus) : {};
 };
 
-const packageName = 'safeguard-example.zip';
 await page.deletePackage(packageName);
 assert.equal(page.state.armedAction, `package:${packageName}`);
 assert.match(page.state.message, /Click Confirm delete/);
@@ -148,9 +213,19 @@ assert.deepEqual(requests[1], {
 assert.equal(page.state.message, 'Unrecognized staging directory removed.');
 
 page.state.armedAction = 'stage:cancel-me';
-page.cancelDestructiveAction();
+page.cancelArmedAction();
 assert.equal(page.state.armedAction, '');
 assert.equal(page.state.message, 'Deletion cancelled. Nothing was removed.');
+
+page.state.armedAction = `create-stage:${packageName}`;
+page.cancelArmedAction();
+assert.equal(page.state.message, 'Stage creation cancelled. The package and running site were unchanged.');
+
+page.state.armedAction = `restore:${restoreStageId}`;
+page.state.restorePhrase = restorePhrase;
+page.cancelArmedAction();
+assert.equal(page.state.restorePhrase, '');
+assert.equal(page.state.message, 'Restore cancelled. The running site was unchanged.');
 
 let deniedRequests = 0;
 page.api = async () => {
@@ -167,6 +242,8 @@ console.log(JSON.stringify({
   version: healthyStatus.version,
   delete_transport: 'POST action routes with stale-route fallback',
   delete_confirmation: 'two click',
+  stage_confirmation: 'two click',
+  restore_confirmation: 'inline typed phrase',
   disclosures: ['readiness', 'packages', 'stages', 'history'],
   readiness_states: ['ready', 'warning', 'error'],
 }));

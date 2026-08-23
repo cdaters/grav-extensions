@@ -149,13 +149,15 @@ Grav site; inspection checks for `index.php`, `system/`, and `user/`.
    its configured expiry so a browser safety probe, range request, or interrupted
    transfer can retry without destroying the authorization.
 5. On the destination, drop the ZIP onto **Validate another package**.
-6. Inspect it again, then select **Create stage**.
+6. Inspect it again, select **Create stage**, review the in-page scope, and
+   select **Confirm stage**. The first click does not call the API.
 7. The package is extracted outside the running Grav root and every staged file
    is hashed again. The current site remains untouched.
-8. Review the stage and select **Restore**. Type the exact confirmation phrase
-   and approve the final warning. Admin2 follows the detached operation through
-   its durable recovery journal while Site Safeguard creates and boots a
-   rollback stage before maintenance mode begins.
+8. Review the stage and select **Restore**. An in-page panel explains the scope;
+   type the exact confirmation phrase and select **Confirm restore**. Opening
+   the panel or entering a wrong phrase cannot call the API. Admin2 follows the
+   detached operation through its durable recovery journal while Site Safeguard
+   creates and boots a rollback stage before maintenance mode begins.
 
 The displayed CLI command remains the recovery fallback when the Admin launcher
 is disabled or unavailable.
@@ -177,6 +179,12 @@ PHP worker still has the preceding route table, Admin2 automatically retries
 through the established package/stage route using the API's authenticated
 method-override form. The operator does not need to restart PHP just to finish
 the cleanup.
+
+Package staging and full-site restore also use in-page confirmation controls;
+Site Safeguard does not depend on native browser `confirm()` or `prompt()`
+dialogs for any Admin action. This keeps browser dialog policies, private mode,
+and embedded Admin2 rendering from turning an operator control into a silent
+no-op.
 
 ## CLI
 

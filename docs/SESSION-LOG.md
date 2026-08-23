@@ -198,3 +198,39 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-215150-d6aded-f8fdac`; the running
   DDEV site was not modified.
+- Live 0.3.9 testing found that **Create stage** still appeared inert after a
+  successful inspection. The handler retained the same native `confirm()`
+  dependency previously removed from deletion; restore still used native
+  `prompt()` plus `confirm()` as well. If the browser did not complete those
+  dialogs, no API request or visible error could exist.
+- Independently checked the operator-supplied package
+  `safeguard-spitfire-file-vault.ddev.site-portable_site-20260823-064154-dcf77e.zip`,
+  SHA-256
+  `9d28a2f9956f73afda29777169e2c596531e88b95b0fb7a4318505e735dd79b6`.
+  ZIP integrity and its deployable 0.3.9 manifest passed; DDEV inspection
+  verified 6,816 archive files and 6,814 checksum records. CLI staging created
+  verified, non-deployed stage
+  `safeguard-spitfire-file-vault.ddev.site-portable_site-20260823-064154-dcf77e-92afb1`,
+  proving the package and backend staging engine were healthy.
+- Released Site Safeguard 0.3.10. Create stage now uses visible two-click
+  confirmation, while Restore opens an inline exact-phrase panel describing
+  rollback-first preparation. Cancel, first clicks, and wrong phrases are
+  non-mutating; no Admin action depends on native browser dialogs.
+- Extended the Admin UI contract to forbid native dialog calls and verify stage
+  arming, stage confirmation, restore arming, wrong-phrase denial, exact restore
+  request bodies, and action-specific cancellation. ZIP-installed DDEV passed
+  settings/version/mode, disposable cleanup, traversal denial, exact protected
+  download, PHP/JavaScript syntax, repository hygiene, and public/Admin HTTP
+  checks.
+- Packaged `site-safeguard-0.3.10.zip`, SHA-256
+  `c3c04f7329c14ca7cb28d98ff92a31cc03a4521bfe0620fe366aac08119320d1`.
+  Preserved the superseded DDEV package
+  `safeguard-localhost-portable_site-20260819-012632-56cb9e.zip` in the existing
+  protected archive directory rather than deleting it at the retention limit.
+- Created, independently inspected, and staged the final 0.3.10 recovery package
+  `safeguard-localhost-portable_site-20260823-065733-349135.zip`, SHA-256
+  `b88aed045b0775abf43138d337044d14e6db72f30b525958dfab526da5c96813`.
+  It contains 6,817 checked files and 6,815 checksum records. Its verified,
+  non-deployed stage is
+  `safeguard-localhost-portable_site-20260823-065733-349135-457383`; the running
+  DDEV site was not modified.

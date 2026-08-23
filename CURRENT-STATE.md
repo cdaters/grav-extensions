@@ -20,7 +20,7 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Site Safeguard 0.3.9 closes the protected-download, shared-host restore, and
+Site Safeguard 0.3.10 closes the protected-download, shared-host restore, and
 Admin destructive-action failures found while moving the SpitfireBBS.com site
 between production and DDEV:
 
@@ -46,6 +46,9 @@ between production and DDEV:
   its exact missing-route response and retried through the already-established
   authenticated package/stage route with method override, avoiding a PHP-FPM
   restart during a rolling plugin upload;
+- create-stage and restore confirmation are rendered inside Admin2 instead of
+  depending on native browser dialogs; the first stage/restore click, a wrong
+  restore phrase, and Cancel are all non-mutating;
 - unrelated directories beneath the staging root are explicitly classified as
   unrecognized and non-restorable; and
 - restored public assets receive missing read bits while private config/data
@@ -70,8 +73,8 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   `spitfire-file-vault.ddev.site`, returns HTTP 200 for HEAD and 206 for a
   128-byte range, and streams bytes from the protected ZIP.
 - The latest portable package was independently inspected and staged:
-  `safeguard-localhost-portable_site-20260822-215150-d6aded.zip`, SHA-256
-  `062214c0208cb34ec667759d48d147648fa05da5a3e79b8bdf2dde2b94a96f77`;
+  `safeguard-localhost-portable_site-20260823-065733-349135.zip`, SHA-256
+  `b88aed045b0775abf43138d337044d14e6db72f30b525958dfab526da5c96813`;
   see the latest `docs/SESSION-LOG.md` entry for the stage identifier.
 - Live Admin2 restore settings were confirmed durable after a fresh page load.
   Site Safeguard 0.3.6 changes both restore toggles to highlight the selected
@@ -88,6 +91,10 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   warning, and error states. Unauthenticated external POSTs to both DDEV route
   forms return 401 rather than 404/405, proving that Grav registered the routes
   and applied its authentication boundary.
+- The same UI contract rejects any native `confirm()`/`prompt()` dependency,
+  proves Create stage is a two-click action, and proves Restore requires its
+  visible exact-phrase form. Opening either action, entering the wrong phrase,
+  or cancelling produces no API request.
 
 ## Active milestone
 

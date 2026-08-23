@@ -111,11 +111,17 @@ states. The disposable DDEV staging cleanup contract remains the filesystem-
 boundary proof that actual contained removal succeeds and parent traversal is
 refused.
 
+The contract also refuses any native `confirm()` or `prompt()` call in the
+dashboard source. It proves Create stage requires a separate in-page
+confirmation, and that opening Restore, typing a wrong phrase, or cancelling
+cannot call the API. Only the exact phrase followed by **Confirm restore**
+produces the expected authenticated request body.
+
 ### Suite coverage inventory
 
 | Extension | Highest-value black-box boundaries | State |
 | --- | --- | --- |
-| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore settings, destructive Admin actions, restore worker | download, settings, stage-cleanup, and Admin UI contracts implemented; restore contract next |
+| Site Safeguard | signed delivery, environment/origin separation, ranges, exact ZIP bytes, restore settings, state-changing Admin actions, restore worker | download, settings, stage-cleanup, and Admin UI contracts implemented; detached-worker restore contract next |
 | File Vault | anonymous/authenticated ACL delivery, range/resume, analytics, external storage | required |
 | Prism Gallery | authorized media enumeration, derivative delivery, missing/corrupt media | required |
 | Image Foundry | source immutability, derivative cache, purge containment, concurrent generation | required |
