@@ -59,7 +59,7 @@ const Page = registry.get('site-safeguard-contract-page');
 assert.ok(Page, 'Admin2 custom element should register');
 
 const healthyStatus = {
-  version: '0.3.10',
+  version: '0.3.11',
   profiles: [],
   packages: [],
   stages: [],
@@ -79,6 +79,9 @@ assert.match(page.shadowRoot.innerHTML, /All checks passed/);
 assert.match(page.shadowRoot.innerHTML, /id="readiness-panel" hidden/);
 assert.match(page.shadowRoot.innerHTML, /id="packages-panel" >/);
 assert.match(page.shadowRoot.innerHTML, /id="history-panel" hidden/);
+assert.doesNotMatch(page.shadowRoot.innerHTML, /[⌃⌄]/, 'disclosures must not depend on font-rendered Unicode chevrons');
+assert.match(page.shadowRoot.innerHTML, /<svg class="disclosure-icon"[^>]*>[\s\S]*?<path d="M3\.5 6 8 10\.5 12\.5 6"><\/path>[\s\S]*?<\/svg>/);
+assert.match(source, /\.disclosure-toggle\[aria-expanded="true"\] \.disclosure-icon \{ transform:rotate\(180deg\); \}/);
 
 page.toggleDisclosure('readiness', false);
 assert.equal(page.state.disclosures.readiness, true);

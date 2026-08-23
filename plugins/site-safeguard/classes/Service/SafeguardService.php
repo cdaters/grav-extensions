@@ -18,7 +18,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.3.10';
+    private const VERSION = '0.3.11';
 
     private Grav $grav;
     private array $config;

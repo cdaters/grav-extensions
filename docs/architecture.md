@@ -67,7 +67,7 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Prism Gallery 0.2.1:** working development release with Quark 2 modular
   integration, shortcodes, mixed media, and opaque just-in-time local-media
   delivery.
-- **Site Safeguard 0.3.5:** working development release for checksummed portable
+- **Site Safeguard 0.3.11:** working development release for checksummed portable
   packages, hostile-archive validation, isolated verified staging, and
   rollback-first full-site restore through a detached Admin-launched CLI worker
   or manual CLI fallback, with fresh-process boot checks and verified

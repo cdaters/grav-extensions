@@ -20,7 +20,7 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Site Safeguard 0.3.10 closes the protected-download, shared-host restore, and
+Site Safeguard 0.3.11 closes the protected-download, shared-host restore, and
 Admin destructive-action failures found while moving the SpitfireBBS.com site
 between production and DDEV:
 
@@ -58,7 +58,8 @@ between production and DDEV:
 Environment Readiness, Package Library, Isolated Staging, and Recovery Journal
 are collapsible with remembered browser preferences and attention-aware
 defaults. Environment Readiness pairs a textual aggregate result and icon with
-green, amber, or red presentation.
+green, amber, or red presentation. Every disclosure uses the same inline SVG
+chevron rotated by state, avoiding inconsistent fallback-font glyphs.
 
 Decision 0003 establishes external black-box contract coverage as a suite-wide
 rule. `docs/testing.md` contains the risk-ordered coverage inventory.

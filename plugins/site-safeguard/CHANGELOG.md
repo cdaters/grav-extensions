@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.11 — 2026-08-23
+
+- Replace the disclosure controls' separate font-rendered up/down characters
+  with one shared inline SVG chevron. Expanded state rotates the same path, so
+  all four collapsible headers retain identical weight, size, and alignment.
+- Extend the Admin UI contract to reject the old Unicode glyphs and require the
+  shared SVG plus state-based rotation.
+
 ## 0.3.10 — 2026-08-22
 
 - Remove the remaining native browser dialog dependency from **Create stage**.

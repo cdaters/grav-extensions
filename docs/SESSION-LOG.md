@@ -198,6 +198,7 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260822-215150-d6aded-f8fdac`; the running
   DDEV site was not modified.
+
 - Live 0.3.9 testing found that **Create stage** still appeared inert after a
   successful inspection. The handler retained the same native `confirm()`
   dependency previously removed from deletion; restore still used native
@@ -234,3 +235,24 @@ suite inventory incremental and risk ordered.
   non-deployed stage is
   `safeguard-localhost-portable_site-20260823-065733-349135-457383`; the running
   DDEV site was not modified.
+
+## 2026-08-23 — Site Safeguard disclosure-icon consistency checkpoint
+
+- Traced the visibly mismatched expanded/collapsed disclosure controls to two
+  separate Unicode characters (`⌃` and `⌄`). Browser fallback-font selection
+  gave them different weight, proportions, and vertical alignment.
+- Released Site Safeguard 0.3.11 with one shared inline SVG chevron. The closed
+  control renders the original path and the expanded control rotates that same
+  path 180 degrees, preserving identical geometry in every collapsible header.
+- Extended the Admin UI contract to reject the old font-rendered characters and
+  require the shared SVG path plus state-based rotation.
+- Installed the packaged plugin into DDEV and cleared Grav cache. A temporary,
+  local-only rendering fixture confirmed all four controls use the same 16 by
+  16 pixel path and 1.75 pixel stroke; computed expanded state was exactly a
+  180-degree transform. The fixture was removed immediately after the visual
+  check.
+- Passed Node syntax, the Admin UI behavior contract, repository hygiene,
+  DDEV settings/version/mode checks, all Site Safeguard PHP 8.3 syntax checks,
+  ZIP integrity, and public/Admin HTTP 200 checks.
+- Packaged `site-safeguard-0.3.11.zip`, SHA-256
+  `2d9c967f0b7360a0c85928740d577cbf43d86618d9820cbe11f503e8b9f5fd0d`.
