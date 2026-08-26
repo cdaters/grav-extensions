@@ -1,8 +1,10 @@
 {% set image = page.media.images|first %}
 {% set image_align = page.header.image_align|default('right')|replace({'align-': ''}) %}
 {% set image_layout = page.header.image_layout|default('columns') %}
+{% set section_spacing = page.header.section_spacing|default('normal') %}
+{% set section_spacing_class = section_spacing == 'tighter' ? 'section-tighter' : (section_spacing == 'tight' ? 'section-tight' : '') %}
 
-<section class="section modular-text image-layout-{{ image_layout }} {{ page.header.class }}">
+<section class="section {{ section_spacing_class }} modular-text image-layout-{{ image_layout }} {{ page.header.class }}">
     <div class="container">
         {% if image and image_layout == 'wrap' %}
             <div class="text-flow align-{{ image_align }}">

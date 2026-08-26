@@ -1,0 +1,19 @@
+title: Form
+'@extends': default
+
+form:
+  fields:
+    tabs:
+      fields:
+        content:
+          fields:
+            header.section_spacing:
+              type: select
+              label: Section spacing
+              help: Controls the responsive space above and below this modular section.
+              default: normal
+              size: medium
+              options:
+                normal: Normal
+                tight: Tight
+                tighter: Tighter (half of Tight)

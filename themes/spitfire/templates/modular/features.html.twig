@@ -1,4 +1,7 @@
-<section class="section modular-features" data-layout="{{ page.header.class|default('small') }}">
+{% set section_spacing = page.header.section_spacing|default('normal') %}
+{% set section_spacing_class = section_spacing == 'tighter' ? 'section-tighter' : (section_spacing == 'tight' ? 'section-tight' : '') %}
+
+<section class="section modular-features {{ section_spacing_class }}" data-layout="{{ page.header.class|default('small') }}">
     <div class="container">
         <div class="frame-box">
             {% set intro_layout = page.header.intro_layout|default('single') %}

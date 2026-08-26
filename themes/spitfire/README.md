@@ -51,6 +51,13 @@ at desktop widths while keeping its headings full width. The Text modular
 blueprint can float its selected image left or right so following prose wraps
 around it, returning to a single column on narrow screens.
 
+Features, Text, and Form modular pages also provide a **Section spacing**
+selector in Admin. **Normal** retains Quark 2's standard responsive spacing,
+**Tight** uses Quark 2's `section-tight` spacing, and **Tighter** uses the
+Spitfire child theme's `section-tighter` spacing at half of Tight. Adjacent
+modules each contribute their own padding, so choose a compact option on both
+sides when reducing the gap between two sections.
+
 Navigation dropdowns are generated from the Grav page hierarchy. Create actual
 child pages, keep them routable, and set their visibility/order in Admin rather
 than hard-coding menu links in the template.

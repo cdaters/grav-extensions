@@ -12,6 +12,16 @@ form:
               label: Section anchor
               help: Stable URL fragment used by the Home submenu, such as mike-woltz. Use lowercase letters, numbers and hyphens only.
               size: medium
+            header.section_spacing:
+              type: select
+              label: Section spacing
+              help: Controls the responsive space above and below this modular section.
+              default: normal
+              size: medium
+              options:
+                normal: Normal
+                tight: Tight
+                tighter: Tighter (half of Tight)
             header.media_order:
               label: Page Media (first one will be displayed next to your content)
             header.image_align:

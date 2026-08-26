@@ -1,4 +1,7 @@
-<section class="section modular-form {{ page.header.class }}">
+{% set section_spacing = page.header.section_spacing|default('normal') %}
+{% set section_spacing_class = section_spacing == 'tighter' ? 'section-tighter' : (section_spacing == 'tight' ? 'section-tight' : '') %}
+
+<section class="section {{ section_spacing_class }} modular-form {{ page.header.class }}">
     <div class="container">
         <div class="modular-form-inner">
             {{ content|raw }}
