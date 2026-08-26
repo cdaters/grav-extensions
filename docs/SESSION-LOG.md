@@ -297,3 +297,24 @@ suite inventory incremental and risk ordered.
   the temporary page, configuration rows, icon, and disable override afterward.
 - Kept the active File Vault black-box milestone and unrelated uncommitted Site
   Workshop/Cache Hearth and Spitfire-theme work unchanged.
+
+## 2026-08-25 — Spitfire modular section-spacing controls
+
+- Released Spitfire theme 1.2.1 with an Admin **Section spacing** selector for
+  Features, Text, and Form modular pages. Existing content defaults to Normal;
+  Tight uses Quark 2's existing responsive `section-tight` utility; and Tighter
+  uses `section-tighter`, defined at half of Tight's responsive padding.
+- Kept spacing independent from the Features module's existing card-layout
+  field, avoiding the invalid layout value and responsive-column regression
+  that would result from overloading `header.class`.
+- Documented that adjacent modules each contribute padding, so operators should
+  select compact spacing on both sides when reducing an inter-section gap.
+- Parsed configuration, page frontmatter, and page blueprints with Grav's YAML
+  linter. Temporary DDEV selections proved Features and Text at 28px desktop
+  edge padding for Tighter and Form at 56px for Tight; Home and Contact both
+  returned HTTP 200. Removed all temporary content selections after testing.
+- Passed repository preflight and ZIP integrity. Packaged
+  `spitfire-1.2.1.zip`, SHA-256
+  `02db9ba50293864e3545d19896dbbe01b8643f3e6ccd276c809b51b89ed1da4a`.
+- Left production untouched and preserved unrelated local Site Workshop,
+  Cache Hearth, and Spitfire theme edits outside this checkpoint.

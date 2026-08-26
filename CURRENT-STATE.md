@@ -20,6 +20,13 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+Spitfire theme 1.2.1 adds an Admin **Section spacing** selector to Features,
+Text, and Form modular pages. Existing pages default to Normal, Tight reuses
+Quark 2's responsive `section-tight` utility, and Tighter adds a responsive
+`section-tighter` utility with half of Tight's padding. The choice is separate
+from the Features card-layout field, so compact spacing does not disturb its
+responsive column layout.
+
 Flexible Markdown Alerts 1.0.1 is now part of the canonical extension suite.
 It provides editable alert definitions, `[!TYPE|Custom title]`, configurable
 colors and icons, site-owned SVG overrides, and optional `pack/icon`
@@ -82,6 +89,11 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
+  integrity, and local DDEV rendering checks. Features and Text produced 28px
+  desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
+  and Contact routes returned HTTP 200. Temporary page selections were removed
+  after testing, leaving existing site presentation unchanged by default.
 - Flexible Markdown Alerts passes PHP syntax, Composer, YAML, ZIP integrity,
   public HTTP, and external DDEV rendering checks. Bundled icons, site-owned
   SVGs, Icon Bench references, missing-reference fallback, and operation with
