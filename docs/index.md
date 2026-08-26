@@ -16,6 +16,7 @@ belong in that extension's own README.
 - [Revision Ledger](../plugins/revision-ledger/README.md)
 - [Lantern Search](../plugins/lantern-search/README.md)
 - [Site Workshop](../plugins/site-workshop/README.md)
+- [Flexible Markdown Alerts](../plugins/flexible-markdown-alerts/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 

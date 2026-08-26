@@ -273,3 +273,27 @@ suite inventory incremental and risk ordered.
 - Recorded the repair in Grav Commander's traveling changelog and updated the
   repository validation guidance. The active File Vault black-box milestone is
   unchanged.
+
+## 2026-08-25 — Flexible Markdown Alerts 1.0.1 added
+
+- Added Flexible Markdown Alerts to the canonical suite as an independently
+  installable Grav 2 plugin maintained by Craig Daters.
+- Preserved GitHub-style `[!TYPE]` markers and added per-instance titles through
+  `[!TYPE|Custom title]`, editable default definitions, new configured types,
+  per-type colors, and configurable icons.
+- Corrected the Grav Admin README's broken relative screenshot references and
+  expanded the traveling documentation with complete syntax, configuration,
+  migration, and SVG icon guides.
+- Moved custom SVG ownership outside the upgradeable plugin to
+  `user/data/flexible-markdown-alerts/icons`; a same-key site file safely
+  overrides a bundled icon and removing it restores the fallback.
+- Added optional `pack/icon` interoperability with Site Workshop's public Icon
+  Bench renderer. No Site Workshop source was changed: Flexible Markdown Alerts
+  degrades to a text title if the service is absent, disabled, or cannot resolve
+  a reference, while Site Workshop remains unaware of the alert plugin.
+- Exercised bundled, site-owned, Icon Bench, and missing-icon paths through a
+  temporary public DDEV Markdown route. Repeated the request with Site Workshop
+  disabled and confirmed HTTP 200 plus intact alert title/body output. Removed
+  the temporary page, configuration rows, icon, and disable override afterward.
+- Kept the active File Vault black-box milestone and unrelated uncommitted Site
+  Workshop/Cache Hearth and Spitfire-theme work unchanged.

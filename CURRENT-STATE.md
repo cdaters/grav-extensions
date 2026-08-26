@@ -20,6 +20,15 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+Flexible Markdown Alerts 1.0.1 is now part of the canonical extension suite.
+It provides editable alert definitions, `[!TYPE|Custom title]`, configurable
+colors and icons, site-owned SVG overrides, and optional `pack/icon`
+interoperability with Site Workshop's public Icon Bench service. Both plugins
+remain independently installable: missing or disabled Icon Bench output
+degrades to the alert's text title, and Site Workshop has no reverse
+dependency. Its traveling README and separate syntax, icon, configuration, and
+migration guides document the complete operator workflow.
+
 An urgent Grav Commander follow-up corrected the canonical source of the live
 blueprint failure: the `backup.path` and archive-name help text now quote their
 colon-bearing scalars. Repository preflight now syntax-parses every extension
@@ -73,6 +82,13 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Flexible Markdown Alerts passes PHP syntax, Composer, YAML, ZIP integrity,
+  public HTTP, and external DDEV rendering checks. Bundled icons, site-owned
+  SVGs, Icon Bench references, missing-reference fallback, and operation with
+  Site Workshop disabled were exercised through the public Markdown route.
+- The plugin's Admin README uses verified public asset URLs for its two example
+  images, and its source, DDEV installation, and release package identify Craig
+  Daters as author/maintainer.
 - Every plugin and theme YAML file passes a real parser, and the Grav Commander
   blueprint preserves its expected metadata, form, and field structure.
 - The Grav Commander package passes ZIP integrity and contains the repaired

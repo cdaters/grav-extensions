@@ -1,0 +1,21 @@
+en:
+  PLUGIN_FLEXIBLE_MARKDOWN_ALERTS:
+    INCLUDE_CSS: Include bundled CSS
+    INCLUDE_CSS_HELP: Load the plugin's base alert layout and presentation styles.
+    ENABLE_ICONS: Enable alert icons
+    ENABLE_ICONS_HELP: Show each alert type's configured SVG icon when its file exists.
+    ALERT_TYPES: Alert types
+    ALERT_TYPES_HELP: Edit the supplied types, disable them, reorder them, or add new reusable alert keywords.
+    ADD_ALERT_TYPE: Add Alert Type
+    ALERT_ENABLED: Enabled
+    TYPE_KEYWORD: Type keyword
+    TYPE_KEYWORD_HELP: Lowercase letters, numbers, and hyphens. For example, sysop makes [!SYSOP] available.
+    DEFAULT_TITLE: Default title
+    DEFAULT_TITLE_HELP: Displayed when the Markdown marker does not supply a custom title.
+    ICON: Icon key
+    ICON_HELP: Enter note, tip, important, warning, caution, none, a site-owned custom key, or an optional Site Workshop Icon Bench reference such as workshop/search. Custom key radio uses user/data/flexible-markdown-alerts/icons/icon-radio.svg.
+    BORDER_COLOR: Border color
+    TITLE_COLOR: Title and icon color
+    WRAPPER_CLASS: Wrapper class and type prefix
+    TITLE_CLASS: Title class
+    BODY_CLASS: Body class

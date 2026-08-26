@@ -1,0 +1,42 @@
+enabled: true
+include_css: true
+enable_icons: true
+wrapper_class: md-alert md-alert--
+title_class: md-alert-title
+body_class: md-alert-body
+alerts:
+  -
+    enabled: true
+    type: note
+    title: Note
+    icon: note
+    border_color: '#316dca'
+    title_color: '#316dca'
+  -
+    enabled: true
+    type: tip
+    title: Tip
+    icon: tip
+    border_color: '#347d39'
+    title_color: '#347d39'
+  -
+    enabled: true
+    type: important
+    title: Important
+    icon: important
+    border_color: '#8256d0'
+    title_color: '#8256d0'
+  -
+    enabled: true
+    type: warning
+    title: Warning
+    icon: warning
+    border_color: '#c69026'
+    title_color: '#c69026'
+  -
+    enabled: true
+    type: caution
+    title: Caution
+    icon: caution
+    border_color: '#c93c37'
+    title_color: '#c93c37'

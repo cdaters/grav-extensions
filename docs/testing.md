@@ -129,6 +129,7 @@ produces the expected authenticated request body.
 | Revision Ledger | concurrent revisions, permission boundaries, restore conflict behavior | required |
 | Lantern Search | index visibility, ACL filtering, stale-index repair, malformed queries | required |
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
+| Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 

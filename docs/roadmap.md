@@ -13,9 +13,10 @@ can never be mistaken for an installable Grav package.
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | 0.2.1 development release; page-editor history drawer, automatic checkpoints, Admin2 comparisons, guarded restore, and CLI parity available |
 | 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | 0.1.0 development release; incremental index, Admin2 control center, public command palette, facets, fuzzy matching, and CLI parity available |
 | 7 | Site Workshop | Safe icons, reusable frontmatter, bounded cache warming, and automation feeds | 0.1.0 development release; Icon Bench available |
-| 8 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
-| 9 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 10 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
+| 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
+| 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
+| 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
+| 11 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
 

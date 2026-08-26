@@ -13,6 +13,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 | **Edge Console** | Narrow Cloudflare operations from Grav | Scoped API tokens, zone diagnostics, cache purge, development-mode controls, audit log |
 | **Lantern Search** | Fast, relevance-ranked site search | Incremental indexing, field weights, filters, excerpts, keyboard-accessible UI |
 | **Site Workshop** | Composable site-building utilities | Safe SVG icons, reusable frontmatter, bounded cache warming, automation feeds |
+| **Flexible Markdown Alerts** | Configurable Markdown callouts | Editable alert definitions, one-time titles, site-owned SVGs, optional Icon Bench references |
 | **Revision Ledger** | Durable content history | Automatic snapshots, diffs, author/reason metadata, retention, explicit rollback |
 | **Site Safeguard** | Backup, restore, and deployment packages | Clean profiles, manifest/checksums, staged validation, maintenance-mode promotion, rollback |
 
@@ -41,6 +42,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 - **Meta Pilot → all public plugins:** Meta Pilot reads the final page and registered structured-data fragments. It does not rewrite another plugin's markup.
 - **Lantern Search → content providers:** Plugins can expose indexable records through an event. ACL-protected and unpublished records are excluded at indexing and query time.
 - **Revision Ledger → writers:** Page Studio and the future Frontmatter Annex module in Site Workshop can ask Revision Ledger to checkpoint a page before a write. If Revision Ledger is absent, they still work.
+- **Flexible Markdown Alerts → Site Workshop:** Alerts may ask the public Icon Bench service to render a configured `pack/icon` reference. Flexible Markdown Alerts keeps bundled and site-owned icon paths and degrades to a text title if the service is absent or disabled; Site Workshop has no dependency on Flexible Markdown Alerts.
 - **Site Safeguard → the whole site:** Backup providers can add manifest entries, but cannot execute restore logic. Restore remains solely owned by Site Safeguard.
 - **Edge Console → caches:** Edge purge runs only after a successful local operation and must be optional. A Cloudflare failure must not corrupt local state.
 - **Asset delivery → media plugins:** Each plugin can provide its own delivery service, but it follows the same opaque-ID, short-lived-token, same-origin, range-request, and `noindex` response contract. A future shared service can replace local implementations without changing page content.
@@ -54,8 +56,9 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 5. Revision Ledger
 6. Lantern Search
 7. Site Workshop
-8. Edge Console
-9. Page Studio
+8. Flexible Markdown Alerts
+9. Edge Console
+10. Page Studio
 
 The order reduces risk and establishes reusable primitives before the editor: safe packaging, derivative media, metadata, revisions, and indexing. Page Studio is last because a serious editor is an application platform rather than a toolbar replacement.
 
@@ -92,6 +95,9 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Site Workshop 0.1.0:** working development release with Icon Bench: a
   sanitized SVG registry, original starter pack, custom-pack discovery,
   shortcode/Twig rendering, Admin2 browsing, and CLI inspection.
+- **Flexible Markdown Alerts 1.0.1:** working development release with editable
+  alert types, per-alert titles, configurable colors and icons, site-owned SVG
+  overrides, and optional failure-safe Icon Bench references.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.

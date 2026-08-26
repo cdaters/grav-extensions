@@ -1,0 +1,22 @@
+{
+  "name": "cdaters/flexible-markdown-alerts",
+  "type": "grav-plugin",
+  "description": "Flexible Markdown alerts for Grav with optional per-alert titles",
+  "keywords": ["grav", "plugin", "markdown", "alerts", "callouts"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Craig Daters",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=8.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\FlexibleMarkdownAlerts\\": "classes/"
+    },
+    "classmap":  ["flexible-markdown-alerts.php"]
+  }
+}

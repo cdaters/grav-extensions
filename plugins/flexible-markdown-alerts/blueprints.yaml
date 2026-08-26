@@ -1,0 +1,129 @@
+name: Flexible Markdown Alerts
+slug: flexible-markdown-alerts
+type: plugin
+version: 1.0.1
+description: Configurable Markdown alerts with editable types, icons, colors, and per-alert titles.
+icon: exclamation-triangle
+author:
+  name: Craig Daters
+keywords: grav, plugin, markdown, alerts, callouts
+license: MIT
+compatibility:
+  grav: ['2.0']
+
+dependencies:
+  - { name: grav, version: '>=2.0.0-rc.6' }
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: PLUGIN_ADMIN.PLUGIN_STATUS
+      highlight: 1
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    include_css:
+      type: toggle
+      label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.INCLUDE_CSS
+      help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.INCLUDE_CSS_HELP
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    enable_icons:
+      type: toggle
+      label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ENABLE_ICONS
+      help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ENABLE_ICONS_HELP
+      highlight: 1
+      default: 1
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+
+    alerts:
+      type: list
+      label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ALERT_TYPES
+      help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ALERT_TYPES_HELP
+      style: vertical
+      collapsed: true
+      sort: true
+      btnLabel: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ADD_ALERT_TYPE
+      fields:
+        .enabled:
+          type: toggle
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ALERT_ENABLED
+          highlight: 1
+          default: 1
+          options:
+            1: PLUGIN_ADMIN.ENABLED
+            0: PLUGIN_ADMIN.DISABLED
+          validate:
+            type: bool
+        .type:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.TYPE_KEYWORD
+          help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.TYPE_KEYWORD_HELP
+          placeholder: tip
+          validate:
+            required: true
+            pattern: '^[a-z][a-z0-9-]{0,31}$'
+        .title:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.DEFAULT_TITLE
+          help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.DEFAULT_TITLE_HELP
+          placeholder: Tip
+          validate:
+            required: true
+        .icon:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ICON
+          help: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.ICON_HELP
+          placeholder: 'tip, warning, none, or a custom key'
+        .border_color:
+          type: colorpicker
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.BORDER_COLOR
+          default: '#333333'
+          validate:
+            type: color
+        .title_color:
+          type: colorpicker
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.TITLE_COLOR
+          default: '#333333'
+          validate:
+            type: color
+
+    _advanced_section:
+      type: section
+      title: PLUGIN_ADMIN.ADVANCED
+      underline: true
+      fields:
+        wrapper_class:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.WRAPPER_CLASS
+          default: md-alert md-alert--
+          validate:
+            type: string
+        title_class:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.TITLE_CLASS
+          default: md-alert-title
+          validate:
+            type: string
+        body_class:
+          type: text
+          label: PLUGIN_FLEXIBLE_MARKDOWN_ALERTS.BODY_CLASS
+          default: md-alert-body
+          validate:
+            type: string
