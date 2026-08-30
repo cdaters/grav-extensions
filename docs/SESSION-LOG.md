@@ -433,3 +433,63 @@ suite inventory incremental and risk ordered.
   HTTP transport plus OpenAI validation, model discovery, and synchronous
   generation, with deterministic fixtures required and live smoke tests
   opt-in/budget-capped.
+
+## 2026-08-30 — Jarvis 0.1.2 bounded transport and OpenAI provider
+
+- Re-read the canonical handoff, roadmap, architecture, security, testing,
+  Jarvis specification/ADR, package manual, session history, and exact 0.1.0/
+  0.1.1 contracts before implementation. Verified the official OpenAI Models
+  list, Responses create/output/usage, bearer-authentication, and error-status
+  documentation current on this date.
+- Preserved the exact method sets of `JarvisServiceInterface`,
+  `ProviderInterface`, and `ProviderRegistryInterface` and all additive 0.1.1
+  contracts. A contract scan proves OpenAI endpoint, output, and usage terms do
+  not enter shared DTOs or interfaces.
+- Added a provider-neutral bounded production HTTP transport. It requires exact
+  HTTPS origin/base-path allowlisting, rejects literal and non-public/mixed DNS
+  destinations, pins a validated address against rebinding, verifies TLS,
+  disables redirects and environment proxies, rejects transport-controlled
+  headers, and bounds connection time, total time, request bytes, response
+  headers, and decompressed response bytes. Diagnostics contain no request/
+  response body or credential values.
+- Added the isolated official `openai` adapter. It uses fixed
+  `https://api.openai.com/v1`, resolves only
+  `GRAV_JARVIS_OPENAI_API_KEY`, validates/discovers through `GET /models`, and
+  completes through `POST /responses`. It defaults to `gpt-5.6-luna`, honors
+  the neutral model override, sets provider storage false, rejects unsupported
+  options, normalizes provider-reported token usage, and exports no raw vendor
+  metadata.
+- Registered OpenAI by default in `$grav['gravJarvis']` while keeping boot
+  network-free and credential-lazy. Missing/malformed credentials,
+  configuration, provider absence, and provider failure continue to degrade
+  through the existing typed validation/service boundaries. No Admin2
+  assistant, Commander integration, CLI, job, streaming, content mutation, or
+  MCP surface was added.
+- Added deterministic DNS/executor fixtures and nine 0.1.2 checks. Together
+  with the seven 0.1.0 and twelve 0.1.1 checks, all twenty-eight pass under
+  DDEV PHP 8.3.31 with no network fallback. Coverage includes success/models/
+  usage, default and explicit models, missing/malformed credentials and config,
+  empty/malformed JSON and output, 401, 429 with retry guidance, other 4xx,
+  5xx, timeout/transport failure, SSRF/destination controls, redaction, and
+  generic service routing through the bounded adapter.
+- Passed every Jarvis PHP syntax check under DDEV, confirmed the cURL extension,
+  repository structure/YAML/hygiene preflight, Composer/JSON and YAML parsing,
+  local Markdown targets, whitespace, ZIP integrity, credential-pattern scans,
+  0.1.1-to-0.1.2 packaged upgrade, fresh packaged install, Grav cache clearing,
+  public/Admin HTTP 200 checks, and relevant log inspection with no Jarvis/
+  fatal/uncaught matches. Host PHP remains unavailable, so preflight correctly
+  recorded that host-side syntax was skipped. No live OpenAI account request
+  was needed or attempted.
+- Packaged `grav-jarvis-0.1.2.zip`, SHA-256
+  `0179b155936800ebd9376c41a16283ae7e38951e4c051dd493d09904134d85ea`.
+  The versioned 0.1.0 and 0.1.1 packages remain in `dist/`.
+- Evaluated the optional 0.1.3 stretch after the 0.1.2 gates passed and kept it
+  as a separate checkpoint. A generic compatible provider needs its own
+  capability/compatibility claims, instance configuration, and multiple
+  partial-server fixtures; folding those judgments into the first live-adapter
+  commit would reduce reviewability.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme work
+  and did not push. The exact next milestone is Jarvis 0.1.3: a separate generic
+  OpenAI-compatible provider using the bounded transport, a deliberate public
+  HTTPS base URI, environment-only instance credentials, truthful declarative
+  capabilities, and full/partial/incompatible offline fixtures.

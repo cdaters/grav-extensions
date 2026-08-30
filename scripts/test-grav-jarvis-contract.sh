@@ -8,6 +8,7 @@ contract_dir="$repo_root/tests/grav-jarvis"
 contract_files=(
     "$contract_dir/contract.php"
     "$contract_dir/provider-boundary.php"
+    "$contract_dir/openai-provider.php"
 )
 
 if command -v php >/dev/null 2>&1; then

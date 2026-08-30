@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.1.1
-description: Provider-neutral AI contracts, validation, model discovery, and environment-only credentials for Grav 2.
+version: 0.1.2
+description: Provider-neutral AI services with bounded HTTP transport and an official OpenAI adapter for Grav 2.
 icon: microchip
 author:
   name: Craig Daters
@@ -30,6 +30,24 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.1 provider boundary
-      text: This release provides provider-neutral PHP contracts, environment-only credential resolution, and offline conformance fixtures. It includes no live provider, Admin2 assistant, background worker, or site mutation.
+      title: Jarvis 0.1 provider foundation
+      text: This release adds a bounded HTTPS transport and the official OpenAI adapter behind the unchanged provider-neutral contracts. Provider credentials are accepted only from server environment variables. It includes no Admin2 assistant, background worker, or site mutation.
       underline: true
+
+    providers.openai.enabled:
+      type: toggle
+      label: OpenAI provider
+      help: Registers the official OpenAI provider. A request still requires GRAV_JARVIS_OPENAI_API_KEY in the server process environment.
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    providers.openai.default_model:
+      type: text
+      label: OpenAI default model
+      help: Non-secret model identifier used when a provider-neutral request does not select a model. API credentials cannot be configured here.
+      default: gpt-5.6-luna
+      validate:
+        required: true
+        type: text

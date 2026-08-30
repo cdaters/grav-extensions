@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.2 — 2026-08-30
+
+- Added a bounded provider-neutral production HTTP transport with HTTPS/base-
+  path allowlisting, public-address validation and DNS pinning, TLS
+  verification, disabled redirects/proxies, explicit timeouts, request/
+  response/header size bounds, and sanitized typed failures.
+- Added the official OpenAI provider using `GET /models` for validation/model
+  discovery and `POST /responses` for synchronous completion.
+- Kept OpenAI request, response, status, and usage structures inside the
+  adapter while normalizing text, models, and provider-reported token usage
+  into the unchanged 0.1.0/0.1.1 public contracts.
+- Added environment-only `GRAV_JARVIS_OPENAI_API_KEY` resolution, a non-secret
+  default-model setting, and default provider registration without any network
+  activity during plugin boot.
+- Added deterministic offline transport/OpenAI fixtures covering success,
+  usage, empty/malformed responses, missing/malformed credentials and config,
+  authentication, rate limits, other HTTP failures, timeouts, SSRF controls,
+  absence/failure behavior, and secret redaction.
+- Deliberately omitted Admin2 assistant UI, Grav Commander integration,
+  streaming, background jobs, MCP workflows, and other live providers.
+
 ## 0.1.1 — 2026-08-30
 
 - Added optional provider-validation and model-discovery contracts without

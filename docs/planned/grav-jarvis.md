@@ -1,6 +1,7 @@
 # Jarvis
 
-**Status:** 0.1.1 provider boundary implemented; 0.1.2 OpenAI adapter next
+**Status:** 0.1.2 bounded transport and official OpenAI adapter implemented;
+0.1.3 generic OpenAI-compatible adapter next
 
 **Product name:** Jarvis
 
@@ -94,11 +95,11 @@ public interface and degrade cleanly when the plugin or a requested capability
 is absent. They never read Jarvis configuration, provider classes, caches,
 jobs, or secrets directly.
 
-The planned live-provider sequence begins with:
+The live-provider sequence begins with:
 
-1. OpenAI;
-2. Anthropic; and
-3. OpenAI-compatible HTTP endpoints.
+1. OpenAI (implemented in 0.1.2);
+2. OpenAI-compatible HTTP endpoints (next in 0.1.3); and
+3. Anthropic.
 
 OpenAI is the first implementation checkpoint. The official
 [generation API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
@@ -108,7 +109,10 @@ fields are isolated inside one adapter. Starting with a generic "compatible"
 endpoint would instead risk treating a family of different servers and partial
 compatibility claims as one stable contract. The generic adapter follows only
 after the first-party mapping is tested, and it does not inherit OpenAI
-behavior that its configured endpoint cannot prove.
+behavior that its configured endpoint cannot prove. Implementing the official
+adapter first has now established the comparison baseline; 0.1.3 uses a
+separate compatible-provider type and an explicit compatibility matrix rather
+than adding a base-URL mode to the official adapter.
 
 Gemini and OpenRouter follow after the contract is stable. OpenRouter may be an
 explicit adapter even where its API resembles OpenAI because routing, model
@@ -265,7 +269,8 @@ Grav's, not a plugin invention.
 
 Provider secrets are server-only environment variables such as
 `GRAV_JARVIS_OPENAI_API_KEY` and `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-Version 0.1.1 accepts no secret source other than the process environment.
+Versions 0.1.1 and 0.1.2 accept no secret source other than the process
+environment.
 Configuration may eventually name an environment variable but never contains
 its value. Secrets never enter Admin2 JavaScript, API payloads, prompts, logs,
 cache keys, job records, exported diagnostics, screenshots, fixtures, or
@@ -339,24 +344,50 @@ mutation, Commander integration, background job, or MCP workflow in 0.1.0.
   authentication, rate limiting, HTTP/transport failures, redaction, absence,
   and deterministic output.
 
-### 0.1.2 — first live OpenAI provider (next)
+### 0.1.2 — first live OpenAI provider (implemented)
 
-- add a bounded production HTTP transport with explicit timeouts, response-size
-  limits, TLS verification, redirect/origin policy, and redacted diagnostics;
-- implement an OpenAI adapter that maps the official models and generation APIs
-  entirely inside the provider namespace;
-- validate credentials without a content-generation request, normalize model
-  records into `ModelCatalog`, and normalize generation into the unchanged
-  completion result/usage contract;
-- keep deterministic HTTP fixtures as the required release tests, including
-  malformed data, authentication, rate limits, timeout, and redaction; and
-- keep real-account smoke tests opt-in, budget-capped, and excluded from normal
-  release validation.
+- bounded production HTTP applies exact HTTPS origin/base-path allowlists,
+  rejects literal/private/reserved destinations, validates every resolved
+  address, pins the chosen address against DNS rebinding, verifies TLS,
+  disables redirects and environment proxies, rejects transport-controlled
+  headers, and limits connect time, total time, request bytes, response-header
+  bytes, and decompressed response bytes;
+- the official `openai` adapter maps `GET /models` and `POST /responses`
+  entirely inside `Grav\Plugin\GravJarvis\Provider\OpenAI`;
+- validation performs model discovery rather than content generation, model
+  records normalize into `ModelCatalog`, and output plus provider-reported
+  token usage normalize into the unchanged completion result/usage contract;
+- the adapter uses only `GRAV_JARVIS_OPENAI_API_KEY`, defaults to
+  `gpt-5.6-luna`, honors the neutral request model override, sets remote storage
+  off, rejects unsupported options, and exports no vendor response metadata;
+- plugin boot registers the provider but neither resolves the credential nor
+  makes a request; missing/malformed credentials and configuration degrade
+  through the existing validation/failure model; and
+- deterministic fixtures cover success, usage, malformed/empty data,
+  authentication, rate limits, other 4xx/5xx responses, timeouts, transport
+  failure, destination policy, offline behavior, and redaction. Live account
+  smoke remains optional and was not needed for the release gate.
 
-Anthropic and OpenAI-compatible adapters then arrive as separate 0.1.x
-increments, followed by synchronous chat, streaming/CLI, prompt/context, and
-Admin2 proposal/diff/approval checkpoints. Gemini and OpenRouter remain later
-candidates.
+### 0.1.3 — generic OpenAI-compatible provider (next)
+
+- create a provider separate from the official `openai` adapter, not a mode or
+  configurable endpoint on that provider;
+- require an operator-approved public HTTPS base URI at provider construction,
+  use the 0.1.2 bounded transport, and permit neither per-request endpoint
+  overrides nor private/local destinations in this checkpoint;
+- support environment-only credentials through provider-scoped configurable
+  environment-variable names without accepting secret values in configuration;
+- declare model discovery, text completion, streaming, structured output, and
+  tool calling truthfully per configured instance instead of inferring full
+  compatibility from a product label;
+- document the exact request/response subset required and fail gracefully when
+  model discovery is absent or a response is only partially compatible; and
+- add deterministic full-compatibility and multiple partial/incompatible
+  fixture implementations before any optional CLI surface.
+
+Anthropic then arrives as a separate 0.1.x increment, followed by synchronous
+chat, streaming/CLI, prompt/context, and Admin2 proposal/diff/approval
+checkpoints. Gemini and OpenRouter remain later candidates.
 
 ### 0.2.0 — reliability and automation
 
@@ -390,7 +421,8 @@ candidates.
 ## Testing strategy
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
-compatibility and 0.1.1 provider-boundary contracts run together with
+compatibility, 0.1.1 provider-boundary, and 0.1.2 bounded-transport/OpenAI
+contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
@@ -427,9 +459,9 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Version 0.1.1 therefore leaves `ProviderInterface`, `JarvisServiceInterface`,
-and `ProviderRegistryInterface` unchanged and exposes introspection through a
-new service subinterface and optional provider interfaces.
+Versions 0.1.1 and 0.1.2 therefore leave `ProviderInterface`,
+`JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
+introspection through a service subinterface and optional provider interfaces.
 
 ## Explicit non-goals
 

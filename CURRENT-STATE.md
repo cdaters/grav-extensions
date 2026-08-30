@@ -20,31 +20,34 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Jarvis 0.1.1 (`grav-jarvis`) completes the provider boundary planned by
+Jarvis 0.1.2 (`grav-jarvis`) completes the first live-provider checkpoint under
 Decision 0004. The 0.1.0 `JarvisServiceInterface`, `ProviderInterface`, and
-`ProviderRegistryInterface` method sets are unchanged. Optional validation and
-model discovery live in new provider interfaces, and
-`ProviderIntrospectionServiceInterface` extends the original service contract
-with provider-neutral validation issue/result and model descriptor/catalog
-DTOs. Providers without those optional interfaces still satisfy 0.1.0.
+`ProviderRegistryInterface` method sets and every additive 0.1.1 validation,
+discovery, credential, HTTP, and DTO contract remain unchanged.
 
-Provider-scoped `EnvironmentCredentialResolver` instances accept only matching
-`GRAV_JARVIS_<PROVIDER>_*` process-environment names. Returned credential values
-exist only in memory, cannot be serialized, redact their debug form, and may be
-prefixed for an authentication scheme without entering ordinary header/config
-arrays. Missing, malformed, and cross-provider references are typed and never
-include secret values. Sanitized HTTP request/response/transport contracts,
-`FixtureHttpTransport`, and `ConformanceFakeProvider` provide deterministic
-success, failure, authentication, rate-limit, malformed-response, and redaction
-evidence with no network fallback.
+`BoundedHttpTransport` provides the production network path behind the existing
+`HttpTransportInterface`. Exact HTTPS origin/base paths are allowlisted; every
+resolved address must be public and the selected address is pinned against DNS
+rebinding; TLS verification is mandatory; redirects and environment proxies
+are disabled; transport-controlled headers are refused; and connect time,
+overall time, request bytes, response headers, and decompressed response bytes
+are bounded. Diagnostics omit bodies, credentials, and raw provider errors.
 
-The package still registers no provider and makes no network request. It has no
-OpenAI, Anthropic, OpenAI-compatible, Gemini, or OpenRouter adapter; Admin2 UI;
-Commander integration; background job; content mutation; or MCP workflow.
-OpenAI is selected for 0.1.2 as the first live adapter because its official
-generation and model-list APIs form one authoritative vendor contract. A
-generic OpenAI-compatible adapter comes later so variable compatibility claims
-cannot silently define Jarvis core.
+The built-in `openai` adapter uses only the fixed official API base,
+`GRAV_JARVIS_OPENAI_API_KEY`, `GET /models` for validation/discovery, and
+`POST /responses` for synchronous generation. It defaults to
+`gpt-5.6-luna`, accepts the existing provider-neutral model override, disables
+remote response storage, rejects unsupported options, and normalizes only
+models, text, and provider-reported usage into shared DTOs. OpenAI wire fields
+remain under `Provider/OpenAI`. Plugin boot registers the adapter without
+resolving a credential or making a request; missing or malformed credentials
+degrade through the existing typed validation/failure path.
+
+Jarvis still has no Anthropic, generic OpenAI-compatible, Gemini, or OpenRouter
+adapter; Admin2 assistant; Commander integration; background job; content
+mutation; or MCP workflow. A separate generic OpenAI-compatible adapter is the
+0.1.3 checkpoint so variable third-party compatibility claims remain outside
+the official provider and shared core.
 
 Spitfire theme 1.2.1 adds an Admin **Section spacing** selector to Features,
 Text, and Form modular pages. Existing pages default to Normal, Tight reuses
@@ -115,19 +118,24 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- Jarvis's full suite passes nineteen checks under PHP 8.3 in the canonical
-  DDEV fixture: seven frozen 0.1.0 registration/service/failure/redaction tests
-  plus twelve 0.1.1 compatibility, validation, discovery, credential, HTTP
-  fixture, malformed response, authentication/rate-limit, absence, redaction,
-  and deterministic-offline tests.
+- Jarvis's full suite passes twenty-eight checks under DDEV PHP 8.3.31: seven
+  frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
+  provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
+  The new checks cover destination policy/DNS pinning, generic service routing,
+  models and Responses normalization, usage, model selection, credentials and
+  configuration, malformed/empty data, 401/429/other 4xx/5xx/timeout paths,
+  offline determinism, contract neutrality, and redaction.
 - Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
   structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
-  YAML parsing, ZIP integrity, package installation, Grav cache clearing, and
-  public/Admin HTTP 200 checks pass. Host PHP remains unavailable, so the root
-  preflight truthfully reports its host-side PHP syntax step as skipped; DDEV
-  supplied the PHP lint and runtime evidence.
-- The verified Jarvis package is `dist/grav-jarvis-0.1.1.zip`, SHA-256
-  `cb2e9fbbde7ba568e6fd0b2f5fa0cac3a14822a37c8c90a2919db512b11c25ed`.
+  YAML parsing, Composer validation, ZIP integrity, 0.1.1-to-0.1.2 packaged
+  upgrade, fresh 0.1.2 package install, Grav cache clearing, cURL availability,
+  and public/Admin HTTP 200 checks pass. Relevant logs contain no Jarvis,
+  fatal, or uncaught match. Host PHP remains unavailable, so the root preflight
+  truthfully reports its host-side PHP syntax step as skipped; DDEV supplied
+  PHP lint and runtime evidence. No live OpenAI account request was needed or
+  attempted.
+- The verified Jarvis package is `dist/grav-jarvis-0.1.2.zip`, SHA-256
+  `0179b155936800ebd9376c41a16283ae7e38951e4c051dd493d09904134d85ea`.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -177,28 +185,30 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.1.2 first live provider: bounded production HTTP transport and the
-OpenAI adapter, without changing the shared 0.1.0/0.1.1 contracts.
+Jarvis 0.1.3 compatible-provider proof: a separate generic OpenAI-compatible
+adapter, without changing the shared 0.1.0/0.1.1 contracts or the official
+OpenAI provider.
 
 ## Exact next action
 
-Implement a bounded production HTTP transport with TLS verification, explicit
-connect/overall timeouts, response-size limits, no cross-origin redirects, and
-redacted diagnostics. Add the OpenAI provider entirely behind the existing
-provider contracts: environment-only credential validation without content
-generation, official model-list normalization, and synchronous generation
-normalization. Preserve deterministic fixtures as the release gate; any live
-account smoke test is opt-in and budget-capped. Do not add the generic
-OpenAI-compatible provider, Admin2, Commander integration, jobs, batch work,
+Specify and implement a separate generic OpenAI-compatible provider using the
+0.1.2 bounded transport. Require an operator-approved public HTTPS base URI,
+provider-scoped configurable environment-variable name without a credential
+value, no per-request endpoint, no private/local-network opt-in, and explicit
+capability declarations. Document the supported wire subset and prove fully
+compatible plus multiple partial/incompatible implementations with
+deterministic fixtures. Keep an optional CLI out unless it is trivial after the
+service contract is complete. Do not alter the official `openai` adapter or
+shared contracts, and do not add Admin2, Commander, jobs, streaming, batch,
 content mutation, or MCP endpoints in this checkpoint.
 
 ## Explicitly deferred
 
-- Anthropic and OpenAI-compatible adapters follow the OpenAI 0.1.2 checkpoint
-  as separate 0.1.x increments. Gemini and OpenRouter, the Admin2 assistant,
-  live streaming, prompt persistence, caching/retries, cost accounting,
-  chunking, background jobs, batch/site-wide workflows, and MCP-facing
-  endpoints remain later work.
+- Anthropic follows the generic OpenAI-compatible 0.1.3 checkpoint as a
+  separate 0.1.x increment. Gemini and OpenRouter, private/local compatible
+  endpoints, the Admin2 assistant, live streaming, prompt persistence,
+  caching/retries, cost accounting, chunking, background jobs, batch/site-wide
+  workflows, and MCP-facing endpoints remain later work.
 - The previous File Vault black-box milestone remains required under Decision
   0003 and is paused, not cancelled: prove anonymous denial, authorized
   delivery, ACL/password/download-limit enforcement, range/resume behavior,

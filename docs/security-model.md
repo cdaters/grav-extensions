@@ -80,4 +80,22 @@ fingerprints and fixture history contain redaction markers. Raw HTTP responses
 also refuse serialization. The release still contains no network transport,
 live provider, persisted provider secret, API route, UI, or mutation path.
 
+Jarvis 0.1.2 adds the first production network boundary without weakening the
+credential model. Its HTTP transport accepts only configured HTTPS origin/base-
+path destinations; rejects literal, private, loopback, link-local, reserved,
+or mixed public/private DNS results; pins a validated address to prevent DNS
+rebinding; verifies TLS; disables redirects and environment proxy inheritance;
+rejects caller-controlled host/proxy/framing headers; and applies explicit
+connect, total-time, request-body, response-header, and decompressed-response
+limits. Diagnostics never include request/response bodies, authorization
+values, or provider error details.
+
+The official OpenAI adapter is the only live provider in 0.1.2. It uses the
+fixed official API base and `GRAV_JARVIS_OPENAI_API_KEY`; no configurable
+endpoint or secret field exists. Plugin boot registers the adapter but does not
+resolve a credential or contact the provider. Raw OpenAI response/error fields
+stay inside the adapter, remote response storage is disabled, and only
+provider-neutral models, output, and provider-reported usage cross Jarvis's
+redacted service boundary.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

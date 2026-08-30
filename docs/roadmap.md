@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.1 development release; validation, model discovery, environment credentials, and offline HTTP conformance available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.2 development release; bounded production HTTP and official OpenAI validation/discovery/completion available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -50,23 +50,28 @@ The version sequence is:
    and model-discovery contracts, provider-neutral DTOs, provider-scoped
    environment credentials, sanitized HTTP contracts, deterministic fixtures,
    and conformance/redaction tests. The 0.1.0 interfaces are unchanged.
-3. **0.1.2 — first live provider (next):** implement the bounded production
-   HTTP transport and OpenAI adapter against official models and generation
-   APIs, with deterministic fixtures as the release gate and live smoke tests
-   strictly opt-in. OpenAI is first because one authoritative API is a cleaner
-   mapping test than a generic adapter whose claimed compatibility varies by
-   server; no OpenAI response shape enters shared contracts.
-4. **0.1.x — provider and interaction increments:** add Anthropic and OpenAI-
-   compatible adapters, then synchronous chat, streaming/CLI, prompt/context
-   work, and the Admin2 proposal/diff/approval surface in separately reviewable
-   checkpoints.
-5. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+3. **0.1.2 — first live provider (implemented):** bounded production HTTP with
+   HTTPS/base-path allowlisting, public-DNS validation and pinning, TLS,
+   disabled redirects/proxies, time/size limits, and safe diagnostics; official
+   OpenAI `GET /models` validation/discovery and Responses completion; and
+   deterministic transport/adapter failure and redaction fixtures. The frozen
+   shared contracts contain no OpenAI response shape.
+4. **0.1.3 — compatible-provider proof (next):** add a separate generic
+   OpenAI-compatible adapter with an operator-approved public HTTPS base URI,
+   environment-only instance credentials, declarative capability truth, and a
+   deterministic matrix for full, partial, and incompatible implementations.
+   It is not a mode of the official OpenAI adapter and receives no private/
+   local-network opt-in in this milestone.
+5. **0.1.x — provider and interaction increments:** add Anthropic, then
+   synchronous chat, streaming/CLI, prompt/context work, and the Admin2
+   proposal/diff/approval surface in separately reviewable checkpoints.
+6. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
    Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
    checkpoints, and a stable consumer contract.
-6. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
+7. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-7. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+8. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

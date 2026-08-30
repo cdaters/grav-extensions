@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
+use Grav\Plugin\GravJarvis\Provider\OpenAI\OpenAIProvider;
 use Grav\Plugin\GravJarvis\Provider\ProviderRegistry;
 use Grav\Plugin\GravJarvis\Security\SecretRedactor;
 use Grav\Plugin\GravJarvis\Service\JarvisService;
@@ -47,19 +48,42 @@ final class GravJarvisPlugin extends Plugin
         $registry = new ProviderRegistry();
         $redactor = SecretRedactor::fromEnvironment();
 
+        if ($this->config->get('plugins.' . self::SLUG . '.providers.openai.enabled', true)) {
+            try {
+                $defaultModel = $this->config->get(
+                    'plugins.' . self::SLUG . '.providers.openai.default_model',
+                    OpenAIProvider::DEFAULT_MODEL
+                );
+                if (!is_string($defaultModel)) {
+                    throw new \InvalidArgumentException('The OpenAI default model must be a string.');
+                }
+                $registry->register(OpenAIProvider::createProduction($defaultModel));
+            } catch (Throwable $error) {
+                $this->logRegistrationFailure('OpenAI registration failed', $error, $redactor);
+            }
+        }
+
         try {
             $this->grav->fireEvent(self::PROVIDER_EVENT, new Event(['registry' => $registry]));
         } catch (Throwable $error) {
-            $safeMessage = $redactor->redact($error->getMessage());
-            $log = $this->grav['log'] ?? null;
-            if (is_object($log) && method_exists($log, 'error')) {
-                $log->error('[Jarvis] Provider registration failed: ' . $safeMessage);
-            }
+            $this->logRegistrationFailure('Provider event failed', $error, $redactor);
         }
 
         if (!isset($this->grav[self::SERVICE_KEY])) {
             $service = new JarvisService($registry, $redactor);
             $this->grav[self::SERVICE_KEY] = static fn (): JarvisService => $service;
+        }
+    }
+
+    private function logRegistrationFailure(
+        string $context,
+        Throwable $error,
+        SecretRedactor $redactor
+    ): void {
+        $safeMessage = $redactor->redact($error->getMessage());
+        $log = $this->grav['log'] ?? null;
+        if (is_object($log) && method_exists($log, 'error')) {
+            $log->error('[Jarvis] ' . $context . ': ' . $safeMessage);
         }
     }
 }

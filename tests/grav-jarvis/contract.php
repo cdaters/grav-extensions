@@ -285,7 +285,11 @@ namespace GravJarvisContract {
         expect(isset($container['gravJarvis']), 'Jarvis service was not registered in the Grav container.');
         $service = $container['gravJarvis'];
         expect($service instanceof JarvisServiceInterface, 'Container service does not implement the public interface.');
-        expectSame(['failure', 'fake', 'leaky'], $service->providerIds(), 'Provider identifiers are not deterministic.');
+        expectSame(
+            ['failure', 'fake', 'leaky', 'openai'],
+            $service->providerIds(),
+            'Provider identifiers are not deterministic.'
+        );
         expectSame(
             ['deterministic-test', 'text-completion'],
             $service->capabilities('fake'),

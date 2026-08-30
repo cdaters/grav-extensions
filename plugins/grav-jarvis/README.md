@@ -1,18 +1,20 @@
 # Jarvis
 
-Jarvis 0.1.1 is the provider-neutral AI service and provider-boundary
-foundation for Grav 2. It gives plugins one optional PHP seam for registering,
-validating, inspecting, and calling model providers without exposing provider
-credentials or coupling consumers to a vendor response shape.
+Jarvis 0.1.2 is the provider-neutral AI service foundation for Grav 2. It gives
+plugins one optional PHP seam for registering, validating, inspecting, and
+calling model providers without exposing provider credentials or coupling
+consumers to a vendor response shape. This release adds a bounded production
+HTTP transport and the first live adapter, for OpenAI's official API.
 
-This release contains no live AI provider, Admin2 assistant, content mutation,
-background worker, MCP workflow, or Grav Commander integration. Enabling it
-does not make a network request.
+This release contains no Admin2 assistant, content mutation, background worker,
+MCP workflow, or Grav Commander integration. Enabling it registers the OpenAI
+adapter but does not resolve a credential or make a network request.
 
 ## Requirements
 
 - Grav 2.0 or newer
 - PHP 8.3 or newer, following Grav 2's supported runtime
+- PHP cURL extension for production provider requests
 
 ## Installation
 
@@ -29,9 +31,11 @@ bin/grav clearcache
 ```
 
 The plugin is enabled by default and registers its service as
-`$grav['gravJarvis']`. It registers no provider by default, so a completion
-request fails with a typed provider-not-found exception until a companion
-plugin registers one.
+`$grav['gravJarvis']`. The official `openai` provider is registered by default.
+Without `GRAV_JARVIS_OPENAI_API_KEY` in the server process environment,
+validation reports a missing credential and generation fails through Jarvis's
+typed, redacted failure boundary. The provider may be disabled, and its
+non-secret default model changed, in plugin configuration.
 
 ## Public contracts
 
@@ -82,6 +86,52 @@ Model discovery returns a sorted `ModelCatalog` of `ModelDescriptor` values.
 Shared model fields are limited to an opaque identifier, label, optional
 description, availability, and capability slugs. Raw provider response objects
 and provider-specific fields never cross the shared contract.
+
+## Official OpenAI provider
+
+The `openai` adapter uses only OpenAI's fixed official base URI. Provider
+validation and model discovery call `GET /v1/models`; synchronous text
+generation calls `POST /v1/responses`. OpenAI request fields, response items,
+error statuses, and token-usage fields remain inside
+`Grav\Plugin\GravJarvis\Provider\OpenAI` and normalize into the existing
+provider-neutral DTOs.
+
+The configured default model is `gpt-5.6-luna`. A `CompletionRequest` may
+select another model through its existing neutral `model` field. Version 0.1.2
+supports no provider-specific request options and fails clearly if options are
+supplied rather than silently ignoring them. Requests set provider-side storage
+off. Vendor response identifiers and other raw fields are not exported as
+Jarvis result metadata.
+
+The only credential name used by this adapter is:
+
+```text
+GRAV_JARVIS_OPENAI_API_KEY
+```
+
+Set it in the PHP/web/CLI process environment or the hosting platform's secret
+manager. It is not a YAML key, Admin field, request option, query parameter,
+ordinary header value, diagnostic field, test fixture, or package file.
+
+## Bounded production transport
+
+The production transport is provider-neutral and replaceable through the
+existing `HttpTransportInterface`. Its default policy:
+
+- accepts HTTPS only and requires an exact configured origin and base path;
+- resolves every destination address, rejects any private, loopback, link-
+  local, reserved, or literal-IP target, then pins the validated address for
+  the request to prevent DNS rebinding;
+- verifies TLS hostnames and certificates;
+- disables redirects and environment-configured HTTP proxies;
+- applies explicit connect and overall request timeouts;
+- bounds request bodies, response headers, and decompressed response bodies;
+- rejects caller-controlled host, proxy, framing, and hop-by-hop headers; and
+- returns safe typed diagnostics without response bodies, request bodies,
+  authorization values, or provider credential text.
+
+The offline fixture transport remains available for deterministic provider
+tests and has no network fallback.
 
 Use the additive service only after a type check:
 
@@ -209,8 +259,8 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete 0.1.0 compatibility and 0.1.1 provider-boundary suite with
-host PHP or the repository's DDEV fixture:
+Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, and 0.1.2
+transport/OpenAI suite with host PHP or the repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -218,7 +268,7 @@ host PHP or the repository's DDEV fixture:
 
 ## Deliberately deferred
 
-- OpenAI, Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters
+- Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
 - prompt libraries and page/frontmatter/media context

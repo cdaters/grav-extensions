@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.1 validation, model discovery, environment credentials, offline HTTP/error fixtures, compatibility, absence, and redaction contracts implemented; first live provider next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.2 bounded production transport and official OpenAI validation/discovery/completion fixtures implemented; generic compatible provider next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -139,8 +139,8 @@ must not wait for the whole inventory before receiving its own regression.
 
 ### Jarvis AI boundary contract
 
-Run the complete 0.1.0 compatibility and 0.1.1 provider-boundary suite with
-host PHP or a DDEV project:
+Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, and 0.1.2
+bounded-transport/OpenAI suite with host PHP or a DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -158,8 +158,15 @@ scoped environment lookup, missing/malformed credentials and configuration,
 non-serializable credential/HTTP objects, sanitized deterministic request
 history, success/error/transport fixtures, malformed responses,
 authentication/rate-limit classification, optional fallback, and offline
-determinism. When host PHP is absent, it defaults to the canonical DDEV fixture
-when available or accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
+determinism. The 0.1.2 contract additionally proves HTTPS/base-path and public-
+address policy, DNS pinning, disabled redirects/proxies, explicit time/size
+bounds, transport-controlled header denial, generic service routing through the
+OpenAI adapter, official model and Responses normalization, provider-reported
+usage, default/explicit model selection, missing/malformed credentials and
+configuration, empty/malformed data, 401/429/other 4xx/5xx/timeout failures,
+secret redaction, and absence of OpenAI vocabulary in shared contracts. When
+host PHP is absent, it defaults to the canonical DDEV fixture when available or
+accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
 
 Future external contracts must prove that an unauthorized request is denied,
 streamed events arrive in order and terminate cleanly, preview does not mutate
