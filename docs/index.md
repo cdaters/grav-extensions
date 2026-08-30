@@ -32,6 +32,7 @@ belong in that extension's own README.
 - [Releasing](releasing.md)
 - [Roadmap](roadmap.md)
 - [Planned extension briefs](planned/README.md)
+- [Jarvis AI/agent framework specification](planned/grav-jarvis.md)
 - [Architecture decisions](decisions/README.md)
 
 ## Documentation boundary

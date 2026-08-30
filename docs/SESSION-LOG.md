@@ -318,3 +318,39 @@ suite inventory incremental and risk ordered.
   `02db9ba50293864e3545d19896dbbe01b8643f3e6ccd276c809b51b89ed1da4a`.
 - Left production untouched and preserved unrelated local Site Workshop,
   Cache Hearth, and Spitfire theme edits outside this checkpoint.
+
+## 2026-08-30 — Jarvis architecture and recovery checkpoint
+
+- Accepted Jarvis (`grav-jarvis`) as a first-class planned Grav 2 AI-service
+  and agent-integration framework through Decision 0004.
+- Recorded why Jarvis is not a clone of Grav AI Pro: provider access and safe
+  AI workflows live in Jarvis, while Grav's REST API and MCP server retain site
+  operations, permissions, optimistic-concurrency conflicts, and API events.
+- Specified OpenAI, Anthropic, and OpenAI-compatible providers first, with
+  Gemini and OpenRouter deferred until the provider contract is stable.
+- Defined Admin2 page/frontmatter/media awareness, versioned prompts,
+  streaming, CLI, retries, privacy-safe caching, token/cost reporting,
+  Grav-aware chunking, background jobs, batch workflows, and bounded MCP/agent
+  composition.
+- Made diff/preview/explicit approval, stale-source denial, optional Revision
+  Ledger checkpoints, environment-only secrets, prompt-injection resistance,
+  budgets, and black-box evidence release requirements.
+- Named the `Grav\Plugin\GravJarvis` namespace, `$grav['gravJarvis']`,
+  `JarvisServiceInterface`, and `onJarvisProviderRegister` as the planned
+  public discovery/extension seam.
+  Grav Commander is the first optional consumer candidate but retains its own
+  permissions, containment, backups, and write authority and must work without
+  Jarvis.
+- Kept the planned extension under `docs/planned/grav-jarvis.md`; no empty or
+  misleading `plugins/grav-jarvis` directory and no runtime secret were added.
+- Set the exact next milestone to a minimal runnable 0.1.0 contract skeleton:
+  package metadata, public interfaces/DTOs, registry, deterministic fake
+  provider, service registration, and absence/failure/redaction/consumer tests
+  before live providers or Admin2 work.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme
+  changes. The prior File Vault black-box milestone remains required but is
+  paused behind the newly selected Jarvis checkpoint.
+- Passed repository structure/YAML/hygiene preflight, `git diff --check`, and
+  local Markdown target validation. Confirmed canonical Markdown contains no
+  the former working-slug identifier. Host PHP was unavailable, so preflight
+  skipped PHP syntax; this documentation-only checkpoint adds no PHP.

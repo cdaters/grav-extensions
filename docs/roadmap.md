@@ -16,7 +16,8 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | Accepted specification; 0.1.0 contract skeleton next |
+| 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -29,6 +30,34 @@ Existing products that are not part of that build sequence remain first-class:
 Names are original working names and can be revisited before first stable
 releases. Implementations must be clean-room work based on public behavior and
 documentation, not copied premium source code.
+
+## Jarvis roadmap
+
+Jarvis is the suite's provider-neutral AI infrastructure and guarded workflow
+layer for Grav 2. It is deliberately not a clone of Grav AI Pro. Grav's native
+REST API and MCP server retain site-operation authority; Jarvis owns provider
+access, prompt/context handling, proposals, approvals, reliability, and a
+public PHP service for optional consumers such as Grav Commander.
+
+The version sequence is:
+
+1. **0.1.0 — foundation:** public interfaces/DTOs, provider registry and fake
+   provider first; then OpenAI, Anthropic, and OpenAI-compatible adapters,
+   environment-only credentials, prompt library, page/frontmatter/media
+   context, initial streaming/CLI, and Admin2 diff/approval.
+2. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+   Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
+   checkpoints, and a stable consumer contract.
+3. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
+   composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
+   as justified, and optional suite integrations.
+4. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+   migrations, complete black-box/security evidence, and operator guidance.
+
+The canonical feature, security, compatibility, testing, and non-goal detail is
+the [Jarvis specification](planned/grav-jarvis.md). No `plugins/grav-jarvis`
+directory is created until the initial skeleton is runnable, independently
+installable, documented, and testable.
 
 ## Site Safeguard recovery roadmap
 

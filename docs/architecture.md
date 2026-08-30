@@ -10,7 +10,9 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 | **Image Foundry** | Original-preserving image optimization and modern derivatives | Auditable queues, WebP/AVIF policies, quality profiles, safe cache invalidation |
 | **Meta Pilot** | Search and social metadata management | Canonicals, robots, Open Graph, social cards, JSON-LD, sitemap diagnostics |
 | **Page Studio** | A richer content-authoring experience | Admin 2 editor integration, Markdown/HTML modes, media browser, extensible blocks |
+| **Gatehouse** | Admin authentication hardening | CAPTCHA options, throttling, least-privilege recovery visibility |
 | **Edge Console** | Narrow Cloudflare operations from Grav | Scoped API tokens, zone diagnostics, cache purge, development-mode controls, audit log |
+| **Jarvis** | Shared AI services and guarded agent workflows | Provider abstraction, Admin2 assistant, prompt library, streaming, CLI, proposal/diff/approval contract |
 | **Lantern Search** | Fast, relevance-ranked site search | Incremental indexing, field weights, filters, excerpts, keyboard-accessible UI |
 | **Site Workshop** | Composable site-building utilities | Safe SVG icons, reusable frontmatter, bounded cache warming, automation feeds |
 | **Flexible Markdown Alerts** | Configurable Markdown callouts | Editable alert definitions, one-time titles, site-owned SVGs, optional Icon Bench references |
@@ -45,6 +47,14 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 - **Flexible Markdown Alerts → Site Workshop:** Alerts may ask the public Icon Bench service to render a configured `pack/icon` reference. Flexible Markdown Alerts keeps bundled and site-owned icon paths and degrades to a text title if the service is absent or disabled; Site Workshop has no dependency on Flexible Markdown Alerts.
 - **Site Safeguard → the whole site:** Backup providers can add manifest entries, but cannot execute restore logic. Restore remains solely owned by Site Safeguard.
 - **Edge Console → caches:** Edge purge runs only after a successful local operation and must be optional. A Cloudflare failure must not corrupt local state.
+- **Jarvis → optional consumers:** Plugins such as Grav Commander may use the
+  public `$grav['gravJarvis']` service or documented events for model work. A
+  consumer must continue to work when Jarvis is absent, cannot read provider
+  secrets, and retains sole authority for its own writes and containment.
+- **Jarvis → Grav REST/MCP:** Jarvis proposes and orchestrates bounded AI work;
+  Grav's REST API and MCP server remain authoritative for site operations,
+  permissions, ETag conflict handling, and API events. No model response can
+  approve or directly widen its own mutation scope.
 - **Asset delivery → media plugins:** Each plugin can provide its own delivery service, but it follows the same opaque-ID, short-lived-token, same-origin, range-request, and `noindex` response contract. A future shared service can replace local implementations without changing page content.
 
 ## Build order
@@ -57,10 +67,16 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 6. Lantern Search
 7. Site Workshop
 8. Flexible Markdown Alerts
-9. Edge Console
-10. Page Studio
+9. Gatehouse
+10. Edge Console
+11. Jarvis
+12. Page Studio
 
-The order reduces risk and establishes reusable primitives before the editor: safe packaging, derivative media, metadata, revisions, and indexing. Page Studio is last because a serious editor is an application platform rather than a toolbar replacement.
+The order reduces risk and establishes reusable primitives before the editor:
+safe packaging, derivative media, metadata, revisions, indexing, and guarded AI
+proposals. Jarvis follows the revision and API foundations it needs; Page
+Studio remains last because a serious editor is an application platform rather
+than a toolbar replacement and may optionally consume Jarvis later.
 
 ## Current status
 
@@ -101,5 +117,7 @@ The order reduces risk and establishes reusable primitives before the editor: sa
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Later roadmap plugins:** Gatehouse, Edge Console, and Page Studio remain
-  named and bounded, not yet represented as finished packages.
+- **Jarvis:** accepted Grav 2 AI/agent framework specification; no installable
+  plugin yet. The next milestone is the minimal 0.1.0 contract skeleton.
+- **Other later roadmap plugins:** Gatehouse, Edge Console, and Page Studio
+  remain named and bounded, not yet represented as finished packages.

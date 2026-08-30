@@ -37,4 +37,30 @@ validated before deep hashing, complete packages are extracted only to a unique
 directory outside the running Grav root, and extracted files are hashed again.
 Version 0.1 deliberately exposes no live-promotion operation.
 
+## AI providers and agent workflows
+
+Jarvis treats model providers, model output, page/media context, and MCP-
+retrieved material as separate trust boundaries.
+
+- Provider credentials are server-only environment variables or external
+  credential references. They never enter tracked YAML, Admin2 JavaScript,
+  prompts, logs, caches, jobs, diagnostics, fixtures, or packages.
+- A request discloses its destination provider and bounded context. Provider
+  endpoints are validated; redirects cannot change origin, and local/private
+  OpenAI-compatible endpoints require explicit opt-in.
+- Untrusted content cannot become system instructions, grant a tool, expand a
+  target set, execute generated code, or approve a change.
+- Model work is limited by permission, rate, token, cost, context-size, and job
+  budgets. Conversation/cache/job records are access-scoped and have explicit
+  retention.
+- Content and configuration output remains a non-mutating proposal until an
+  authorized user reviews a diff and approves it. Apply rechecks permission and
+  source version; stale proposals fail closed.
+- External agents use a dedicated least-privilege Grav API user through the
+  native REST/MCP permission model. Provider keys and Grav API keys are never
+  interchangeable.
+
+The full boundary is specified in
+[`docs/planned/grav-jarvis.md`](planned/grav-jarvis.md).
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

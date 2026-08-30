@@ -20,6 +20,16 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+Decision 0004 accepts **Jarvis** (`grav-jarvis`) as a first-class planned Grav
+2 AI-service and agent-integration framework. The canonical specification is
+`docs/planned/grav-jarvis.md`. Jarvis is not a clone of Grav AI Pro: it combines
+an internal provider abstraction with Grav's REST API/MCP authority, page/
+frontmatter/media-aware Admin2 assistance, versioned prompts, streaming/CLI,
+safe proposal/diff/approval, and an optional public service for Grav Commander
+and other plugins. OpenAI, Anthropic, and OpenAI-compatible providers are first;
+Gemini and OpenRouter are later candidates. No installable plugin or runtime
+secret was created in this documentation checkpoint.
+
 Spitfire theme 1.2.1 adds an Admin **Section spacing** selector to Features,
 Text, and Form modular pages. Existing pages default to Normal, Tight reuses
 Quark 2's responsive `section-tight` utility, and Tighter adds a responsive
@@ -89,6 +99,11 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- The Jarvis documentation set passes repository structure/YAML/hygiene
+  preflight, whitespace validation, and local Markdown target checks. No legacy
+  former working-slug identifier remains in canonical Markdown. Host PHP was
+  unavailable, so repository preflight explicitly skipped PHP syntax; this
+  checkpoint adds no PHP.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -138,21 +153,35 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Expand Decision 0003 coverage across the suite in risk order without coupling
-the plugins. File Vault protected delivery is the next candidate because it
-shares the highest-risk authentication, authorization, range, analytics, and
-external-storage boundaries.
+Begin Jarvis 0.1.0 with the smallest reviewable contract skeleton. The goal is
+to freeze the public service/provider seam and failure behavior before adding
+live providers, Admin2 UI, background work, or consumer features.
 
 ## Exact next action
 
-Design a disposable DDEV black-box contract for File Vault that proves
-anonymous denial, authorized delivery, ACL/password/download-limit enforcement,
-range/resume behavior, analytics counted once at the correct boundary, and
-byte-identical delivery from protected storage. Do not weaken or replace File
-Vault's independent public interface to share Site Safeguard code.
+First isolate or checkpoint the unrelated local Site Workshop/Cache Hearth and
+Spitfire-theme edits. Then create a runnable `plugins/grav-jarvis` package with
+the repository's required blueprint/defaults/README/changelog/license/plugin
+entry point, `JarvisServiceInterface`, provider registry and
+`onJarvisProviderRegister`, immutable request/result/usage types, a
+`Grav\Plugin\GravJarvis` namespace, deterministic fake provider,
+`$grav['gravJarvis']` registration, and tests for
+service discovery, missing/disabled behavior, provider failure/redaction, and
+optional-consumer fallback. Do not add real API credentials, network providers,
+Admin2 mutation, batch work, or a Grav Commander dependency in that first
+checkpoint.
 
 ## Explicitly deferred
 
+- OpenAI, Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters; the
+  Admin2 assistant; live streaming; prompt persistence; caching/retries; usage
+  and cost accounting; chunking; background jobs; batch/site-wide workflows;
+  and MCP-facing endpoints follow the reviewed Jarvis contract skeleton.
+- The previous File Vault black-box milestone remains required under Decision
+  0003 and is paused, not cancelled: prove anonymous denial, authorized
+  delivery, ACL/password/download-limit enforcement, range/resume behavior,
+  correct analytics counting, and byte-identical protected delivery without
+  coupling it to Site Safeguard.
 - Site Safeguard standalone Recovery Console, scheduling, encrypted SSA/SSS,
   remote providers, and external-data-set orchestration remain roadmap work.
 - Site Safeguard restore-worker black-box coverage remains the next test for
@@ -169,6 +198,8 @@ Vault's independent public interface to share Site Safeguard code.
 2. Read `README.md`, `docs/roadmap.md`, and `docs/architecture.md`.
 3. Read `docs/decisions/README.md` and the latest entries in
    `docs/SESSION-LOG.md`.
-4. Run `git status` and `git log --oneline --decorate -10`.
-5. Confirm the active milestone, exact next action, deferred work, and local
+4. For the active Jarvis milestone, read `docs/planned/grav-jarvis.md` and
+   `docs/decisions/0004-grav-jarvis-agent-framework.md` completely.
+5. Run `git status` and `git log --oneline --decorate -10`.
+6. Confirm the active milestone, exact next action, deferred work, and local
    uncommitted changes before modifying files.

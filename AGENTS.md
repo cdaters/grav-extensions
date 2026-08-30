@@ -11,8 +11,10 @@ Before modifying the suite:
 2. read `README.md`, `docs/roadmap.md`, and `docs/architecture.md`;
 3. read `docs/decisions/README.md` and the latest entries in
    `docs/SESSION-LOG.md`;
-4. inspect `git status` and recent commits; and
-5. summarize the active checkpoint, exact next action, deferred work, and any
+4. when `CURRENT-STATE.md` names a planned extension as active, read its brief
+   under `docs/planned/` and every decision record linked from that brief;
+5. inspect `git status` and recent commits; and
+6. summarize the active checkpoint, exact next action, deferred work, and any
    uncommitted local work before changing it.
 
 ## Durable rules
@@ -42,6 +44,8 @@ At a meaningful checkpoint:
 1. update `CURRENT-STATE.md`;
 2. append the work, evidence, and remaining caveats to `docs/SESSION-LOG.md`;
 3. update a decision record only when a durable rule changed;
-4. run and record applicable gates;
-5. commit a coherent scope without unrelated local work; and
-6. push the checkpoint to `origin` when authorized.
+4. keep the root README, architecture, roadmap, planned brief, and
+   documentation index consistent when a first-class component changes;
+5. run and record applicable gates;
+6. commit a coherent scope without unrelated local work; and
+7. push the checkpoint to `origin` when authorized.

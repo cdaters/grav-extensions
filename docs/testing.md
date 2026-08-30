@@ -131,10 +131,27 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | specification accepted; fake-provider contract is the first 0.1.0 gate |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
 must not wait for the whole inventory before receiving its own regression.
+
+### Jarvis AI boundary contract
+
+Jarvis tests use a deterministic fake provider and local HTTP fixtures by
+default. Before any 0.1.0 package can be called runnable, the external contract
+must prove that an unauthorized request is denied, streamed events arrive in
+order and terminate cleanly, provider errors and logs redact secrets, preview
+does not mutate content, one explicit approval applies once, and a changed
+source rejects a stale proposal. Consumer tests must also prove that Grav
+Commander or another fixture degrades safely when Jarvis is missing, disabled,
+or lacks a requested capability.
+
+Later batch/job coverage must prove target and budget limits, cancellation,
+idempotent resume, per-item permission/source rechecks, and truthful partial-
+failure reporting. Live-provider smoke tests remain opt-in and budget-capped;
+they do not replace deterministic release tests.
 
 ## Security-sensitive checks
 

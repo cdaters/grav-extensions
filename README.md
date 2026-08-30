@@ -50,6 +50,17 @@ The future suite is deliberately maintained as a roadmap until each extension
 has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 [docs/architecture.md](docs/architecture.md).
 
+## Planned first-class components
+
+**Jarvis** (`grav-jarvis`) is the accepted Grav 2 AI-service and agent-
+integration framework. It will provide a shared provider-neutral PHP service,
+Admin2 assistance, safe proposal/diff/approval workflows, and composition with
+Grav REST/MCP without becoming a dependency of the existing plugins. It is a
+specification, not an installable package, until its minimal 0.1.0 release meets
+the repository package contract. Read the
+[Jarvis specification](docs/planned/grav-jarvis.md) and
+[Decision 0004](docs/decisions/0004-grav-jarvis-agent-framework.md).
+
 Every installable package also carries its own end-user README so the guidance
 travels with release ZIPs:
 

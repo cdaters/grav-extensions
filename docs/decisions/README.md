@@ -13,3 +13,4 @@ Accepted records:
 - [0001: prove recovery before promotion](0001-site-safeguard-staged-recovery.md)
 - [0002: run restore across a CLI process boundary](0002-site-safeguard-cli-restore.md)
 - [0003: verify extension boundaries as black boxes](0003-black-box-extension-boundaries.md)
+- [0004: build Jarvis as a Grav 2 AI and agent framework](0004-grav-jarvis-agent-framework.md)
