@@ -539,3 +539,68 @@ suite inventory incremental and risk ordered.
   Anthropic adapter as the second first-party wire family, using current
   official APIs, environment-only credentials, bounded HTTP, provider-neutral
   normalization, and deterministic error/redaction fixtures.
+
+## 2026-08-30 — Jarvis 0.1.4 Anthropic provider foundation
+
+- Re-read the canonical handoff, architecture, roadmap, security/testing
+  guidance, Jarvis specification/ADR/manual, session history, and every frozen
+  contract and existing provider implementation before editing. Re-verified
+  Anthropic's official direct API authentication/version, Models pagination,
+  Messages request/response/usage, error statuses, and current model guidance;
+  re-verified OpenAI's official bounded Responses output parameter for the
+  opt-in smoke path.
+- Added the isolated official `anthropic` adapter using only
+  `https://api.anthropic.com/v1`, `anthropic-version: 2023-06-01`, environment-
+  only `GRAV_JARVIS_ANTHROPIC_API_KEY`, `GET /models`, and `POST /messages`.
+  Model/display/capability data, ordered text blocks, and reported input/output
+  usage normalize into existing neutral DTOs; headers, messages, content/stop
+  blocks, raw errors, request IDs, and other vendor fields stay adapter-private.
+- Extended the bounded transport to allow only bounded non-secret queries on
+  an already allowlisted HTTPS path, while credential query keys remain denied.
+  Anthropic model discovery requests the official maximum page size and follows
+  at most four validated opaque cursors before failing closed, so provider
+  pagination does not leak into the shared catalog contract.
+- Added the neutral `max_output_units` option to both first-party adapters.
+  OpenAI maps it privately to its Responses output cap; Anthropic maps it to
+  the required Messages output cap and otherwise defaults to 1,024 units. Other
+  options and invalid bounds fail clearly. No provider-specific field entered
+  a shared DTO or interface.
+- Proved the 0.1.0/0.1.1 compatibility baseline byte-for-byte: all six public
+  service/provider/registry/introspection/validation/discovery interface hashes
+  match 0.1.3. Plugin boot now registers `openai` and `anthropic` lazily without
+  credential resolution or network activity; compatible instances remain
+  separate and disabled by default.
+- Added ten deterministic Anthropic checks. Together with seven 0.1.0, twelve
+  0.1.1, nine OpenAI, and six compatible-provider checks, all forty-four pass
+  under DDEV PHP 8.3.31 with no network fallback. Coverage includes bounded
+  headers/destination, cursor discovery, validation, models/capabilities,
+  completion with and without usage, multiple content blocks, empty/malformed/
+  incomplete output, missing/malformed/cross-provider credentials and config,
+  auth/rate/other 4xx/5xx/timeout failures, redaction, and frozen contracts.
+- Added a separate live-smoke harness for OpenAI or Anthropic through the public
+  service, registry, environment resolver, bounded production transport, live
+  adapter, validation/discovery, and neutral completion result. Both shell and
+  PHP paths require `GRAV_JARVIS_LIVE_SMOKE=1`; output is capped and no prompt,
+  response, credential, or authorization header is printed. Both providers
+  cleanly skipped because no corresponding key existed on host or DDEV; no live
+  request or API charge occurred.
+- Passed repository preflight (host PHP truthfully skipped), DDEV PHP syntax and
+  cURL/runtime checks, Composer/JSON/YAML/Markdown/whitespace/hygiene and
+  credential scans, ZIP integrity, final packaged 0.1.3-to-0.1.4 upgrade, fresh
+  0.1.4 installation, Grav cache clear, public/Admin HTTP 200, and clean recent
+  log inspection. The fixture was restored to its prior state with no Jarvis
+  installation.
+- Packaged `dist/grav-jarvis-0.1.4.zip`, SHA-256
+  `242fef895caaf6ea926a17ad0e711f7801d2f39e0779bf67db487e3c82d02a8b`.
+  Versioned 0.1.0 through 0.1.3 archives and hashes remain intact.
+- Made Jarvis 0.2.0 the exact next milestone: a permission-filtered Admin2
+  Jarvis/sidebar and page-editor surface with provider/model selectors,
+  validation state, prompt/response, inspectable bounded current-page context,
+  Rewrite/Proofread/Shorten/Expand/Summarize/Custom actions, diff preview, and
+  explicit Accept/Reject into the unsaved editor buffer. It must recheck page
+  permission/source hash, never auto-save, and leave Admin2 usable when Jarvis
+  or a provider is absent or fails.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme work.
+  No Gemini/OpenRouter, CLI commands, streaming, tools, structured output,
+  jobs, MCP, Commander integration, site-wide mutation, push, tag, or publish
+  was performed.

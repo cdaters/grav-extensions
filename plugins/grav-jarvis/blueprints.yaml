@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.1.3
-description: Provider-neutral AI services with bounded HTTP, official OpenAI, and explicit compatible-provider profiles for Grav 2.
+version: 0.1.4
+description: Provider-neutral AI services with bounded HTTP, official OpenAI and Anthropic adapters, and explicit compatible-provider profiles for Grav 2.
 icon: microchip
 author:
   name: Craig Daters
@@ -31,7 +31,7 @@ form:
     foundation:
       type: section
       title: Jarvis 0.1 provider foundation
-      text: This release provides bounded HTTPS transport, official OpenAI, and opt-in Responses-compatible provider instances behind unchanged provider-neutral contracts. Provider credentials are accepted only from server environment variables. It includes no Admin2 assistant, background worker, or site mutation.
+      text: This release provides bounded HTTPS transport, isolated official OpenAI and Anthropic adapters, and opt-in Responses-compatible provider instances behind unchanged provider-neutral contracts. Provider credentials are accepted only from server environment variables. It includes no Admin2 assistant, background worker, or site mutation.
       underline: true
 
     providers.openai.enabled:
@@ -48,6 +48,24 @@ form:
       label: OpenAI default model
       help: Non-secret model identifier used when a provider-neutral request does not select a model. API credentials cannot be configured here.
       default: gpt-5.6-luna
+      validate:
+        required: true
+        type: text
+
+    providers.anthropic.enabled:
+      type: toggle
+      label: Anthropic provider
+      help: Registers the official Anthropic provider. A request still requires GRAV_JARVIS_ANTHROPIC_API_KEY in the server process environment.
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    providers.anthropic.default_model:
+      type: text
+      label: Anthropic default model
+      help: Non-secret model identifier used when a provider-neutral request does not select a model. API credentials cannot be configured here.
+      default: claude-sonnet-5
       validate:
         required: true
         type: text

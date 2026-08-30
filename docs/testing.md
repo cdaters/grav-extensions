@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.3 bounded official and compatible-provider fixtures implemented; Anthropic next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.4 bounded OpenAI/Anthropic and compatible-provider fixtures implemented; Admin2 preview/accept boundary next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -140,8 +140,8 @@ must not wait for the whole inventory before receiving its own regression.
 ### Jarvis AI boundary contract
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
-transport/OpenAI, and 0.1.3 compatible-provider suite with host PHP or a DDEV
-project:
+transport/OpenAI, 0.1.3 compatible-provider, and 0.1.4 Anthropic suite with
+host PHP or a DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -171,8 +171,32 @@ bounded service; separate instance IDs/endpoints/environment references;
 truthful no-discovery capability and limited-validation warning; declared
 endpoint absence; Chat Completions-only, malformed, and incomplete failures;
 rate guidance; cross-instance credential denial; and private-destination
-denial. When host PHP is absent, it defaults to the canonical DDEV fixture when
-available or accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
+denial. The 0.1.4 contract proves versioned Anthropic headers, bounded
+destination policy, non-generating validation/model discovery with bounded
+cursor pagination, normalized model labels/capabilities, ordered multiple text
+blocks, usage and no-usage
+success, missing/malformed/incomplete provider responses, missing/malformed/
+cross-provider credentials and configuration, 401/429/other 4xx/5xx/timeout
+classification, no network fallback, redaction, and byte-identical frozen
+interfaces. When host PHP is absent, the runner defaults to the canonical DDEV
+fixture when available or accepts a DDEV project path/
+`GRAV_JARVIS_DDEV_PROJECT`.
+
+Live-provider smoke is a separate explicit path:
+
+```bash
+GRAV_JARVIS_LIVE_SMOKE=1 ./scripts/test-grav-jarvis-live.sh openai
+GRAV_JARVIS_LIVE_SMOKE=1 ./scripts/test-grav-jarvis-live.sh anthropic
+```
+
+Without `GRAV_JARVIS_LIVE_SMOKE=1`, the shell and PHP entry points both skip.
+With opt-in but no selected provider credential, the result is also a clean
+skip. A live run traverses the public service, registry, environment resolver,
+bounded production transport, selected adapter, validation/discovery, and
+provider-neutral completion result. It caps output and reports only provider/
+model metadata, catalog size, usage availability, non-empty success, and
+whether the optional short acknowledgement matched; prompt/response bodies and
+credentials are never printed. Live smoke never replaces deterministic tests.
 
 Future external contracts must prove that an unauthorized request is denied,
 streamed events arrive in order and terminate cleanly, preview does not mutate

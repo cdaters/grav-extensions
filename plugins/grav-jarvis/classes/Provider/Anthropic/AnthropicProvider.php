@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Grav\Plugin\GravJarvis\Provider\OpenAI;
+namespace Grav\Plugin\GravJarvis\Provider\Anthropic;
 
 use Grav\Plugin\GravJarvis\Contracts\CompletionRequest;
 use Grav\Plugin\GravJarvis\Contracts\CompletionResult;
 use Grav\Plugin\GravJarvis\Contracts\CredentialResolverInterface;
-use Grav\Plugin\GravJarvis\Contracts\CredentialValueInterface;
 use Grav\Plugin\GravJarvis\Contracts\Exception\CredentialConfigurationException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\HttpTransportException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\MalformedCredentialException;
@@ -35,18 +34,22 @@ use JsonException;
 use Throwable;
 
 /**
- * Official OpenAI adapter. Vendor request, response, status, and usage fields
- * are intentionally contained in this namespace.
+ * Official Anthropic adapter. Messages, content blocks, model records, headers,
+ * status details, and usage fields remain private to this namespace.
  */
-final class OpenAIProvider implements
+final class AnthropicProvider implements
     ProviderInterface,
     ProviderValidationInterface,
     ModelDiscoveryInterface
 {
-    public const ID = 'openai';
-    public const API_BASE_URI = 'https://api.openai.com/v1';
-    public const CREDENTIAL_ENVIRONMENT_VARIABLE = 'GRAV_JARVIS_OPENAI_API_KEY';
-    public const DEFAULT_MODEL = 'gpt-5.6-luna';
+    public const ID = 'anthropic';
+    public const API_BASE_URI = 'https://api.anthropic.com/v1';
+    public const API_VERSION = '2023-06-01';
+    public const CREDENTIAL_ENVIRONMENT_VARIABLE = 'GRAV_JARVIS_ANTHROPIC_API_KEY';
+    public const DEFAULT_MODEL = 'claude-sonnet-5';
+    public const DEFAULT_MAX_OUTPUT_UNITS = 1024;
+    private const MODEL_PAGE_LIMIT = 1000;
+    private const MAX_MODEL_PAGES = 4;
 
     private readonly SecretRedactor $redactor;
 
@@ -81,21 +84,21 @@ final class OpenAIProvider implements
     {
         $this->assertConfiguration();
         if ($request->providerId !== self::ID) {
-            throw new ProviderException('The OpenAI provider received a request for another provider.');
+            throw new ProviderException('The Anthropic provider received a request for another provider.');
         }
+
         $model = $request->model ?? trim($this->defaultModel);
         $this->assertModel($model);
         $payload = [
             'model' => $model,
-            'input' => $request->input,
-            'store' => false,
+            'max_tokens' => $this->maxOutputUnits($request->options),
+            'messages' => [[
+                'role' => 'user',
+                'content' => $request->input,
+            ]],
         ];
-        $maxOutputUnits = $this->maxOutputUnits($request->options);
-        if ($maxOutputUnits !== null) {
-            $payload['max_output_tokens'] = $maxOutputUnits;
-        }
         if ($request->instructions !== null) {
-            $payload['instructions'] = $request->instructions;
+            $payload['system'] = $request->instructions;
         }
 
         try {
@@ -104,16 +107,16 @@ final class OpenAIProvider implements
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
             );
         } catch (JsonException) {
-            throw new ProviderConfigurationException('The OpenAI request could not be encoded.');
+            throw new ProviderConfigurationException('The Anthropic request could not be encoded.');
         }
 
-        $response = $this->http->send($this->request('POST', '/responses', $body));
+        $response = $this->http->send($this->request('POST', '/messages', $body));
         $this->assertSuccessful($response);
         $decoded = $this->decodeObject($response->body);
         $output = $this->extractOutput($decoded);
-        $responseModel = $decoded['model'] ?? $model;
+        $responseModel = $decoded['model'] ?? null;
         if (!is_string($responseModel)) {
-            throw new ProviderResponseException('OpenAI returned an invalid model identifier.');
+            throw new ProviderResponseException('Anthropic returned an invalid model identifier.');
         }
         $this->assertModel($responseModel, true);
 
@@ -150,37 +153,68 @@ final class OpenAIProvider implements
         } catch (HttpTransportException $error) {
             return $this->invalid('transport_unavailable', $error->getMessage(), true);
         } catch (Throwable) {
-            return $this->invalid('provider_unavailable', 'OpenAI is currently unavailable.', true);
+            return $this->invalid('provider_unavailable', 'Anthropic is currently unavailable.', true);
         }
     }
 
     public function discoverModels(): ModelCatalog
     {
         $this->assertConfiguration();
-        $response = $this->http->send($this->request('GET', '/models'));
-        $this->assertSuccessful($response);
-        $decoded = $this->decodeObject($response->body);
-        $records = $decoded['data'] ?? null;
-        if (!is_array($records) || !array_is_list($records)) {
-            throw new ProviderResponseException('OpenAI returned an invalid model list.');
-        }
-
         $models = [];
-        foreach ($records as $record) {
-            if (!is_array($record) || !isset($record['id']) || !is_string($record['id'])) {
-                throw new ProviderResponseException('OpenAI returned an invalid model record.');
+        $path = '/models?limit=' . self::MODEL_PAGE_LIMIT;
+        for ($page = 0; $page < self::MAX_MODEL_PAGES; ++$page) {
+            $response = $this->http->send($this->request('GET', $path));
+            $this->assertSuccessful($response);
+            $decoded = $this->decodeObject($response->body);
+            $records = $decoded['data'] ?? null;
+            if (!is_array($records) || !array_is_list($records)) {
+                throw new ProviderResponseException('Anthropic returned an invalid model list.');
             }
-            try {
-                $models[] = new ModelDescriptor(id: $record['id']);
-            } catch (Throwable) {
-                throw new ProviderResponseException('OpenAI returned a malformed model identifier.');
+            $hasMore = $decoded['has_more'] ?? false;
+            if (!is_bool($hasMore)) {
+                throw new ProviderResponseException('Anthropic returned invalid model pagination metadata.');
             }
+
+            foreach ($records as $record) {
+                if (!is_array($record)
+                    || !isset($record['id'], $record['display_name'])
+                    || !is_string($record['id'])
+                    || !is_string($record['display_name'])
+                    || (isset($record['type']) && $record['type'] !== 'model')) {
+                    throw new ProviderResponseException('Anthropic returned an invalid model record.');
+                }
+                try {
+                    $models[] = new ModelDescriptor(
+                        id: $record['id'],
+                        label: $record['display_name'],
+                        capabilities: ['text-completion']
+                    );
+                } catch (Throwable) {
+                    throw new ProviderResponseException('Anthropic returned a malformed model record.');
+                }
+            }
+
+            if (!$hasMore) {
+                break;
+            }
+            $lastId = $decoded['last_id'] ?? null;
+            if (!is_string($lastId)
+                || $lastId === ''
+                || strlen($lastId) > 256
+                || preg_match('/[\x00-\x1F\x7F]/', $lastId) === 1) {
+                throw new ProviderResponseException('Anthropic returned invalid model pagination metadata.');
+            }
+            $path = '/models?limit=' . self::MODEL_PAGE_LIMIT
+                . '&after_id=' . rawurlencode($lastId);
+        }
+        if ($hasMore ?? false) {
+            throw new ProviderResponseException('Anthropic model discovery exceeded its bounded page limit.');
         }
 
         try {
             return new ModelCatalog(self::ID, $models);
         } catch (Throwable) {
-            throw new ProviderResponseException('OpenAI returned duplicate or malformed model records.');
+            throw new ProviderResponseException('Anthropic returned duplicate or malformed model records.');
         }
     }
 
@@ -197,27 +231,23 @@ final class OpenAIProvider implements
         if ($model === ''
             || strlen($model) > 256
             || preg_match('/[\x00-\x1F\x7F]/', $model) === 1) {
-            if ($providerResponse) {
-                throw new ProviderResponseException('OpenAI returned a malformed model identifier.');
-            }
-            throw new ProviderConfigurationException('The OpenAI model identifier is invalid.');
+            throw $providerResponse
+                ? new ProviderResponseException('Anthropic returned a malformed model identifier.')
+                : new ProviderConfigurationException('The Anthropic model identifier is invalid.');
         }
     }
 
     /** @param array<string, mixed> $options */
-    private function maxOutputUnits(array $options): ?int
+    private function maxOutputUnits(array $options): int
     {
         foreach (array_keys($options) as $key) {
             if ($key !== 'max_output_units') {
                 throw new ProviderConfigurationException(
-                    'The OpenAI adapter received an unsupported provider-neutral option.'
+                    'The Anthropic 0.1.4 adapter received an unsupported provider-neutral option.'
                 );
             }
         }
-        if (!array_key_exists('max_output_units', $options)) {
-            return null;
-        }
-        $value = $options['max_output_units'];
+        $value = $options['max_output_units'] ?? self::DEFAULT_MAX_OUTPUT_UNITS;
         if (!is_int($value) || $value < 1 || $value > 65536) {
             throw new ProviderConfigurationException(
                 'The provider-neutral output limit must be an integer between 1 and 65536.'
@@ -234,40 +264,34 @@ final class OpenAIProvider implements
             uri: self::API_BASE_URI . $path,
             headers: [
                 'Accept' => 'application/json',
+                'Anthropic-Version' => self::API_VERSION,
                 'Content-Type' => 'application/json',
             ],
             body: $body,
-            credentialHeaders: [
-                'Authorization' => $this->bearer($credential),
-            ]
+            credentialHeaders: ['X-Api-Key' => $credential]
         );
-    }
-
-    private function bearer(CredentialValueInterface $credential): CredentialValueInterface
-    {
-        return $credential->prefixed('Bearer ');
     }
 
     private function assertSuccessful(HttpResponse $response): void
     {
         if ($response->status === 401 || $response->status === 403) {
-            throw new ProviderAuthenticationException('OpenAI authentication failed.');
+            throw new ProviderAuthenticationException('Anthropic authentication or access failed.');
         }
         if ($response->status === 429) {
             $retryAfter = $response->header('retry-after');
             $retryAfterSeconds = is_string($retryAfter) && ctype_digit($retryAfter)
                 ? min((int) $retryAfter, 86400)
                 : null;
-            throw new ProviderRateLimitException('OpenAI rate limited the request.', $retryAfterSeconds);
+            throw new ProviderRateLimitException('Anthropic rate limited the request.', $retryAfterSeconds);
         }
         if ($response->status >= 500) {
             throw new HttpTransportException(
-                'OpenAI is unavailable with HTTP status ' . $response->status . '.'
+                'Anthropic is unavailable with HTTP status ' . $response->status . '.'
             );
         }
         if ($response->status < 200 || $response->status >= 300) {
             throw new ProviderConfigurationException(
-                'OpenAI rejected the request with HTTP status ' . $response->status . '.'
+                'Anthropic rejected the request with HTTP status ' . $response->status . '.'
             );
         }
     }
@@ -278,10 +302,10 @@ final class OpenAIProvider implements
         try {
             $decoded = json_decode($body, true, 128, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
-            throw new ProviderResponseException('OpenAI returned malformed JSON.');
+            throw new ProviderResponseException('Anthropic returned malformed JSON.');
         }
         if (!is_array($decoded) || array_is_list($decoded)) {
-            throw new ProviderResponseException('OpenAI returned a non-object response.');
+            throw new ProviderResponseException('Anthropic returned a non-object response.');
         }
         return $decoded;
     }
@@ -290,43 +314,40 @@ final class OpenAIProvider implements
     private function extractOutput(array $decoded): string
     {
         if (isset($decoded['error']) && $decoded['error'] !== null) {
-            throw new ProviderResponseException('OpenAI reported an unsuccessful response.');
+            throw new ProviderResponseException('Anthropic reported an unsuccessful response.');
         }
-        if (array_key_exists('status', $decoded)
-            && (!is_string($decoded['status']) || $decoded['status'] !== 'completed')) {
-            throw new ProviderResponseException('OpenAI returned an incomplete response.');
+        if (($decoded['type'] ?? null) !== 'message') {
+            throw new ProviderResponseException('Anthropic returned an unexpected response type.');
+        }
+        if (($decoded['role'] ?? null) !== 'assistant') {
+            throw new ProviderResponseException('Anthropic returned an unexpected response role.');
+        }
+        $stopReason = $decoded['stop_reason'] ?? null;
+        if ($stopReason !== null
+            && (!is_string($stopReason) || !in_array($stopReason, ['end_turn', 'stop_sequence'], true))) {
+            throw new ProviderResponseException('Anthropic returned an incomplete or unsupported completion.');
         }
 
-        $outputText = $decoded['output_text'] ?? null;
-        if (is_string($outputText) && trim($outputText) !== '') {
-            return $outputText;
-        }
-
-        $items = $decoded['output'] ?? null;
-        if (!is_array($items) || !array_is_list($items)) {
-            throw new ProviderResponseException('OpenAI returned no usable text output.');
+        $content = $decoded['content'] ?? null;
+        if (!is_array($content) || !array_is_list($content)) {
+            throw new ProviderResponseException('Anthropic returned no usable text output.');
         }
         $parts = [];
-        foreach ($items as $item) {
-            if (!is_array($item) || ($item['type'] ?? null) !== 'message') {
+        foreach ($content as $block) {
+            if (!is_array($block)) {
+                throw new ProviderResponseException('Anthropic returned a malformed content block.');
+            }
+            if (($block['type'] ?? null) !== 'text') {
                 continue;
             }
-            $content = $item['content'] ?? null;
-            if (!is_array($content) || !array_is_list($content)) {
-                continue;
+            if (!isset($block['text']) || !is_string($block['text'])) {
+                throw new ProviderResponseException('Anthropic returned a malformed text block.');
             }
-            foreach ($content as $contentItem) {
-                if (is_array($contentItem)
-                    && ($contentItem['type'] ?? null) === 'output_text'
-                    && isset($contentItem['text'])
-                    && is_string($contentItem['text'])) {
-                    $parts[] = $contentItem['text'];
-                }
-            }
+            $parts[] = $block['text'];
         }
         $output = implode('', $parts);
         if (trim($output) === '') {
-            throw new ProviderResponseException('OpenAI returned no usable text output.');
+            throw new ProviderResponseException('Anthropic returned no usable text output.');
         }
         return $output;
     }
@@ -338,17 +359,14 @@ final class OpenAIProvider implements
             return new Usage();
         }
         if (!is_array($decoded['usage']) || array_is_list($decoded['usage'])) {
-            throw new ProviderResponseException('OpenAI returned malformed usage information.');
+            throw new ProviderResponseException('Anthropic returned malformed usage information.');
         }
-        $usage = $decoded['usage'];
-        $input = $this->usageValue($usage, 'input_tokens');
-        $output = $this->usageValue($usage, 'output_tokens');
-        $total = $this->usageValue($usage, 'total_tokens');
-
+        $input = $this->usageValue($decoded['usage'], 'input_tokens');
+        $output = $this->usageValue($decoded['usage'], 'output_tokens');
         return new Usage(
             inputUnits: $input,
             outputUnits: $output,
-            totalUnits: $total,
+            totalUnits: $input !== null && $output !== null ? $input + $output : null,
             unit: 'tokens',
             providerReported: true
         );
@@ -361,7 +379,7 @@ final class OpenAIProvider implements
             return null;
         }
         if (!is_int($usage[$key]) || $usage[$key] < 0) {
-            throw new ProviderResponseException('OpenAI returned malformed usage information.');
+            throw new ProviderResponseException('Anthropic returned malformed usage information.');
         }
         return $usage[$key];
     }
@@ -370,7 +388,7 @@ final class OpenAIProvider implements
     {
         $message = trim($this->redactor->redact($message));
         if ($message === '') {
-            $message = 'OpenAI is not usable.';
+            $message = 'Anthropic is not usable.';
         }
         return new ProviderValidationResult(
             providerId: self::ID,

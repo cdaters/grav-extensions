@@ -128,7 +128,8 @@ function openAiService(OpenAIProvider $provider): JarvisService
 function completionPayload(
     string $input = 'Explain the deterministic fixture.',
     string $model = OpenAIProvider::DEFAULT_MODEL,
-    ?string $instructions = 'Return plain text.'
+    ?string $instructions = 'Return plain text.',
+    ?int $maxOutputUnits = null
 ): array {
     $payload = [
         'model' => $model,
@@ -137,6 +138,9 @@ function completionPayload(
     ];
     if ($instructions !== null) {
         $payload['instructions'] = $instructions;
+    }
+    if ($maxOutputUnits !== null) {
+        $payload['max_output_tokens'] = $maxOutputUnits;
     }
     return $payload;
 }
@@ -240,13 +244,20 @@ $tests['bounded production transport policy'] = static function () use ($secret)
         static fn () => $transport->send(new HttpRequest('GET', 'https://api.openai.com/internal')),
         'Provider path outside the allowed base was accepted.'
     );
+    $queryRequest = openAiRequest('GET', '/models?cursor=opaque', $secret);
+    $executor->addResponse($queryRequest, new HttpResponse(200, [], modelListBody()));
+    expectSame(
+        200,
+        $transport->send($queryRequest)->status,
+        'Bounded non-secret query on an allowlisted provider path was rejected.'
+    );
     expectThrows(
-        HttpTransportException::class,
-        static fn () => $transport->send(new HttpRequest(
+        \InvalidArgumentException::class,
+        static fn () => new HttpRequest(
             'GET',
-            OpenAIProvider::API_BASE_URI . '/models?cursor=opaque'
-        )),
-        'Provider query parameters were accepted by the production transport.'
+            OpenAIProvider::API_BASE_URI . '/models?api_key=forbidden'
+        ),
+        'Provider credential query parameter was accepted.'
     );
     expectThrows(
         HttpTransportException::class,
@@ -362,6 +373,19 @@ $tests['default and explicit model selection'] = static function () use ($secret
             'output_text' => 'Explicit model output.',
         ], JSON_THROW_ON_ERROR))
     );
+    $boundedRequest = openAiRequest(
+        'POST',
+        '/responses',
+        $secret,
+        completionPayload('Bounded output input.', OpenAIProvider::DEFAULT_MODEL, null, 64)
+    );
+    $http->addResponse(
+        $boundedRequest,
+        new HttpResponse(200, [], json_encode([
+            'model' => OpenAIProvider::DEFAULT_MODEL,
+            'output_text' => 'Bounded output.',
+        ], JSON_THROW_ON_ERROR))
+    );
     $provider = openAiProvider($http);
     expectSame(
         'Default model output.',
@@ -376,6 +400,15 @@ $tests['default and explicit model selection'] = static function () use ($secret
             model: 'operator-selected-model'
         ))->output,
         'Provider-neutral explicit model selection was ignored.'
+    );
+    expectSame(
+        'Bounded output.',
+        $provider->complete(new CompletionRequest(
+            OpenAIProvider::ID,
+            'Bounded output input.',
+            options: ['max_output_units' => 64]
+        ))->output,
+        'Provider-neutral output limit was not mapped by OpenAI.'
     );
 };
 

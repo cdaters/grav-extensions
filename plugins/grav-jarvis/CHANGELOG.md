@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.4 — 2026-08-30
+
+- Added an isolated official Anthropic provider using versioned Models and
+  Messages API contracts without changing any frozen Jarvis interface.
+- Added environment-only `GRAV_JARVIS_ANTHROPIC_API_KEY` authentication,
+  non-generating validation/model discovery, ordered text-block normalization,
+  provider-reported usage, typed failures, and default network-free provider
+  registration.
+- Added the provider-neutral `max_output_units` request option and private
+  OpenAI/Anthropic wire mappings so opt-in live smoke calls have a hard output
+  bound without vendor vocabulary entering shared contracts.
+- Added ten deterministic Anthropic checks for bounded transport, headers,
+  validation, discovery, capabilities, completion, usage, multiple blocks,
+  bounded cursor pagination, malformed/empty/incomplete responses, credentials/
+  configuration, auth/rate/4xx/5xx/timeout failures, offline behavior,
+  redaction, and frozen contracts.
+- Added an explicitly opt-in OpenAI/Anthropic live smoke harness that cleanly
+  skips without a configured credential and never replaces deterministic
+  release tests.
+- Deliberately omitted CLI commands, Admin2 UI, streaming, tool calling,
+  structured output, jobs, MCP workflows, Commander integration, and further
+  providers. Jarvis 0.2.0 is the first Admin2 usability slice.
+
 ## 0.1.3 — 2026-08-30
 
 - Added a separate opt-in OpenAI Responses-compatible provider type without

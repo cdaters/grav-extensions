@@ -108,4 +108,17 @@ discovery may be disabled, and the adapter claims no streaming, structured-
 output, or tool-calling capability it does not implement. Partial and Chat
 Completions-only responses fail closed.
 
+Jarvis 0.1.4 adds Anthropic as a genuinely different first-party wire family
+without changing the shared interfaces. The adapter uses only the fixed
+official HTTPS base, required version header, Models and Messages endpoints,
+and environment-only `GRAV_JARVIS_ANTHROPIC_API_KEY`. The key enters only the
+transport's credential-header channel; message bodies, content blocks, model
+capability objects, stop details, raw errors, and request IDs remain adapter-
+private. Bounded non-secret cursor queries may be used only on the already
+allowlisted provider path; credential query keys remain rejected. Multiple
+text blocks and provider-reported usage normalize to shared
+DTOs; empty, malformed, incomplete, tool-oriented, or refusal-style responses
+fail closed. The opt-in live harness hard-bounds output, prints no prompt or
+response, and cleanly skips without a configured credential.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

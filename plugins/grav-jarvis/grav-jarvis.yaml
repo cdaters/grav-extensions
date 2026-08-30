@@ -3,6 +3,9 @@ providers:
   openai:
     enabled: true
     default_model: gpt-5.6-luna
+  anthropic:
+    enabled: true
+    default_model: claude-sonnet-5
   openai_compatible:
     enabled: false
     instances: []

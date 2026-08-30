@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
+use Grav\Plugin\GravJarvis\Provider\Anthropic\AnthropicProvider;
 use Grav\Plugin\GravJarvis\Provider\OpenAI\OpenAIProvider;
 use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\CompatibleProviderConfig;
 use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\OpenAICompatibleProvider;
@@ -62,6 +63,21 @@ final class GravJarvisPlugin extends Plugin
                 $registry->register(OpenAIProvider::createProduction($defaultModel));
             } catch (Throwable $error) {
                 $this->logRegistrationFailure('OpenAI registration failed', $error, $redactor);
+            }
+        }
+
+        if ($this->config->get('plugins.' . self::SLUG . '.providers.anthropic.enabled', true)) {
+            try {
+                $defaultModel = $this->config->get(
+                    'plugins.' . self::SLUG . '.providers.anthropic.default_model',
+                    AnthropicProvider::DEFAULT_MODEL
+                );
+                if (!is_string($defaultModel)) {
+                    throw new \InvalidArgumentException('The Anthropic default model must be a string.');
+                }
+                $registry->register(AnthropicProvider::createProduction($defaultModel));
+            } catch (Throwable $error) {
+                $this->logRegistrationFailure('Anthropic registration failed', $error, $redactor);
             }
         }
 

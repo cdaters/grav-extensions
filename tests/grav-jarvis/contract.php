@@ -295,7 +295,7 @@ namespace GravJarvisContract {
         $service = $container['gravJarvis'];
         expect($service instanceof JarvisServiceInterface, 'Container service does not implement the public interface.');
         expectSame(
-            ['compatible-fixture', 'failure', 'fake', 'leaky', 'openai'],
+            ['anthropic', 'compatible-fixture', 'failure', 'fake', 'leaky', 'openai'],
             $service->providerIds(),
             'Provider identifiers are not deterministic.'
         );

@@ -90,7 +90,7 @@ final class PublicHttpsDestinationGuard implements DestinationGuardInterface
             || isset($parts['user'])
             || isset($parts['pass'])
             || isset($parts['fragment'])
-            || isset($parts['query'])) {
+            || ($baseUri && isset($parts['query']))) {
             throw new InvalidArgumentException('Provider destinations must be absolute HTTPS URLs.');
         }
 
@@ -124,6 +124,14 @@ final class PublicHttpsDestinationGuard implements DestinationGuardInterface
         }
         if ($baseUri && strlen($path) > 1) {
             $path = rtrim($path, '/');
+        }
+
+        if (!$baseUri && isset($parts['query'])) {
+            $query = (string) $parts['query'];
+            if (strlen($query) > 2048
+                || preg_match('/[\x00-\x1F\x7F]/', rawurldecode($query)) === 1) {
+                throw new InvalidArgumentException('Provider destination query is unsafe.');
+            }
         }
 
         return ['hostname' => $hostname, 'port' => $port, 'path' => $path];

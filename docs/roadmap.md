@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.3 development release; bounded official OpenAI and explicitly profiled compatible-provider instances available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.4 development release; bounded official OpenAI/Anthropic and explicitly profiled compatible-provider instances available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -62,17 +62,21 @@ The version sequence is:
    deterministic matrix for full, partial, and incompatible implementations.
    It is not a mode of the official OpenAI adapter, accepts no per-request
    endpoint, and has no private/local-network opt-in.
-5. **0.1.4 — second first-party wire family (next):** add Anthropic validation,
-   discovery where supported, and synchronous completion behind the unchanged
-   contracts and bounded transport, with deterministic vendor-specific
-   success/error/usage fixtures.
-6. **0.1.x — provider and interaction increments:** add synchronous chat,
-   streaming/CLI, prompt/context work, and the Admin2
-   proposal/diff/approval surface in separately reviewable checkpoints.
-7. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+5. **0.1.4 — second first-party wire family (implemented):** isolated official
+   Anthropic Models/Messages mapping, environment-only authentication,
+   non-generating validation/discovery, ordered text and usage normalization,
+   deterministic vendor-specific failure/redaction fixtures, and an opt-in
+   bounded live-smoke path. Frozen shared interfaces remain byte-identical.
+6. **0.2.0 — first Admin2 usability slice (next):** permission-filtered Jarvis
+   and page-editor entry points; provider/model selection and status; prompt,
+   current-page context, and Rewrite/Proofread/Shorten/Expand/Summarize/Custom
+   actions; response/diff preview; explicit Accept/Reject into the unsaved
+   editor buffer; source/permission rechecks; and graceful absence/failure
+   states with no automatic save.
+7. **0.3.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
    Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
    checkpoints, and a stable consumer contract.
-8. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
+8. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
 9. **1.0.0 — supported platform:** stable compatibility/deprecation promises,

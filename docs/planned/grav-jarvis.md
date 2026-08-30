@@ -1,7 +1,7 @@
 # Jarvis
 
-**Status:** 0.1.3 official and compatible-provider foundation implemented;
-0.1.4 Anthropic adapter next
+**Status:** 0.1.4 provider foundation implemented; 0.2.0 first Admin2
+usability slice next
 
 **Product name:** Jarvis
 
@@ -99,7 +99,7 @@ The live-provider sequence begins with:
 
 1. OpenAI (implemented in 0.1.2);
 2. OpenAI-compatible HTTP endpoints (implemented in 0.1.3); and
-3. Anthropic (next in 0.1.4).
+3. Anthropic (implemented in 0.1.4).
 
 OpenAI is the first implementation checkpoint. The official
 [generation API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
@@ -114,7 +114,8 @@ adapter first has now established the comparison baseline; 0.1.3 uses a
 separate compatible-provider type and an explicit compatibility matrix rather
 than adding a base-URL mode to the official adapter.
 
-Gemini and OpenRouter follow after the contract is stable. OpenRouter may be an
+Gemini and OpenRouter remain later candidates now that two first-party wire
+families have proved the contract. OpenRouter may be an
 explicit adapter even where its API resembles OpenAI because routing, model
 metadata, accounting, and errors are different product semantics. The generic
 compatible adapter requires an operator-approved HTTPS origin; loopback or
@@ -164,6 +165,40 @@ metadata/frontmatter suggestions, and custom prompts. Streaming improves
 feedback but does not alter approval rules. Cancel stops presentation and asks
 the provider/job to stop where supported; partial output is never silently
 applied.
+
+The first Admin2 slice is deliberately smaller and is the exact 0.2.0
+milestone:
+
+- add a permission-filtered **Jarvis** item in Admin2's sidebar utility/tools
+  area and a page-editor action that opens the same Jarvis surface with current-
+  page context;
+- populate a provider selector from `providerIds()` and a model selector from
+  `discoverModels()`, with an explicit manual model fallback only when a
+  provider truthfully lacks discovery;
+- show validation as usable, unavailable, misconfigured, or retryable without
+  exposing raw provider errors or credential state beyond the safe issue code;
+- provide a prompt field, provider-neutral response panel, and initial
+  **Rewrite**, **Proofread**, **Shorten**, **Expand**, **Summarize**, and
+  **Custom Prompt** actions;
+- make the context envelope inspectable before generation and begin with the
+  current page's route, title, template, language, Markdown, parsed
+  frontmatter, and bounded media metadata—never binary media or hidden secrets;
+- render original/proposed text and a readable diff, then require an explicit
+  **Accept** or **Reject**. Accept may update only the unsaved editor buffer in
+  0.2.0; it must never save the page, overwrite the source automatically, or
+  bypass the normal Admin page-save permission and workflow;
+- require `grav-jarvis.use` for generation and a separate
+  `grav-jarvis.approve` boundary for accepting a proposal into an editable
+  field. Recheck the actor's page permission and source hash before accept;
+- present typed, redacted errors with retry guidance and preserve entered
+  prompt/context locally when a safe retry is possible; and
+- progressively disable only Jarvis controls when the plugin, selected
+  provider, validation, discovery, or generation path is absent or fails.
+  Normal Admin2 navigation, page editing, and saving must remain usable.
+
+Version 0.2.0 does not add persistence, automatic apply, streaming, jobs,
+site-wide targeting, or MCP operations. Those remain separate reviewable
+increments after the synchronous UI boundary is proven.
 
 ### Proposal, diff, and approval model
 
@@ -269,7 +304,7 @@ Grav's, not a plugin invention.
 
 Provider secrets are server-only environment variables such as
 `GRAV_JARVIS_OPENAI_API_KEY` and `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-Versions 0.1.1 through 0.1.3 accept no secret source other than the process
+Versions 0.1.1 through 0.1.4 accept no secret source other than the process
 environment.
 Configuration may eventually name an environment variable but never contains
 its value. Secrets never enter Admin2 JavaScript, API payloads, prompts, logs,
@@ -368,6 +403,10 @@ mutation, Commander integration, background job, or MCP workflow in 0.1.0.
   failure, destination policy, offline behavior, and redaction. Live account
   smoke remains optional and was not needed for the release gate.
 
+Version 0.1.4 additively teaches the OpenAI adapter the provider-neutral
+`max_output_units` bound for the live-smoke path; the 0.1.2 default request
+shape and all shared contracts remain unchanged.
+
 ### 0.1.3 — generic OpenAI-compatible provider (implemented)
 
 - created a provider separate from the official `openai` adapter, not a mode or
@@ -386,21 +425,45 @@ mutation, Commander integration, background job, or MCP workflow in 0.1.0.
   missing-endpoint, Chat Completions-only, malformed/partial response,
   rate-limit, cross-credential, and private-destination fixtures.
 
-### 0.1.4 — Anthropic provider (next)
+### 0.1.4 — Anthropic provider (implemented)
 
-- add the second first-party wire family behind the unchanged public contracts;
-- map non-generating validation and model discovery only where Anthropic's
-  current official APIs support them, without inventing a generic shape;
-- normalize synchronous text and provider-reported usage, keep vendor errors
-  private, and use environment-only credentials plus bounded HTTP; and
-- require deterministic success, malformed, auth, rate, server, timeout,
-  redaction, and no-network-fallback fixtures before any live smoke.
+- added the second first-party wire family behind byte-identical frozen public
+  interfaces using the fixed official API base, `x-api-key`, required
+  [API version](https://platform.claude.com/docs/en/api/versioning),
+  [Models discovery](https://platform.claude.com/docs/en/api/models), and
+  [Messages generation](https://platform.claude.com/docs/en/api/http/messages/create);
+- normalized ordered text blocks, model IDs/labels, capability truth, and
+  provider-reported input/output usage while keeping message fields, content
+  blocks, stop details, model capability objects, errors, and headers private;
+- reused environment-only `GRAV_JARVIS_ANTHROPIC_API_KEY` resolution and the
+  bounded HTTP transport, with typed auth, rate, other 4xx, 5xx/overload,
+  malformed-response, configuration, and transport failures;
+- added provider-neutral `max_output_units` mapping inside both first-party
+  adapters so an opt-in live smoke has a hard generation bound without shared
+  vendor vocabulary; and
+- added ten deterministic Anthropic checks plus an OpenAI/Anthropic live-smoke
+  harness that is off by default and cleanly skips when no credential exists;
+  and
+- packaged `dist/grav-jarvis-0.1.4.zip`, SHA-256
+  `242fef895caaf6ea926a17ad0e711f7801d2f39e0779bf67db487e3c82d02a8b`.
 
-Synchronous chat, streaming/CLI, prompt/context, and Admin2 proposal/diff/
-approval follow in separate checkpoints. Gemini and OpenRouter remain later
-candidates.
+No live provider request was required for 0.1.4. Gemini, OpenRouter, CLI,
+streaming, tools, structured output, jobs, MCP, Commander, and mutations remain
+deferred.
 
-### 0.2.0 — reliability and automation
+### 0.2.0 — first Admin2 usability slice (next)
+
+- add the permission-filtered Jarvis Admin2 entry and page-editor launcher;
+- expose provider/model selection, validation status, prompt input, normalized
+  response display, and typed redacted failures through only public services;
+- supply inspectable bounded current-page Markdown/frontmatter/media-metadata
+  context plus Rewrite, Proofread, Shorten, Expand, Summarize, and Custom Prompt;
+- render original/proposed text and a diff with explicit Accept/Reject, source-
+  hash recheck, separate use/approve permissions, and no automatic save; and
+- prove progressive enhancement for absent, disabled, misconfigured, and
+  unavailable Jarvis/provider states without impairing ordinary Admin2 work.
+
+### 0.3.0 — reliability and automation
 
 - bounded retries, privacy-safe response caching, token/cost reporting, rate
   and budget controls;
@@ -410,7 +473,7 @@ candidates.
   structured frontmatter/media-metadata proposals; and
 - stable plugin-facing PHP API with compatibility tests.
 
-### 0.3.0 — agent and site-wide workflows
+### 0.4.0 — agent and site-wide workflows
 
 - batch selection, per-item proposals, selected apply, resumability, and
   partial-failure reports;
@@ -432,8 +495,8 @@ candidates.
 ## Testing strategy
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
-compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI, and
-0.1.3 compatible-provider contracts run together with
+compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI,
+0.1.3 compatible-provider, and 0.1.4 Anthropic contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
@@ -470,7 +533,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 through 0.1.3 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.1.4 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

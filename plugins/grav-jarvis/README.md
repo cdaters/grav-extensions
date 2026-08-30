@@ -1,15 +1,17 @@
 # Jarvis
 
-Jarvis 0.1.3 is the provider-neutral AI service foundation for Grav 2. It gives
+Jarvis 0.1.4 is the provider-neutral AI service foundation for Grav 2. It gives
 plugins one optional PHP seam for registering, validating, inspecting, and
 calling model providers without exposing provider credentials or coupling
-consumers to a vendor response shape. This release adds a bounded production
-HTTP transport, the official OpenAI adapter, and a separate opt-in adapter for
-an explicitly documented OpenAI Responses-compatible subset.
+consumers to a vendor response shape. This release provides a bounded
+production HTTP transport, isolated official OpenAI and Anthropic adapters,
+and a separate opt-in adapter for an explicitly documented OpenAI Responses-
+compatible subset.
 
-This release contains no Admin2 assistant, content mutation, background worker,
-MCP workflow, or Grav Commander integration. Enabling it registers the OpenAI
-adapter but does not resolve a credential or make a network request.
+This release contains no Admin2 assistant, content mutation, background
+worker, MCP workflow, or Grav Commander integration. Enabling it registers the
+OpenAI and Anthropic adapters but does not resolve a credential or make a
+network request.
 
 ## Requirements
 
@@ -32,11 +34,17 @@ bin/grav clearcache
 ```
 
 The plugin is enabled by default and registers its service as
-`$grav['gravJarvis']`. The official `openai` provider is registered by default.
+`$grav['gravJarvis']`. The official `openai` and `anthropic` providers are
+registered by default.
 Without `GRAV_JARVIS_OPENAI_API_KEY` in the server process environment,
 validation reports a missing credential and generation fails through Jarvis's
 typed, redacted failure boundary. The provider may be disabled, and its
 non-secret default model changed, in plugin configuration.
+
+Anthropic behaves the same way with
+`GRAV_JARVIS_ANTHROPIC_API_KEY`. Credentials are resolved lazily only when the
+corresponding provider is validated, inspected, or called. Either built-in
+provider may be enabled or disabled independently.
 
 Compatible providers are disabled by default and configured as named instances
 in environment-specific YAML. An instance contains only non-secret metadata:
@@ -116,11 +124,12 @@ error statuses, and token-usage fields remain inside
 provider-neutral DTOs.
 
 The configured default model is `gpt-5.6-luna`. A `CompletionRequest` may
-select another model through its existing neutral `model` field. Version 0.1.2
-supports no provider-specific request options and fails clearly if options are
-supplied rather than silently ignoring them. Requests set provider-side storage
-off. Vendor response identifiers and other raw fields are not exported as
-Jarvis result metadata.
+select another model through its existing neutral `model` field. Requests set
+provider-side storage off. Vendor response identifiers and other raw fields
+are not exported as Jarvis result metadata. Version 0.1.4 accepts the provider-
+neutral `max_output_units` request option as a bounded integer and maps it to
+OpenAI's private output-limit field. Other options fail clearly rather than
+being silently ignored.
 
 The only credential name used by this adapter is:
 
@@ -132,12 +141,50 @@ Set it in the PHP/web/CLI process environment or the hosting platform's secret
 manager. It is not a YAML key, Admin field, request option, query parameter,
 ordinary header value, diagnostic field, test fixture, or package file.
 
+## Official Anthropic provider
+
+The `anthropic` adapter uses only Anthropic's fixed official API base and the
+[versioned direct API](https://platform.claude.com/docs/en/api/versioning)
+contract declared by `anthropic-version: 2023-06-01`. Provider validation and
+model discovery call the official
+[Models endpoint](https://platform.claude.com/docs/en/api/models); synchronous
+text generation calls the official
+[Messages endpoint](https://platform.claude.com/docs/en/api/http/messages/create).
+API-key headers, message request fields, content blocks, stop details, model
+metadata, errors, and usage fields remain inside
+`Grav\Plugin\GravJarvis\Provider\Anthropic`.
+
+The configured default model is `claude-sonnet-5`. The existing neutral model
+override remains available. Jarvis sends one user text turn and maps optional
+instructions to Anthropic's top-level system field. Multiple returned text
+blocks are combined in order; non-text blocks are not exported. Empty,
+malformed, incomplete, tool-oriented, or refusal-style output fails through a
+typed provider boundary. Provider-reported input and output usage normalizes
+to `Usage`; raw cache, service-tier, request-ID, and other vendor metadata does
+not cross the adapter.
+
+Anthropic requires an output limit. The adapter defaults to 1,024 provider
+units and accepts the same provider-neutral `max_output_units` option as the
+OpenAI adapter. Anthropic's private request-field name remains inside the
+adapter.
+
+The only credential name used by this adapter is:
+
+```text
+GRAV_JARVIS_ANTHROPIC_API_KEY
+```
+
+Its value follows the same environment-only, non-serializable, redacted path
+as every Jarvis provider credential. No plugin setting accepts the value.
+
 ## Bounded production transport
 
 The production transport is provider-neutral and replaceable through the
 existing `HttpTransportInterface`. Its default policy:
 
 - accepts HTTPS only and requires an exact configured origin and base path;
+- permits only bounded, non-secret query data on that path so an adapter can
+  follow an official pagination contract; credential query keys remain denied;
 - resolves every destination address, rejects any private, loopback, link-
   local, reserved, or literal-IP target, then pins the validated address for
   the request to prevent DNS rebinding;
@@ -305,20 +352,34 @@ contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2
-transport/OpenAI, and 0.1.3 compatible-provider suite with host PHP or the
-repository's DDEV fixture:
+transport/OpenAI, 0.1.3 compatible-provider, and 0.1.4 Anthropic suite with
+host PHP or the repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
 ```
 
+Repository contributors may explicitly opt into a tiny live end-to-end smoke
+through the public Jarvis service:
+
+```bash
+GRAV_JARVIS_LIVE_SMOKE=1 ./scripts/test-grav-jarvis-live.sh openai
+GRAV_JARVIS_LIVE_SMOKE=1 ./scripts/test-grav-jarvis-live.sh anthropic
+```
+
+The live harness is never called by default. It skips successfully when the
+selected provider credential is absent, caps generated output, prints no
+request or response content, and records only provider/model identifiers,
+catalog size, usage availability, and normalized success. Deterministic
+fixtures remain the release gate; a live account request is optional.
+
 ## Deliberately deferred
 
-- Anthropic, Gemini, and OpenRouter adapters
+- Gemini and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
 - prompt libraries and page/frontmatter/media context
-- Admin2 UI and proposal/diff/approval workflows
+- Admin2 UI and proposal/diff/approval workflows (the next 0.2.0 milestone)
 - retries, caching, cost reports, chunking, and background jobs
 - batch work, REST/MCP workflows, and suite integrations
 
