@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.0 registration, deterministic response, typed failure, absence, and secret-redaction contract implemented; live adapter boundary next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.1 validation, model discovery, environment credentials, offline HTTP/error fixtures, compatibility, absence, and redaction contracts implemented; first live provider next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -139,20 +139,27 @@ must not wait for the whole inventory before receiving its own regression.
 
 ### Jarvis AI boundary contract
 
-Run the 0.1.0 contract with host PHP or a DDEV project:
+Run the complete 0.1.0 compatibility and 0.1.1 provider-boundary suite with
+host PHP or a DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
 ```
 
-The runner uses a deterministic fake provider and no credential or network. It
-lints the package and test in PHP, then proves actual plugin service
+The runner uses deterministic fake environment values/providers and no
+network. It lints the package and tests in PHP, then proves actual plugin service
 registration, `onJarvisProviderRegister`, stable fake output, duplicate/missing
 provider denial, normalized provider failures, disabled/missing/invalid service
 fallback, request credential rejection, and redaction of environment secrets,
-authorization text, successful output, and result metadata. When host PHP is
-absent, it defaults to the canonical DDEV fixture when available or accepts a
-DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
+authorization text, successful output, and result metadata. The provider-
+boundary contract additionally freezes the 0.1.0 method sets and proves
+validation without generation, provider-neutral model catalogs, provider-
+scoped environment lookup, missing/malformed credentials and configuration,
+non-serializable credential/HTTP objects, sanitized deterministic request
+history, success/error/transport fixtures, malformed responses,
+authentication/rate-limit classification, optional fallback, and offline
+determinism. When host PHP is absent, it defaults to the canonical DDEV fixture
+when available or accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
 
 Future external contracts must prove that an unauthorized request is denied,
 streamed events arrive in order and terminate cleanly, preview does not mutate

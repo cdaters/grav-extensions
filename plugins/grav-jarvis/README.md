@@ -1,9 +1,9 @@
 # Jarvis
 
-Jarvis 0.1.0 is the provider-neutral AI service-contract foundation for Grav 2.
-It gives plugins one optional PHP seam for registering and calling model
-providers without exposing provider credentials or coupling consumers to a
-specific vendor API.
+Jarvis 0.1.1 is the provider-neutral AI service and provider-boundary
+foundation for Grav 2. It gives plugins one optional PHP seam for registering,
+validating, inspecting, and calling model providers without exposing provider
+credentials or coupling consumers to a vendor response shape.
 
 This release contains no live AI provider, Admin2 assistant, content mutation,
 background worker, MCP workflow, or Grav Commander integration. Enabling it
@@ -41,7 +41,7 @@ Public interfaces and immutable value objects live under:
 Grav\Plugin\GravJarvis\Contracts
 ```
 
-The 0.1.0 surface includes:
+The unchanged 0.1.0 surface includes:
 
 - `JarvisServiceInterface`
 - `ProviderInterface`
@@ -56,6 +56,45 @@ options, and metadata fields. It rejects credentials placed in options or
 metadata. `Usage` carries a provider-declared unit such as `characters`,
 `tokens`, or `items`; the contract does not assume tokens or any vendor's
 response schema.
+
+Jarvis 0.1.1 adds optional contracts rather than changing those interfaces:
+
+- `ProviderValidationInterface`
+- `ModelDiscoveryInterface`
+- `ProviderIntrospectionServiceInterface`
+- `ProviderValidationResult` and `ValidationIssue`
+- `ModelCatalog` and `ModelDescriptor`
+- `CredentialResolverInterface` and `CredentialValueInterface`
+- `HttpTransportInterface`, `HttpRequest`, and `HttpResponse`
+
+Providers opt into validation and discovery independently. Jarvis's concrete
+service implements `ProviderIntrospectionServiceInterface`, while consumers
+compiled against `JarvisServiceInterface` retain the exact 0.1.0 methods.
+
+## Validation and model discovery
+
+Validation answers whether configured provider access is currently usable
+without issuing a content-generation request. Expected configuration,
+credential, authentication, rate-limit, transport, and response problems are
+represented by provider-neutral issue codes, severity, and retryability.
+
+Model discovery returns a sorted `ModelCatalog` of `ModelDescriptor` values.
+Shared model fields are limited to an opaque identifier, label, optional
+description, availability, and capability slugs. Raw provider response objects
+and provider-specific fields never cross the shared contract.
+
+Use the additive service only after a type check:
+
+```php
+use Grav\Plugin\GravJarvis\Contracts\ProviderIntrospectionServiceInterface;
+
+if ($jarvis instanceof ProviderIntrospectionServiceInterface) {
+    $validation = $jarvis->validateProvider('example');
+    $models = $validation->usable
+        ? $jarvis->discoverModels('example')
+        : null;
+}
+```
 
 ## Register a provider
 
@@ -134,8 +173,35 @@ Environment values are held only in memory; no secret is written to plugin
 configuration, request metadata, logs, caches, fixtures, or packages.
 
 Provider credentials must be resolved inside a provider from server-side
-environment variables or an external credential reference. They are never a
-`CompletionRequest` option.
+environment variables. They are never a `CompletionRequest` option, ordinary
+HTTP header string, plugin YAML value, Admin field, API payload, log field, or
+serialized DTO.
+
+`EnvironmentCredentialResolver` is bound to one provider identifier. It only
+accepts uppercase environment names within that provider's namespace. For
+provider `example-provider`, the namespace is:
+
+```text
+GRAV_JARVIS_EXAMPLE_PROVIDER_*
+```
+
+Credential values exist only as in-memory `CredentialValueInterface` objects.
+They cannot be serialized, display as redacted during debugging, and can be
+prefixed safely for an HTTP authentication scheme without converting the
+secret into an ordinary configuration value. Missing, malformed, and cross-
+provider environment references fail with typed exceptions that mention only
+the provider and environment-variable name.
+
+## Deterministic HTTP conformance
+
+`FixtureHttpTransport` matches a sanitized request fingerprint to a fixed
+response or failure. It has no network fallback and stores only redacted
+request history: raw bodies become a byte count and digest, while credential
+headers become redaction markers. Raw HTTP responses cannot be serialized.
+`ConformanceFakeProvider` exercises validation, model
+discovery, response normalization, authentication-style failures, rate-limit
+guidance, and malformed payloads against that transport. Both classes live in
+the `Testing` namespace and are never registered during normal plugin boot.
 
 ## Deterministic test provider
 
@@ -143,7 +209,8 @@ environment variables or an external credential reference. They are never a
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the contract with host PHP or the repository's DDEV fixture:
+Run the complete 0.1.0 compatibility and 0.1.1 provider-boundary suite with
+host PHP or the repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -152,7 +219,7 @@ Run the contract with host PHP or the repository's DDEV fixture:
 ## Deliberately deferred
 
 - OpenAI, Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters
-- provider model discovery and validation commands
+- validation/model-discovery CLI commands
 - streaming and CLI chat
 - prompt libraries and page/frontmatter/media context
 - Admin2 UI and proposal/diff/approval workflows

@@ -4,14 +4,20 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 plugin_dir="$repo_root/plugins/grav-jarvis"
-contract_file="$repo_root/tests/grav-jarvis/contract.php"
+contract_dir="$repo_root/tests/grav-jarvis"
+contract_files=(
+    "$contract_dir/contract.php"
+    "$contract_dir/provider-boundary.php"
+)
 
 if command -v php >/dev/null 2>&1; then
     while IFS= read -r -d '' php_file; do
         php -l "$php_file" >/dev/null
     done < <(find "$plugin_dir" -type f -name '*.php' -print0)
-    php -l "$contract_file" >/dev/null
-    GRAV_JARVIS_PLUGIN_DIR="$plugin_dir" php "$contract_file"
+    for contract_file in "${contract_files[@]}"; do
+        php -l "$contract_file" >/dev/null
+        GRAV_JARVIS_PLUGIN_DIR="$plugin_dir" php "$contract_file"
+    done
     exit 0
 fi
 
@@ -45,15 +51,19 @@ cleanup() {
 trap cleanup EXIT
 
 cp -R "$plugin_dir" "$temporary_dir/plugin"
-cp "$contract_file" "$temporary_dir/contract.php"
+cp -R "$contract_dir" "$temporary_dir/tests"
 
 (
     cd "$ddev_project"
     ddev mutagen sync >/dev/null
     ddev exec bash -lc \
         "find '/var/www/html/$temporary_name/plugin' -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null"
-    ddev exec php -l "/var/www/html/$temporary_name/contract.php" >/dev/null
-    ddev exec env \
-        GRAV_JARVIS_PLUGIN_DIR="/var/www/html/$temporary_name/plugin" \
-        php "/var/www/html/$temporary_name/contract.php"
+    ddev exec bash -lc \
+        "find '/var/www/html/$temporary_name/tests' -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null"
+    for contract_file in "${contract_files[@]}"; do
+        contract_name="$(basename "$contract_file")"
+        ddev exec env \
+            GRAV_JARVIS_PLUGIN_DIR="/var/www/html/$temporary_name/plugin" \
+            php "/var/www/html/$temporary_name/tests/$contract_name"
+    done
 )

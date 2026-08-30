@@ -388,3 +388,48 @@ suite inventory incremental and risk ordered.
   provider validation/model-discovery contracts, an environment credential
   resolver, deterministic local HTTP fixtures, and adapter-conformance/
   redaction tests before any live provider is added.
+
+## 2026-08-30 — Jarvis 0.1.1 provider boundary
+
+- Preserved the exact 0.1.0 method sets of `JarvisServiceInterface`,
+  `ProviderInterface`, and `ProviderRegistryInterface`. Added optional provider
+  validation/model-discovery interfaces and an additive introspection service
+  interface, so existing providers and consumers remain compatible.
+- Added provider-neutral validation issue/result and model descriptor/catalog
+  DTOs. Model discovery exposes only opaque identifiers, labels, descriptions,
+  availability, and capability slugs; raw provider response structures do not
+  enter shared contracts.
+- Added provider-scoped environment credential resolution. Only matching
+  `GRAV_JARVIS_<PROVIDER>_*` process variables can be resolved; credential
+  values are in-memory, non-serializable, debug-redacted, and usable in safely
+  prefixed authentication headers without entering YAML, Admin fields, request
+  DTOs, ordinary headers, logs, or persisted configuration.
+- Added sanitized HTTP request/response/transport contracts. Credential-like
+  ordinary headers and query parameters are rejected; diagnostic request forms
+  retain only redacted credential markers plus raw-body byte counts/digests;
+  raw responses refuse serialization.
+- Added `FixtureHttpTransport` with no network fallback and
+  `ConformanceFakeProvider` for deterministic validation, model discovery,
+  HTTP success/error, malformed response, authentication, rate-limit,
+  transport-failure, redaction, and offline-generation evidence.
+- Expanded `scripts/test-grav-jarvis-contract.sh` to run both the seven-check
+  0.1.0 compatibility contract and twelve-check 0.1.1 provider-boundary
+  contract. All nineteen checks and every Jarvis PHP syntax check passed under
+  DDEV PHP 8.3.31; host PHP remains unavailable and repository preflight
+  truthfully reported its host-side PHP step as skipped.
+- Passed repository structure/YAML/hygiene preflight, whitespace, Composer/JSON
+  and YAML parsing, local Markdown target checks, ZIP integrity, 0.1.0-to-0.1.1
+  packaged upgrade, final 0.1.1 packaged install, Grav cache clearing, public/
+  Admin HTTP 200 checks, and relevant log inspection with no Jarvis/fatal/
+  uncaught matches. Temporary DDEV plugin installs were removed afterward.
+- Packaged `grav-jarvis-0.1.1.zip`, SHA-256
+  `cb2e9fbbde7ba568e6fd0b2f5fa0cac3a14822a37c8c90a2919db512b11c25ed`.
+- Selected OpenAI for the 0.1.2 first-live-provider checkpoint. Its official
+  generation and model-list APIs provide one authoritative vendor contract to
+  map behind Jarvis; beginning with a generic compatible adapter would let
+  variable third-party compatibility claims shape the core prematurely.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme
+  changes and did not push. The exact next action is the bounded production
+  HTTP transport plus OpenAI validation, model discovery, and synchronous
+  generation, with deterministic fixtures required and live smoke tests
+  opt-in/budget-capped.

@@ -1,6 +1,6 @@
 # Jarvis
 
-**Status:** 0.1.0 contract foundation implemented; 0.1.1 provider boundary next
+**Status:** 0.1.1 provider boundary implemented; 0.1.2 OpenAI adapter next
 
 **Product name:** Jarvis
 
@@ -77,21 +77,38 @@ interfaces and immutable request/result objects. The 0.1.0 vocabulary is:
 - provider-declared capability strings and usage units without a vendor-
   specific or token-only vocabulary.
 
-Streaming events, validation/model discovery, prompts, proposals, and cost
-reporting remain additive future contracts. Optional provider capabilities
-must use separate interfaces or capability checks so the 0.1.0 provider
-contract does not accumulate methods every adapter must fake.
+Streaming events, prompts, proposals, and cost reporting remain additive future
+contracts. Optional provider capabilities use separate interfaces or
+capability checks so the 0.1.0 provider contract does not accumulate methods
+every adapter must fake.
+
+Version 0.1.1 applies that rule through `ProviderValidationInterface` and
+`ModelDiscoveryInterface`. `ProviderIntrospectionServiceInterface` extends the
+unchanged 0.1.0 service contract and returns provider-neutral
+`ProviderValidationResult`, `ValidationIssue`, `ModelCatalog`, and
+`ModelDescriptor` values. Validation and discovery can be added independently;
+a provider that implements neither still satisfies `ProviderInterface`.
 
 The Grav container key is `$grav['gravJarvis']`. Consumers type-check the
 public interface and degrade cleanly when the plugin or a requested capability
 is absent. They never read Jarvis configuration, provider classes, caches,
 jobs, or secrets directly.
 
-Initial providers:
+The planned live-provider sequence begins with:
 
 1. OpenAI;
 2. Anthropic; and
 3. OpenAI-compatible HTTP endpoints.
+
+OpenAI is the first implementation checkpoint. The official
+[generation API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
+and [models endpoint](https://developers.openai.com/api/reference/typescript/resources/models/methods/list)
+provide one authoritative target, making it possible to prove that vendor
+fields are isolated inside one adapter. Starting with a generic "compatible"
+endpoint would instead risk treating a family of different servers and partial
+compatibility claims as one stable contract. The generic adapter follows only
+after the first-party mapping is tested, and it does not inherit OpenAI
+behavior that its configured endpoint cannot prove.
 
 Gemini and OpenRouter follow after the contract is stable. OpenRouter may be an
 explicit adapter even where its API resembles OpenAI because routing, model
@@ -248,10 +265,11 @@ Grav's, not a plugin invention.
 
 Provider secrets are server-only environment variables such as
 `GRAV_JARVIS_OPENAI_API_KEY` and `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-Configuration stores an environment-variable name or credential reference,
-never a copied secret. Secrets never enter Admin2 JavaScript, API payloads,
-prompts, logs, cache keys, job records, exported diagnostics, screenshots,
-fixtures, or release ZIPs.
+Version 0.1.1 accepts no secret source other than the process environment.
+Configuration may eventually name an environment variable but never contains
+its value. Secrets never enter Admin2 JavaScript, API payloads, prompts, logs,
+cache keys, job records, exported diagnostics, screenshots, fixtures, or
+release ZIPs.
 
 Additional requirements:
 
@@ -304,20 +322,41 @@ and their native permission systems.
 There is deliberately no live provider, network request, Admin2 UI, content
 mutation, Commander integration, background job, or MCP workflow in 0.1.0.
 
-### 0.1.1 — provider boundary (next)
+### 0.1.1 — provider boundary (implemented)
 
-- define additive optional contracts for provider validation and model
-  discovery without changing `ProviderInterface`;
-- add an environment credential resolver that returns secrets only to provider
-  adapters and never to request DTOs, logs, configuration, or diagnostics;
-- add deterministic local HTTP transport fixtures for success, timeout,
-  malformed response, authentication failure, and redaction behavior; and
-- freeze adapter conformance tests before implementing a live provider.
+- additive validation/model-discovery provider contracts and an introspection
+  service extension without changing the 0.1.0 service, provider, or registry;
+- immutable provider-neutral validation issue/result and model descriptor/
+  catalog values with deterministic ordering and no raw provider shapes;
+- provider-scoped environment credential resolvers, non-serializable in-memory
+  credential values, safe authentication prefixing, and typed missing,
+  malformed, and cross-provider errors;
+- sanitized HTTP request/response/transport contracts, deterministic fixture
+  matching with no network fallback, and a reference offline conformance
+  provider; and
+- nineteen passing compatibility/conformance checks covering successful and
+  failed validation/discovery, credentials, malformed configuration/responses,
+  authentication, rate limiting, HTTP/transport failures, redaction, absence,
+  and deterministic output.
 
-OpenAI, Anthropic, and OpenAI-compatible adapters then arrive as separate
-0.1.x increments, followed by synchronous chat, streaming/CLI, prompt/context,
-and Admin2 proposal/diff/approval checkpoints. Gemini and OpenRouter remain
-later candidates.
+### 0.1.2 — first live OpenAI provider (next)
+
+- add a bounded production HTTP transport with explicit timeouts, response-size
+  limits, TLS verification, redirect/origin policy, and redacted diagnostics;
+- implement an OpenAI adapter that maps the official models and generation APIs
+  entirely inside the provider namespace;
+- validate credentials without a content-generation request, normalize model
+  records into `ModelCatalog`, and normalize generation into the unchanged
+  completion result/usage contract;
+- keep deterministic HTTP fixtures as the required release tests, including
+  malformed data, authentication, rate limits, timeout, and redaction; and
+- keep real-account smoke tests opt-in, budget-capped, and excluded from normal
+  release validation.
+
+Anthropic and OpenAI-compatible adapters then arrive as separate 0.1.x
+increments, followed by synchronous chat, streaming/CLI, prompt/context, and
+Admin2 proposal/diff/approval checkpoints. Gemini and OpenRouter remain later
+candidates.
 
 ### 0.2.0 — reliability and automation
 
@@ -351,9 +390,10 @@ later candidates.
 ## Testing strategy
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
-contract runs with `./scripts/test-grav-jarvis-contract.sh`; it uses host PHP
-when available and otherwise the canonical DDEV fixture (or an explicitly
-selected DDEV project).
+compatibility and 0.1.1 provider-boundary contracts run together with
+`./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
+available and otherwise the canonical DDEV fixture (or an explicitly selected
+DDEV project).
 
 The continuing strategy is:
 
@@ -387,6 +427,9 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
+Version 0.1.1 therefore leaves `ProviderInterface`, `JarvisServiceInterface`,
+and `ProviderRegistryInterface` unchanged and exposes introspection through a
+new service subinterface and optional provider interfaces.
 
 ## Explicit non-goals
 

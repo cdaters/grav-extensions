@@ -42,9 +42,9 @@ Version 0.1 deliberately exposes no live-promotion operation.
 Jarvis treats model providers, model output, page/media context, and MCP-
 retrieved material as separate trust boundaries.
 
-- Provider credentials are server-only environment variables or external
-  credential references. They never enter tracked YAML, Admin2 JavaScript,
-  prompts, logs, caches, jobs, diagnostics, fixtures, or packages.
+- Provider credentials are server-only environment variables. They never enter
+  tracked YAML, Admin2 JavaScript, prompts, logs, caches, jobs, diagnostics,
+  fixtures, or packages.
 - A request discloses its destination provider and bounded context. Provider
   endpoints are validated; redirects cannot change origin, and local/private
   OpenAI-compatible endpoints require explicit opt-in.
@@ -70,5 +70,14 @@ exceptions without chaining the unsafe original; and successful provider
 output/metadata is redacted before it crosses the public service. The release
 contains no live provider, remote endpoint, API route, UI, persistent history,
 or mutation path.
+
+Jarvis 0.1.1 adds provider-scoped environment resolvers and in-memory
+credential values that cannot be serialized and redact their debug form.
+Provider namespaces prevent an accidental cross-provider lookup. Ordinary HTTP
+header maps reject credential-like headers; only credential value objects may
+populate the separate transport-only credential channel, while request
+fingerprints and fixture history contain redaction markers. Raw HTTP responses
+also refuse serialization. The release still contains no network transport,
+live provider, persisted provider secret, API route, UI, or mutation path.
 
 Report vulnerabilities using the root [security policy](../SECURITY.md).

@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.1.0
-description: Provider-neutral AI service contracts and guarded provider registration for Grav 2.
+version: 0.1.1
+description: Provider-neutral AI contracts, validation, model discovery, and environment-only credentials for Grav 2.
 icon: microchip
 author:
   name: Craig Daters
@@ -30,6 +30,6 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.1 foundation
-      text: This release provides the provider-neutral PHP contract only. It includes no live provider, Admin2 assistant, background worker, or site mutation.
+      title: Jarvis 0.1 provider boundary
+      text: This release provides provider-neutral PHP contracts, environment-only credential resolution, and offline conformance fixtures. It includes no live provider, Admin2 assistant, background worker, or site mutation.
       underline: true
