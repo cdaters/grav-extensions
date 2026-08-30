@@ -493,3 +493,49 @@ suite inventory incremental and risk ordered.
   OpenAI-compatible provider using the bounded transport, a deliberate public
   HTTPS base URI, environment-only instance credentials, truthful declarative
   capabilities, and full/partial/incompatible offline fixtures.
+
+## 2026-08-30 — Jarvis 0.1.3 compatible-provider proof
+
+- Continued only after the complete 0.1.2 release matrix passed and preserved
+  that checkpoint in its own commit (`44b4571`). The compatible-provider work
+  is a separate additive increment; no 0.1.0/0.1.1 public contract or official
+  OpenAI behavior changed.
+- Added a distinct `OpenAICompatibleProvider`, not an endpoint mode on the
+  official provider. Named instances carry only a stable provider ID,
+  operator-selected public HTTPS base URI, provider-scoped environment-
+  variable name, default model, and optional model-discovery declaration.
+  Instances are disabled by default; secret values and per-request endpoints
+  are not configuration fields.
+- Defined the exact 0.1.3 compatibility claim: `POST /responses` with model,
+  string input, optional instructions, and remote storage disabled; text through
+  Responses output text; optional token usage; and `GET /models` only when
+  declared. Chat Completions-only, empty, incomplete, malformed, and other
+  partial shapes fail closed.
+- Reused the 0.1.2 bounded transport. Compatible endpoints must remain public
+  HTTPS and receive the same base-path, DNS/public-address pinning, TLS,
+  redirect/proxy, header, time, and size protections. Private/local endpoints
+  remain unsupported.
+- Capability metadata reports only text completion, provider validation, and
+  optional model discovery. No streaming, structured-output, or tool-calling
+  support is claimed. A no-discovery instance validates local configuration and
+  credential presence with an explicit warning that remote non-generating
+  validation was unavailable.
+- Added six deterministic checks for full compatible service operation,
+  multi-instance endpoint/credential separation, no-discovery behavior,
+  missing declared endpoints, multiple incompatible response types, rate
+  guidance, cross-instance credential denial, and private-address denial.
+  All thirty-four Jarvis checks pass under DDEV PHP 8.3.31 with no network
+  fallback.
+- Passed DDEV PHP syntax and cURL checks, repository preflight, Composer/JSON/
+  YAML/Markdown/whitespace and credential-pattern checks, ZIP integrity,
+  packaged 0.1.2-to-0.1.3 upgrade, fresh 0.1.3 install, Grav cache clearing,
+  public/Admin HTTP 200 checks, and clean relevant log inspection. Host PHP is
+  still unavailable and is not claimed; no live provider request was attempted.
+- Packaged `grav-jarvis-0.1.3.zip`, SHA-256
+  `4c2c20996f0a46dac704beaa6db91f7b5fa1f03aec251e5d0ac4075fccea4f0c`.
+  Earlier versioned archives remain in `dist/`.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme work
+  and did not push. The exact next milestone is Jarvis 0.1.4: an isolated
+  Anthropic adapter as the second first-party wire family, using current
+  official APIs, environment-only credentials, bounded HTTP, provider-neutral
+  normalization, and deterministic error/redaction fixtures.

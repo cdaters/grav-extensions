@@ -273,7 +273,16 @@ namespace GravJarvisContract {
     };
 
     $plugin = new \Grav\Plugin\GravJarvisPlugin();
-    $plugin->setContractContext($container, new ContractConfig());
+    $plugin->setContractContext($container, new ContractConfig([
+        'plugins.grav-jarvis.providers.openai_compatible.enabled' => true,
+        'plugins.grav-jarvis.providers.openai_compatible.instances' => [[
+            'id' => 'compatible-fixture',
+            'base_uri' => 'https://compatible.example/v1',
+            'credential_environment_variable' => 'GRAV_JARVIS_COMPATIBLE_FIXTURE_API_KEY',
+            'default_model' => 'fixture-model',
+            'model_discovery' => false,
+        ]],
+    ]));
     $plugin->autoload();
 
     /** @var array<string, callable(): void> $tests */
@@ -286,7 +295,7 @@ namespace GravJarvisContract {
         $service = $container['gravJarvis'];
         expect($service instanceof JarvisServiceInterface, 'Container service does not implement the public interface.');
         expectSame(
-            ['failure', 'fake', 'leaky', 'openai'],
+            ['compatible-fixture', 'failure', 'fake', 'leaky', 'openai'],
             $service->providerIds(),
             'Provider identifiers are not deterministic.'
         );
@@ -294,6 +303,11 @@ namespace GravJarvisContract {
             ['deterministic-test', 'text-completion'],
             $service->capabilities('fake'),
             'Provider capabilities are not normalized.'
+        );
+        expectSame(
+            ['provider-validation', 'text-completion'],
+            $service->capabilities('compatible-fixture'),
+            'Configured compatible provider capabilities are not truthful.'
         );
     };
 

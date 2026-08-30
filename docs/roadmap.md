@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.2 development release; bounded production HTTP and official OpenAI validation/discovery/completion available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.3 development release; bounded official OpenAI and explicitly profiled compatible-provider instances available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -56,22 +56,26 @@ The version sequence is:
    OpenAI `GET /models` validation/discovery and Responses completion; and
    deterministic transport/adapter failure and redaction fixtures. The frozen
    shared contracts contain no OpenAI response shape.
-4. **0.1.3 — compatible-provider proof (next):** add a separate generic
+4. **0.1.3 — compatible-provider proof (implemented):** a separate generic
    OpenAI-compatible adapter with an operator-approved public HTTPS base URI,
    environment-only instance credentials, declarative capability truth, and a
    deterministic matrix for full, partial, and incompatible implementations.
-   It is not a mode of the official OpenAI adapter and receives no private/
-   local-network opt-in in this milestone.
-5. **0.1.x — provider and interaction increments:** add Anthropic, then
-   synchronous chat, streaming/CLI, prompt/context work, and the Admin2
+   It is not a mode of the official OpenAI adapter, accepts no per-request
+   endpoint, and has no private/local-network opt-in.
+5. **0.1.4 — second first-party wire family (next):** add Anthropic validation,
+   discovery where supported, and synchronous completion behind the unchanged
+   contracts and bounded transport, with deterministic vendor-specific
+   success/error/usage fixtures.
+6. **0.1.x — provider and interaction increments:** add synchronous chat,
+   streaming/CLI, prompt/context work, and the Admin2
    proposal/diff/approval surface in separately reviewable checkpoints.
-6. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+7. **0.2.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
    Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
    checkpoints, and a stable consumer contract.
-7. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
+8. **0.3.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-8. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+9. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

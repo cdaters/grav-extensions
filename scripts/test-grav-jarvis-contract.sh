@@ -9,6 +9,7 @@ contract_files=(
     "$contract_dir/contract.php"
     "$contract_dir/provider-boundary.php"
     "$contract_dir/openai-provider.php"
+    "$contract_dir/compatible-provider.php"
 )
 
 if command -v php >/dev/null 2>&1; then

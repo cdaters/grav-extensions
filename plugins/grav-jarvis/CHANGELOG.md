@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.3 — 2026-08-30
+
+- Added a separate opt-in OpenAI Responses-compatible provider type without
+  changing the official OpenAI adapter or shared Jarvis contracts.
+- Added named compatible-provider instances with immutable public HTTPS base
+  URIs, stable provider IDs, non-secret default models, provider-scoped
+  environment-variable names, and truthful optional model-discovery claims.
+- Required an explicit Responses-compatible text subset, failed closed on
+  Chat Completions-only and malformed/partial shapes, and classified a missing
+  declared model endpoint without attempting generation.
+- Reused the 0.1.2 bounded transport, including public-address enforcement,
+  DNS pinning, TLS, disabled redirects/proxies, and time/size limits. Private
+  and local compatible endpoints remain unsupported.
+- Added deterministic full-compatible, multi-instance, no-discovery, missing-
+  endpoint, incompatible-shape, rate-limit, cross-instance credential, and
+  private-destination fixtures.
+- Deliberately omitted CLI, Admin2 UI, streaming, structured output, tool
+  calling, jobs, MCP workflows, and other live providers.
+
 ## 0.1.2 — 2026-08-30
 
 - Added a bounded provider-neutral production HTTP transport with HTTPS/base-

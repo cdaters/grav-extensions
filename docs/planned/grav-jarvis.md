@@ -1,7 +1,7 @@
 # Jarvis
 
-**Status:** 0.1.2 bounded transport and official OpenAI adapter implemented;
-0.1.3 generic OpenAI-compatible adapter next
+**Status:** 0.1.3 official and compatible-provider foundation implemented;
+0.1.4 Anthropic adapter next
 
 **Product name:** Jarvis
 
@@ -98,8 +98,8 @@ jobs, or secrets directly.
 The live-provider sequence begins with:
 
 1. OpenAI (implemented in 0.1.2);
-2. OpenAI-compatible HTTP endpoints (next in 0.1.3); and
-3. Anthropic.
+2. OpenAI-compatible HTTP endpoints (implemented in 0.1.3); and
+3. Anthropic (next in 0.1.4).
 
 OpenAI is the first implementation checkpoint. The official
 [generation API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
@@ -269,7 +269,7 @@ Grav's, not a plugin invention.
 
 Provider secrets are server-only environment variables such as
 `GRAV_JARVIS_OPENAI_API_KEY` and `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-Versions 0.1.1 and 0.1.2 accept no secret source other than the process
+Versions 0.1.1 through 0.1.3 accept no secret source other than the process
 environment.
 Configuration may eventually name an environment variable but never contains
 its value. Secrets never enter Admin2 JavaScript, API payloads, prompts, logs,
@@ -368,26 +368,37 @@ mutation, Commander integration, background job, or MCP workflow in 0.1.0.
   failure, destination policy, offline behavior, and redaction. Live account
   smoke remains optional and was not needed for the release gate.
 
-### 0.1.3 — generic OpenAI-compatible provider (next)
+### 0.1.3 — generic OpenAI-compatible provider (implemented)
 
-- create a provider separate from the official `openai` adapter, not a mode or
+- created a provider separate from the official `openai` adapter, not a mode or
   configurable endpoint on that provider;
-- require an operator-approved public HTTPS base URI at provider construction,
+- requires an operator-approved public HTTPS base URI at provider construction,
   use the 0.1.2 bounded transport, and permit neither per-request endpoint
   overrides nor private/local destinations in this checkpoint;
-- support environment-only credentials through provider-scoped configurable
+- supports environment-only credentials through provider-scoped configurable
   environment-variable names without accepting secret values in configuration;
-- declare model discovery, text completion, streaming, structured output, and
-  tool calling truthfully per configured instance instead of inferring full
-  compatibility from a product label;
-- document the exact request/response subset required and fail gracefully when
+- declares only implemented text completion, provider validation, and optional
+  model discovery; streaming, structured output, and tool calling remain
+  deliberately absent rather than being inferred from a product label;
+- documents the exact Responses request/response subset and fails gracefully when
   model discovery is absent or a response is only partially compatible; and
-- add deterministic full-compatibility and multiple partial/incompatible
-  fixture implementations before any optional CLI surface.
+- includes deterministic full-compatibility, multi-instance, no-discovery,
+  missing-endpoint, Chat Completions-only, malformed/partial response,
+  rate-limit, cross-credential, and private-destination fixtures.
 
-Anthropic then arrives as a separate 0.1.x increment, followed by synchronous
-chat, streaming/CLI, prompt/context, and Admin2 proposal/diff/approval
-checkpoints. Gemini and OpenRouter remain later candidates.
+### 0.1.4 — Anthropic provider (next)
+
+- add the second first-party wire family behind the unchanged public contracts;
+- map non-generating validation and model discovery only where Anthropic's
+  current official APIs support them, without inventing a generic shape;
+- normalize synchronous text and provider-reported usage, keep vendor errors
+  private, and use environment-only credentials plus bounded HTTP; and
+- require deterministic success, malformed, auth, rate, server, timeout,
+  redaction, and no-network-fallback fixtures before any live smoke.
+
+Synchronous chat, streaming/CLI, prompt/context, and Admin2 proposal/diff/
+approval follow in separate checkpoints. Gemini and OpenRouter remain later
+candidates.
 
 ### 0.2.0 — reliability and automation
 
@@ -421,8 +432,8 @@ checkpoints. Gemini and OpenRouter remain later candidates.
 ## Testing strategy
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
-compatibility, 0.1.1 provider-boundary, and 0.1.2 bounded-transport/OpenAI
-contracts run together with
+compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI, and
+0.1.3 compatible-provider contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
@@ -459,7 +470,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 and 0.1.2 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.1.3 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.2 bounded production transport and official OpenAI validation/discovery/completion fixtures implemented; generic compatible provider next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.3 bounded official and compatible-provider fixtures implemented; Anthropic next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -139,8 +139,9 @@ must not wait for the whole inventory before receiving its own regression.
 
 ### Jarvis AI boundary contract
 
-Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, and 0.1.2
-bounded-transport/OpenAI suite with host PHP or a DDEV project:
+Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
+transport/OpenAI, and 0.1.3 compatible-provider suite with host PHP or a DDEV
+project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -164,9 +165,14 @@ bounds, transport-controlled header denial, generic service routing through the
 OpenAI adapter, official model and Responses normalization, provider-reported
 usage, default/explicit model selection, missing/malformed credentials and
 configuration, empty/malformed data, 401/429/other 4xx/5xx/timeout failures,
-secret redaction, and absence of OpenAI vocabulary in shared contracts. When
-host PHP is absent, it defaults to the canonical DDEV fixture when available or
-accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
+secret redaction, and absence of OpenAI vocabulary in shared contracts. The
+0.1.3 contract proves full Responses-compatible operation through the
+bounded service; separate instance IDs/endpoints/environment references;
+truthful no-discovery capability and limited-validation warning; declared
+endpoint absence; Chat Completions-only, malformed, and incomplete failures;
+rate guidance; cross-instance credential denial; and private-destination
+denial. When host PHP is absent, it defaults to the canonical DDEV fixture when
+available or accepts a DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
 
 Future external contracts must prove that an unauthorized request is denied,
 streamed events arrive in order and terminate cleanly, preview does not mutate

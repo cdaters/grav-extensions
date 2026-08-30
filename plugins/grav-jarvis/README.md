@@ -1,10 +1,11 @@
 # Jarvis
 
-Jarvis 0.1.2 is the provider-neutral AI service foundation for Grav 2. It gives
+Jarvis 0.1.3 is the provider-neutral AI service foundation for Grav 2. It gives
 plugins one optional PHP seam for registering, validating, inspecting, and
 calling model providers without exposing provider credentials or coupling
 consumers to a vendor response shape. This release adds a bounded production
-HTTP transport and the first live adapter, for OpenAI's official API.
+HTTP transport, the official OpenAI adapter, and a separate opt-in adapter for
+an explicitly documented OpenAI Responses-compatible subset.
 
 This release contains no Admin2 assistant, content mutation, background worker,
 MCP workflow, or Grav Commander integration. Enabling it registers the OpenAI
@@ -36,6 +37,24 @@ Without `GRAV_JARVIS_OPENAI_API_KEY` in the server process environment,
 validation reports a missing credential and generation fails through Jarvis's
 typed, redacted failure boundary. The provider may be disabled, and its
 non-secret default model changed, in plugin configuration.
+
+Compatible providers are disabled by default and configured as named instances
+in environment-specific YAML. An instance contains only non-secret metadata:
+
+```yaml
+providers:
+  openai_compatible:
+    enabled: true
+    instances:
+      - id: compatible-gateway
+        base_uri: https://gateway.example/v1
+        credential_environment_variable: GRAV_JARVIS_COMPATIBLE_GATEWAY_API_KEY
+        default_model: operator-model
+        model_discovery: true
+```
+
+The environment-variable name must belong to the instance identifier's Jarvis
+namespace. Its value exists only in the process environment.
 
 ## Public contracts
 
@@ -132,6 +151,32 @@ existing `HttpTransportInterface`. Its default policy:
 
 The offline fixture transport remains available for deterministic provider
 tests and has no network fallback.
+
+## OpenAI-compatible profile
+
+The generic adapter is separate from the official `openai` provider. Each
+instance has a stable provider ID, deliberate public HTTPS base URI, provider-
+scoped credential environment-variable name, default model, and truthful
+model-discovery flag. The endpoint is immutable after construction and cannot
+be overridden by a completion request. Private, loopback, link-local, reserved,
+and mixed public/private destinations are refused; 0.1.3 has no local-network
+opt-in.
+
+Version 0.1.3 requires a Responses-compatible subset: `POST /responses` accepts
+`model`, string `input`, optional string `instructions`, and `store: false`;
+text is returned through `output_text` or message/content `output_text` items.
+Token usage is optional. `GET /models` is required only when the instance
+declares `model_discovery: true`. A Chat Completions-only response, missing
+required text shape, malformed usage, missing declared endpoint, or other
+partial implementation fails through a typed provider boundary rather than
+being guessed into compatibility.
+
+The adapter currently implements only text completion, provider validation,
+and optionally model discovery. It does not claim streaming, structured
+output, or tool-calling capabilities because those operations are deferred.
+When discovery is deliberately disabled, validation checks local configuration
+and credential presence and returns a warning that no non-generating remote
+validation was performed.
 
 Use the additive service only after a type check:
 
@@ -259,8 +304,9 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, and 0.1.2
-transport/OpenAI suite with host PHP or the repository's DDEV fixture:
+Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2
+transport/OpenAI, and 0.1.3 compatible-provider suite with host PHP or the
+repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -268,7 +314,7 @@ transport/OpenAI suite with host PHP or the repository's DDEV fixture:
 
 ## Deliberately deferred
 
-- Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters
+- Anthropic, Gemini, and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
 - prompt libraries and page/frontmatter/media context

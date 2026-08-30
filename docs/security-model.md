@@ -98,4 +98,14 @@ stay inside the adapter, remote response storage is disabled, and only
 provider-neutral models, output, and provider-reported usage cross Jarvis's
 redacted service boundary.
 
+Jarvis 0.1.3 reuses that transport for compatible providers without turning
+the official adapter into an arbitrary proxy. Each compatible instance has an
+immutable operator-selected public HTTPS base URI, stable provider ID, and a
+provider-scoped environment-variable name; secret values and per-request
+endpoints are impossible configuration fields. Private/local destinations stay
+blocked. Compatibility is an explicit Responses text subset, declared model
+discovery may be disabled, and the adapter claims no streaming, structured-
+output, or tool-calling capability it does not implement. Partial and Chat
+Completions-only responses fail closed.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

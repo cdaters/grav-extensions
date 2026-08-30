@@ -12,6 +12,6 @@ installation path. Implemented briefs remain as scope records.
 - [Gatehouse](gatehouse.md)
 - [Site Workshop scope record](site-workshop.md) — implemented; Icon Bench available
 - [Edge Console](edge-console.md)
-- [Jarvis scope and roadmap](grav-jarvis.md) — 0.1.2 bounded transport and
-  official OpenAI adapter implemented; 0.1.3 generic compatible adapter next
+- [Jarvis scope and roadmap](grav-jarvis.md) — 0.1.3 official and compatible-
+  provider foundation implemented; 0.1.4 Anthropic adapter next
 - [Page Studio](page-studio.md)

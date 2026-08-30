@@ -6,6 +6,8 @@ namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
 use Grav\Plugin\GravJarvis\Provider\OpenAI\OpenAIProvider;
+use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\CompatibleProviderConfig;
+use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\OpenAICompatibleProvider;
 use Grav\Plugin\GravJarvis\Provider\ProviderRegistry;
 use Grav\Plugin\GravJarvis\Security\SecretRedactor;
 use Grav\Plugin\GravJarvis\Service\JarvisService;
@@ -60,6 +62,38 @@ final class GravJarvisPlugin extends Plugin
                 $registry->register(OpenAIProvider::createProduction($defaultModel));
             } catch (Throwable $error) {
                 $this->logRegistrationFailure('OpenAI registration failed', $error, $redactor);
+            }
+        }
+
+        if ($this->config->get('plugins.' . self::SLUG . '.providers.openai_compatible.enabled', false)) {
+            $instances = $this->config->get(
+                'plugins.' . self::SLUG . '.providers.openai_compatible.instances',
+                []
+            );
+            if (!is_array($instances)) {
+                $this->logRegistrationFailure(
+                    'Compatible provider registration failed',
+                    new \InvalidArgumentException('Compatible provider instances must be a list.'),
+                    $redactor
+                );
+            } else {
+                foreach ($instances as $instance) {
+                    try {
+                        if (!is_array($instance)) {
+                            throw new \InvalidArgumentException(
+                                'Compatible provider instance configuration must be a map.'
+                            );
+                        }
+                        $config = CompatibleProviderConfig::fromArray($instance);
+                        $registry->register(OpenAICompatibleProvider::createProduction($config));
+                    } catch (Throwable $error) {
+                        $this->logRegistrationFailure(
+                            'Compatible provider registration failed',
+                            $error,
+                            $redactor
+                        );
+                    }
+                }
             }
         }
 

@@ -44,7 +44,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
-| Jarvis | Plugin | 0.1.2 bounded HTTP transport and official OpenAI provider | `user/plugins/grav-jarvis` |
+| Jarvis | Plugin | 0.1.3 bounded official and compatible-provider foundation | `user/plugins/grav-jarvis` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -54,12 +54,13 @@ has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 ## Jarvis provider foundation
 
 **Jarvis** (`grav-jarvis`) is the Grav 2 AI-service and agent-integration
-framework. The runnable 0.1.2 package preserves its 0.1.0/0.1.1 contracts and
-adds a bounded provider-neutral production HTTP transport plus the first live
-adapter for OpenAI's official Models and Responses APIs. OpenAI-specific data
-stays inside the adapter, credentials remain environment-only, and plugin boot
-makes no network request. Admin2 assistance, proposal workflows, and Grav
-REST/MCP composition remain staged roadmap work. Read the
+framework. The runnable 0.1.3 package preserves its 0.1.0/0.1.1 contracts and
+provides bounded provider-neutral production HTTP, OpenAI's official Models and
+Responses APIs, and separate named instances for an explicitly documented
+Responses-compatible subset. Vendor data stays inside adapters, credentials
+remain environment-only, and plugin boot makes no network request. Admin2
+assistance, proposal workflows, and Grav REST/MCP composition remain staged
+roadmap work. Read the
 [Jarvis manual](plugins/grav-jarvis/README.md),
 [Jarvis specification](docs/planned/grav-jarvis.md) and
 [Decision 0004](docs/decisions/0004-grav-jarvis-agent-framework.md).
