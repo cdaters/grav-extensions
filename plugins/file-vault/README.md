@@ -75,7 +75,21 @@ Each metadata panel displays a ready-to-copy `[file-download id="…" /]` shortc
 
 ## Catalog data
 
-Metadata and managed categories live in `user/data/file-vault/catalog.json`; download statistics live in `user/data/file-vault/stats.json`. If activity recording is enabled, retained events live in `user/data/file-vault/activity.json`. The signing key is generated at first use in the same protected data folder. Back up these files with the site. File Vault automatically reads older catalog formats; version 0.6 writes catalog schema 4 and activity schema 1.
+Metadata and managed categories live in `user/data/file-vault/catalog.json`; download statistics live in `user/data/file-vault/stats.json`. If activity recording is enabled, retained events live in `user/data/file-vault/activity.json`. The signing key is generated at first use in the same protected data folder. Back up these files with the site. File Vault automatically reads older catalog formats; the current implementation writes catalog schema 5 and activity schema 1.
+
+## Lantern Search integration (optional)
+
+When Lantern Search is installed and enabled, File Vault automatically acts as an optional public-metadata provider during Lantern index rebuilds. Lantern Search itself has no File Vault dependency or catalog-specific code; removing or disabling File Vault simply removes the adapter.
+
+The adapter enriches the public File Vault page's search document with the catalog fields useful for discovery: display title, original/download filename, version, author, publisher, description, functional category, tags, compatibility or target version, provenance, release date, requirements, and documented work-file names. Results point to the configured public File Vault route. Rebuild the Lantern index after catalog changes:
+
+```bash
+bin/plugin lantern-search index --force
+```
+
+The adapter reads `publicCatalog()` only. Disabled, unlisted, exhausted, and otherwise non-public entries follow the same exclusions as the public catalog. Publicly displayed locked-entry metadata follows the site's `show_locked` setting, but no protected file bytes or unlock information is indexed. File Vault never supplies protected storage paths, internal storage filenames, archive contents, signed download URLs, passwords/hashes, ACL secrets, download authorization state, private external destinations, or activity data to Lantern Search.
+
+The current adapter contributes metadata to one public File Vault page result rather than creating a separate Lantern result for each package. Per-package results should be added only when the File Vault has stable public detail routes and Lantern exposes a dedicated multi-document provider contract.
 
 ## Permissions
 

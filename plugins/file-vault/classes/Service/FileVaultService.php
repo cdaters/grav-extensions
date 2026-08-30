@@ -119,6 +119,13 @@ class FileVaultService
                 $categoryDetails[] = [
                     'id' => (string) $category['id'],
                     'name' => $name,
+                    'label' => (string) ($category['label'] ?? $name),
+                    'description' => (string) ($category['description'] ?? ''),
+                    'section' => (string) ($category['section'] ?? ''),
+                    'section_id' => (string) ($category['section_id'] ?? ''),
+                    'group' => (string) ($category['group'] ?? ''),
+                    'group_id' => (string) ($category['group_id'] ?? ''),
+                    'group_order' => (int) ($category['group_order'] ?? 0),
                     'file_count' => count(array_filter($public, static fn(array $item): bool => strcasecmp((string) $item['category'], $name) === 0)),
                 ];
                 unset($categories[$name]);
@@ -132,23 +139,65 @@ class FileVaultService
             $categoryDetails[] = [
                 'id' => $id,
                 'name' => $name,
+                'label' => $name,
+                'description' => '',
+                'section' => '',
+                'section_id' => '',
+                'group' => '',
+                'group_id' => '',
+                'group_order' => 0,
                 'file_count' => count(array_filter($public, static fn(array $item): bool => strcasecmp((string) $item['category'], $name) === 0)),
             ];
         }
 
         $categoryIds = [];
+        $categoryMetadata = [];
         foreach ($categoryDetails as $detail) {
             $categoryIds[strtolower((string) $detail['name'])] = (string) $detail['id'];
+            $categoryMetadata[strtolower((string) $detail['name'])] = $detail;
         }
         foreach ($public as &$item) {
-            $item['category_id'] = $categoryIds[strtolower((string) $item['category'])] ?? '';
+            $key = strtolower((string) $item['category']);
+            $detail = $categoryMetadata[$key] ?? [];
+            $item['category_id'] = $categoryIds[$key] ?? '';
+            $item['category_label'] = (string) ($detail['label'] ?? $item['category']);
+            $item['section_label'] = (string) ($detail['section'] ?? '');
+            $item['provenance_label'] = (string) ($item['provenance'] ?? ($detail['group'] ?? ''));
+            $item['provenance_id'] = (string) ($detail['group_id'] ?? '');
         }
         unset($item);
+
+        $groups = [];
+        foreach ($categoryDetails as $detail) {
+            $groupId = (string) ($detail['group_id'] ?? '');
+            if ($groupId === '') {
+                continue;
+            }
+            if (!isset($groups[$groupId])) {
+                $groups[$groupId] = [
+                    'id' => $groupId,
+                    'name' => (string) ($detail['group'] ?? ''),
+                    'sort_order' => (int) ($detail['group_order'] ?? 0),
+                    'file_count' => 0,
+                    'categories' => [],
+                ];
+            }
+            $groups[$groupId]['file_count'] += (int) ($detail['file_count'] ?? 0);
+            $groups[$groupId]['categories'][] = $detail;
+        }
+        usort($groups, static fn(array $a, array $b): int => ((int) $a['sort_order']) <=> ((int) $b['sort_order']));
+
+        $sectionLabels = array_values(array_unique(array_filter(array_map(
+            static fn(array $detail): string => trim((string) ($detail['section'] ?? '')),
+            $categoryDetails
+        ))));
 
         return [
             'items' => array_values($public),
             'categories' => array_values($categoryNames),
             'category_details' => $categoryDetails,
+            'groups' => array_values($groups),
+            'section_label' => count($sectionLabels) === 1 ? $sectionLabels[0] : '',
             'total_downloads' => $totalDownloads,
             'count' => count($public),
             'settings' => $this->publicSettings(),
@@ -502,6 +551,9 @@ class FileVaultService
         $allowed = [
             'display_name', 'download_name', 'version', 'description', 'category', 'tags',
             'published_at', 'featured', 'enabled', 'listed', 'access', 'sort_order', 'download_limit',
+            'original_filename', 'date_basis', 'author', 'publisher', 'provenance',
+            'provenance_confidence', 'provenance_note', 'license', 'requirements',
+            'compatibility', 'work_files', 'rights_review_required',
         ];
 
         foreach ($items as &$item) {
@@ -868,7 +920,10 @@ class FileVaultService
         $ttl = max(300, (int) ($this->config['link_ttl'] ?? 43200));
         $payload = $this->base64UrlEncode((string) json_encode(['id' => $id, 'exp' => time() + $ttl], JSON_UNESCAPED_SLASHES));
         $signature = $this->base64UrlEncode(hash_hmac('sha256', $payload, $this->signingSecret(), true));
-        $base = rtrim((string) $this->grav['uri']->rootUrl(true), '/');
+        // Keep signed links on the site that rendered them. An absolute root
+        // can point at the production canonical host while Grav is running in
+        // DDEV or staging, which makes otherwise valid local tokens unusable.
+        $base = rtrim((string) $this->grav['uri']->rootUrl(false), '/');
         return $base . '/file-vault/download?token=' . rawurlencode($payload . '.' . $signature);
     }
 
@@ -1021,7 +1076,7 @@ class FileVaultService
         }
         $this->sortCategories($categories);
         $this->writeJson($this->catalogPath(), [
-            'schema' => 4,
+            'schema' => 5,
             'categories' => array_values($categories),
             'items' => array_values($items),
         ]);
@@ -1045,8 +1100,14 @@ class FileVaultService
         return [
             'id' => $id,
             'name' => $name,
+            'label' => trim((string) ($category['label'] ?? $name)) ?: $name,
             'description' => trim((string) ($category['description'] ?? '')),
             'sort_order' => max(0, (int) ($category['sort_order'] ?? $fallbackOrder)),
+            'section' => trim((string) ($category['section'] ?? '')),
+            'section_id' => trim((string) ($category['section_id'] ?? '')),
+            'group' => trim((string) ($category['group'] ?? '')),
+            'group_id' => trim((string) ($category['group_id'] ?? '')),
+            'group_order' => max(0, (int) ($category['group_order'] ?? 0)),
         ];
     }
 
@@ -1126,6 +1187,18 @@ class FileVaultService
             'download_limit' => max(0, (int) ($item['download_limit'] ?? 0)),
             'sort_order' => max(0, (int) ($item['sort_order'] ?? 0)),
             'checksum_sha256' => strtolower(trim((string) ($item['checksum_sha256'] ?? ''))),
+            'original_filename' => basename((string) ($item['original_filename'] ?? $item['download_name'] ?? $filename)),
+            'date_basis' => trim((string) ($item['date_basis'] ?? '')),
+            'author' => trim((string) ($item['author'] ?? '')),
+            'publisher' => trim((string) ($item['publisher'] ?? '')),
+            'provenance' => trim((string) ($item['provenance'] ?? '')),
+            'provenance_confidence' => trim((string) ($item['provenance_confidence'] ?? '')),
+            'provenance_note' => trim((string) ($item['provenance_note'] ?? '')),
+            'license' => trim((string) ($item['license'] ?? '')),
+            'requirements' => trim((string) ($item['requirements'] ?? '')),
+            'compatibility' => trim((string) ($item['compatibility'] ?? '')),
+            'work_files' => array_values(array_unique(array_filter(array_map('trim', (array) ($item['work_files'] ?? []))))),
+            'rights_review_required' => (bool) ($item['rights_review_required'] ?? false),
         ];
     }
 

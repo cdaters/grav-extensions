@@ -27,6 +27,7 @@ class FileVaultPlugin extends Plugin
             'onApiSidebarItems' => ['onApiSidebarItems', 0],
             'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
             'onShortcodeHandlers' => ['onShortcodeHandlers', 0],
+            'onLanternSearchIndexPage' => ['onLanternSearchIndexPage', 0],
         ];
     }
 
@@ -96,6 +97,82 @@ class FileVaultPlugin extends Plugin
         }
 
         $this->grav['twig']->twig_vars['file_vault'] = $catalog;
+    }
+
+    /**
+     * Optional Lantern Search adapter.
+     *
+     * File Vault owns this integration so Lantern Search remains independent
+     * of the catalog implementation. Only metadata returned by publicCatalog()
+     * is added to the public File Vault page document; protected bytes, storage
+     * paths, signed URLs, authorization data, and unlisted records are never
+     * supplied to the search index.
+     */
+    public function onLanternSearchIndexPage(Event $event): void
+    {
+        $page = $event['page'] ?? null;
+        $document = $event['document'] ?? null;
+        if (!is_object($page) || !is_array($document)) {
+            return;
+        }
+        $template = method_exists($page, 'template') ? (string) $page->template() : '';
+        $route = method_exists($page, 'route') ? '/' . trim((string) $page->route(), '/') : '';
+        if ($template !== 'file-vault' && $route !== '/downloads') {
+            return;
+        }
+
+        try {
+            $items = (new FileVaultService())->publicCatalog()['items'];
+        } catch (\Throwable $e) {
+            $this->grav['log']->warning('[File Vault] Lantern Search metadata provider skipped: ' . $e->getMessage());
+            return;
+        }
+
+        $parts = [];
+        foreach ($items as $item) {
+            $parts[] = implode(' ', array_filter([
+                (string) ($item['display_name'] ?? ''),
+                (string) ($item['original_filename'] ?? ''),
+                (string) ($item['download_name'] ?? ''),
+                (string) ($item['version'] ?? ''),
+                (string) ($item['description'] ?? ''),
+                (string) ($item['author'] ?? ''),
+                (string) ($item['publisher'] ?? ''),
+                (string) ($item['provenance_label'] ?? $item['provenance'] ?? ''),
+                (string) ($item['category_label'] ?? ''),
+                (string) ($item['published_at'] ?? ''),
+                (string) ($item['compatibility'] ?? ''),
+                (string) ($item['requirements'] ?? ''),
+                implode(' ', (array) ($item['work_files'] ?? [])),
+                implode(' ', (array) ($item['tags'] ?? [])),
+            ]));
+        }
+        $catalogText = trim(implode("\n", $parts));
+        if ($catalogText === '') {
+            return;
+        }
+        $document['content'] = trim((string) ($document['content'] ?? '') . "\n" . $catalogText);
+        $document['terms']['content'] = $this->searchTermFrequency($document['content']);
+        $document['source_hash'] = hash('sha256', (string) ($document['source_hash'] ?? '') . "\n" . $catalogText);
+        $event['document'] = $document;
+    }
+
+    /** @return array<string,int> */
+    private function searchTermFrequency(string $text): array
+    {
+        $text = mb_strtolower(trim($text));
+        if (class_exists('Normalizer')) {
+            $text = \Normalizer::normalize($text, \Normalizer::FORM_KC) ?: $text;
+        }
+        $parts = preg_split('/[^\p{L}\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $frequency = [];
+        foreach ($parts as $term) {
+            if (mb_strlen($term) < 2 && !ctype_digit($term)) {
+                continue;
+            }
+            $frequency[$term] = ($frequency[$term] ?? 0) + 1;
+        }
+        return $frequency;
     }
 
     public function onDownloadRequest(): void

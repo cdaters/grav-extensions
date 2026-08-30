@@ -13,6 +13,7 @@ Its first engine deliberately favors shared-host portability: it needs neither S
 - An accessible command palette with keyboard navigation, `/` and `Ctrl/Cmd+K` shortcuts, responsive layout, and light/dark support.
 - A theme-aware Admin2 dashboard for status, rebuilding, settings, and search previews.
 - CLI indexing and querying plus provider events for controlled integrations.
+- Optional public-metadata providers supplied by other plugins without teaching Lantern Search about their storage models.
 
 ## Installation
 
@@ -38,6 +39,22 @@ bin/plugin lantern-search search "spitfire history"
 
 The normal command reuses unchanged documents. `--force` rebuilds every eligible record.
 
+## Optional content providers
+
+Lantern Search deliberately has no built-in knowledge of File Vault or any other catalog plugin. An installed plugin can act as an adapter by subscribing to `onLanternSearchIndexPage`, which runs after Lantern's publication, routability, ACL, and `noindex` checks. If the other plugin is absent, no adapter is registered and Lantern continues indexing normal Grav content only.
+
+The File Vault plugin supplies one such optional adapter. During a rebuild it enriches the eligible public File Vault page document with public catalog metadata: display title, original/download filename, version, author, publisher, description, functional category, tags, compatibility, provenance, release date, requirements, and documented work-file names. Search results continue to point to the public File Vault route; Lantern does not inspect archive contents or create download links.
+
+Provider safety is part of the contract:
+
+- Source data must already be public under the provider's own visibility and access policy.
+- Protected payload bytes, private storage paths, unlisted/internal records, password or ACL secrets, signed tokens, authorization state, and private destination URLs must not be added.
+- The provider owns translation from its data model into public search text; Lantern core does not read the provider's files or tables.
+- A provider that changes indexed text must update the document term map and `source_hash`, allowing deterministic ranking and rebuild behavior.
+- Provider failure should leave normal Grav indexing available instead of exposing fallback/private data.
+
+The current page-enrichment event produces one result route per eligible Grav page. A future multi-document source event would be required for plugins that need a distinct result URL for every external record.
+
 ## Integration events
 
 `onLanternSearchIndexPage` runs after core safety checks and before an eligible document is stored. Providers may add public fields or set `include` to `false`. `onLanternSearchResults` receives the bounded public payload after ranking.
@@ -57,7 +74,7 @@ The normal command reuses unchanged documents. `--force` rebuilds every eligible
 
 ## Roadmap
 
-Likely follow-ups include synonyms, spelling suggestions, multilingual token strategies, pagination, scheduled/background indexing, content-source adapters, and larger-site storage providers. JSON remains the portable baseline.
+Likely follow-ups include synonyms, spelling suggestions, multilingual token strategies, pagination, scheduled/background indexing, first-class multi-document source adapters, and larger-site storage providers. JSON remains the portable baseline.
 
 ## Clean-room design references
 

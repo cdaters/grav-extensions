@@ -405,7 +405,10 @@ final class SearchIndexService
     private function plainText(object $page): string
     {
         $content = method_exists($page, 'rawMarkdown') ? (string) $page->rawMarkdown() : (method_exists($page, 'content') ? (string) $page->content() : '');
-        $content = preg_replace('/```.*?```/su', ' ', $content) ?? $content;
+        // Fenced blocks on public archive pages contain searchable primary
+        // sources. Remove the Markdown fence markers without discarding the
+        // transcript or other readable preformatted content inside them.
+        $content = preg_replace('/```[^\n]*\n|```/u', ' ', $content) ?? $content;
         $content = preg_replace('/\[([^\]]+)\]\([^\)]+\)/u', '$1', $content) ?? $content;
         $content = preg_replace('/\[(?:file-vault|file-download|prism|lightbox)[^\]]*\](?:.*?\[\/(?:file-vault|file-download|prism|lightbox)\])?/isu', ' ', $content) ?? $content;
         return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($content), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? $content);

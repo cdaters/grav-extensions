@@ -1,7 +1,7 @@
 name: File Vault
 slug: file-vault
 type: plugin
-version: 0.6.0
+version: 0.7.0
 description: Protected download library, catalog, analytics, and Admin2 manager for Grav 2.
 icon: box-archive
 author:

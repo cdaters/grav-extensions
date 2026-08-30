@@ -31,6 +31,22 @@
 
   {% if file_vault.error %}<div class="fv-alert">{{ file_vault.error|e }}</div>{% endif %}
 
+  {% if file_vault.groups|default([]) %}
+    <section class="fv-taxonomy" aria-labelledby="fv-taxonomy-title">
+      <div class="fv-taxonomy-heading">
+        {% if file_vault.section_label %}<nav class="fv-breadcrumb" aria-label="File Vault hierarchy"><span>File Vault</span><i aria-hidden="true">›</i><strong>{{ file_vault.section_label|e }}</strong></nav>{% endif %}
+        <h2 id="fv-taxonomy-title">Browse {{ file_vault.section_label ? file_vault.section_label|e : 'the catalog' }} by collection</h2>
+        <p>Choose a collection to narrow the catalog, then browse its functional categories.</p>
+      </div>
+      <div class="fv-branches" role="group" aria-label="Filter by collection">
+        <button type="button" class="active" data-fv-branch="" aria-pressed="true"><strong>{{ file_vault.section_label ? 'All ' ~ file_vault.section_label : 'All files' }}</strong><span>{{ file_vault.count }} files</span></button>
+        {% for group in file_vault.groups %}
+          <button type="button" data-fv-branch="{{ group.id|e('html_attr') }}" aria-pressed="false"><strong>{{ group.name|e }}</strong><span>{{ group.file_count }} files · {{ group.categories|length }} categories</span></button>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
   {% if show_controls %}
     <section class="fv-controls" aria-label="Download filters">
       <div class="fv-control-field fv-search-field">
@@ -45,9 +61,19 @@
         <span class="fv-select-wrap">
           <select data-fv-category aria-label="Browse category">
             <option value="">All categories ({{ file_vault.count }})</option>
-            {% for category in file_vault.category_details %}
-              <option value="{{ category.id|e('html_attr') }}" {{ category.id == selected_category ? 'selected' : '' }}>{{ category.name|e }} ({{ category.file_count }})</option>
-            {% endfor %}
+            {% if file_vault.groups|default([]) %}
+              {% for group in file_vault.groups %}
+                <optgroup label="{{ group.name|e('html_attr') }}">
+                {% for category in group.categories %}
+                  <option value="{{ category.id|e('html_attr') }}" data-provenance="{{ group.id|e('html_attr') }}" {{ category.id == selected_category ? 'selected' : '' }}>{{ category.label|e }} ({{ category.file_count }})</option>
+                {% endfor %}
+                </optgroup>
+              {% endfor %}
+            {% else %}
+              {% for category in file_vault.category_details %}
+                <option value="{{ category.id|e('html_attr') }}" {{ category.id == selected_category ? 'selected' : '' }}>{{ category.label|default(category.name)|e }} ({{ category.file_count }})</option>
+              {% endfor %}
+            {% endif %}
           </select>
         </span>
       </div>
@@ -82,14 +108,22 @@
     {% for item in file_vault.items %}
       <article class="fv-file{% if item.featured %} is-featured{% endif %}{% if item.locked %} is-locked{% endif %}"
                data-fv-item
-               data-name="{{ (item.display_name ~ ' ' ~ item.filename ~ ' ' ~ item.description ~ ' ' ~ item.tags|join(' '))|lower|e('html_attr') }}"
+               data-name="{{ (item.display_name ~ ' ' ~ item.filename ~ ' ' ~ item.download_name ~ ' ' ~ item.description ~ ' ' ~ item.author ~ ' ' ~ item.publisher ~ ' ' ~ item.provenance ~ ' ' ~ item.compatibility ~ ' ' ~ item.requirements ~ ' ' ~ item.work_files|join(' ') ~ ' ' ~ item.tags|join(' '))|lower|e('html_attr') }}"
                data-category="{{ item.category_id|default(item.category|lower)|e('html_attr') }}"
+               data-provenance="{{ item.provenance_id|default('')|e('html_attr') }}"
                data-order="{{ item.sort_order }}"
                data-date="{{ item.published_at|e('html_attr') }}"
                data-size="{{ item.bytes }}"
                data-downloads="{{ item.download_count }}">
         <div class="fv-type" aria-hidden="true"><span>{{ item.source_type == 'url' ? 'URL' : item.filename|split('.')|last|upper|e }}</span></div>
         <div class="fv-primary">
+          {% if item.section_label or item.provenance_label or item.category_label %}
+            <nav class="fv-item-path" aria-label="Catalog path">
+              {% if item.section_label %}<span>{{ item.section_label|e }}</span><i aria-hidden="true">›</i>{% endif %}
+              {% if item.provenance_label %}<span>{{ item.provenance_label|e }}</span><i aria-hidden="true">›</i>{% endif %}
+              <strong>{{ item.category_label|default(item.category)|e }}</strong>
+            </nav>
+          {% endif %}
           <div class="fv-title-row">
             <h2>{{ item.display_name|e }}</h2>
             <div class="fv-badges">
@@ -100,17 +134,33 @@
               {% if item.is_hot %}<span class="hot">Hot</span>{% endif %}
             </div>
           </div>
-          <p>{{ item.description|e }}</p>
+          {% if item.description %}
+            {% set description_id = 'fv-description-' ~ item.id %}
+            <div class="fv-description{% if item.description|length > 120 %} is-collapsible{% endif %}" data-fv-description>
+              <p id="{{ description_id|e('html_attr') }}">{{ item.description|e }}</p>
+              {% if item.description|length > 120 %}
+                <button type="button" class="fv-description-toggle" data-fv-description-toggle aria-expanded="false" aria-controls="{{ description_id|e('html_attr') }}" hidden>
+                  <span data-fv-description-label>Show full description</span>
+                  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5.5 7.5 4.5 4.5 4.5-4.5"/></svg>
+                </button>
+              {% endif %}
+            </div>
+          {% endif %}
           <div class="fv-tags">
-            {% if item.category %}<span>{{ item.category|e }}</span>{% endif %}
-            {% for tag in item.tags %}<span>{{ tag|e }}</span>{% endfor %}
+            {% if item.provenance_label %}<span class="fv-provenance-tag">{{ item.provenance_label|e }}</span>{% endif %}
+            {% if item.category_label %}<span>{{ item.category_label|e }}</span>{% endif %}
+            {% for tag in item.tags|slice(0, 4) %}<span>{{ tag|e }}</span>{% endfor %}
           </div>
         </div>
         <dl class="fv-meta">
           <div><dt>{{ item.source_type == 'url' ? 'Type' : 'File' }}</dt><dd>{{ item.source_type == 'url' ? 'Secure URL' : item.download_name|e }}</dd></div>
           {% if item.version %}<div><dt>Version</dt><dd>{{ item.version|e }}</dd></div>{% endif %}
+          {% if item.publisher %}<div><dt>Publisher</dt><dd>{{ item.publisher|e }}</dd></div>{% elseif item.author %}<div><dt>Author</dt><dd>{{ item.author|e }}</dd></div>{% endif %}
+          {% if item.publisher and item.author and item.author != item.publisher %}<div><dt>Author</dt><dd>{{ item.author|e }}</dd></div>{% endif %}
           {% if item.source_type != 'url' %}<div><dt>Size</dt><dd>{{ item.size|e }}</dd></div>{% endif %}
-          {% if item.published_at %}<div><dt>Released</dt><dd>{{ item.published_at|date('M j, Y') }}</dd></div>{% endif %}
+          {% if item.published_at %}<div><dt>{{ item.date_basis == 'stated release date' ? 'Released' : 'Archive dated' }}</dt><dd>{{ item.published_at|date('M j, Y') }}</dd></div>{% endif %}
+          {% if item.compatibility %}<div><dt>Compatibility</dt><dd>{{ item.compatibility|e }}</dd></div>{% endif %}
+          {% if item.license and item.license != 'Not stated' %}<div><dt>Package type</dt><dd>{{ item.license|e }}</dd></div>{% endif %}
           <div><dt>Downloads</dt><dd>{{ item.download_count|number_format }}</dd></div>
         </dl>
         <div class="fv-action">

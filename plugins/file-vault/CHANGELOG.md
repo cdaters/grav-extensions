@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0 - 2026-08-30
+
+- Added and documented the optional Lantern Search adapter for public File Vault catalog metadata while excluding protected bytes, storage details, hidden records, authorization data, and signed links.
+- Included original archive filenames and release dates in the provider's searchable text and made provider failure non-fatal to normal Lantern indexing.
+- Added optional section/group/category metadata, collection filters, catalog breadcrumbs, provenance/compatibility metadata, and catalog schema 5 while retaining the flat-category fallback.
+- Added accessible expand/collapse chevrons for descriptions longer than 120 characters.
+- Kept signed download links relative to the site that rendered them so DDEV and staging do not inherit a production canonical host.
+- Documented the single-public-route behavior of the current Lantern integration.
+
 ## 0.6.0 - 2026-08-18
 
 - Added unlisted protected assets for one-off page downloads that must remain outside every public catalog and category collection.

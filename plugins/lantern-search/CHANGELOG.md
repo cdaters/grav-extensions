@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-08-30
+
+- Documented the optional content-provider boundary and the File Vault public-metadata adapter, including its visibility, privacy, failure-isolation, and routing contract.
+- Clarified that distinct results for provider-owned records require a future multi-document source event rather than catalog-specific logic in Lantern core.
+- Preserved searchable public text inside fenced Markdown blocks while removing only the fence markers.
+
 ## 0.1.2 — 2026-08-19
 
 - Made the visitor palette follow Grav theme `data-theme` and light/dark classes immediately, with the operating-system preference retained as a fallback.

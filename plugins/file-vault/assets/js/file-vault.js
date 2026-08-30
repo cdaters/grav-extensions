@@ -11,14 +11,27 @@
     const countLabel = root.querySelector('[data-fv-count-label]');
     const empty = root.querySelector('[data-fv-empty]');
     const items = Array.from(root.querySelectorAll('[data-fv-item]'));
+    const branchButtons = Array.from(root.querySelectorAll('[data-fv-branch]'));
+    let selectedBranch = '';
     if (!files) return;
+
+    const setBranch = branch => {
+      selectedBranch = branch || '';
+      branchButtons.forEach(button => {
+        const active = (button.dataset.fvBranch || '') === selectedBranch;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+    };
 
     const update = () => {
       const needle = search?.value.trim().toLowerCase() || '';
       const selectedCategory = category?.value || '';
       let visible = 0;
       items.forEach(item => {
-        const match = (!needle || item.dataset.name.includes(needle)) && (!selectedCategory || item.dataset.category === selectedCategory);
+        const match = (!needle || item.dataset.name.includes(needle))
+          && (!selectedCategory || item.dataset.category === selectedCategory)
+          && (!selectedBranch || item.dataset.provenance === selectedBranch);
         item.hidden = !match;
         if (match) visible += 1;
       });
@@ -38,8 +51,34 @@
     };
 
     search?.addEventListener('input', update);
-    category?.addEventListener('change', update);
+    category?.addEventListener('change', () => {
+      setBranch('');
+      update();
+    });
     sort?.addEventListener('change', update);
+    branchButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        setBranch(button.dataset.fvBranch || '');
+        if (category) category.value = '';
+        update();
+      });
+    });
+
+    root.querySelectorAll('[data-fv-description]').forEach(description => {
+      const button = description.querySelector('[data-fv-description-toggle]');
+      const label = description.querySelector('[data-fv-description-label]');
+      if (!button || !label) return;
+
+      description.classList.add('is-collapsed');
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        const expanded = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(expanded));
+        description.classList.toggle('is-collapsed', !expanded);
+        description.classList.toggle('is-expanded', expanded);
+        label.textContent = expanded ? 'Show less' : 'Show full description';
+      });
+    });
 
     root.querySelectorAll('[data-fv-view]').forEach(button => {
       button.addEventListener('click', () => {
@@ -68,6 +107,7 @@
     });
 
     const defaultView = root.dataset.defaultView === 'grid' ? 'grid' : 'list';
+    setBranch('');
     root.querySelector(`[data-fv-view="${defaultView}"]`)?.click();
     update();
   };
