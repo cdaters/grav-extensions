@@ -44,20 +44,22 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
+| Jarvis | Plugin | 0.1.0 provider-neutral contract foundation | `user/plugins/grav-jarvis` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
 has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 [docs/architecture.md](docs/architecture.md).
 
-## Planned first-class components
+## Jarvis foundation
 
-**Jarvis** (`grav-jarvis`) is the accepted Grav 2 AI-service and agent-
-integration framework. It will provide a shared provider-neutral PHP service,
-Admin2 assistance, safe proposal/diff/approval workflows, and composition with
-Grav REST/MCP without becoming a dependency of the existing plugins. It is a
-specification, not an installable package, until its minimal 0.1.0 release meets
-the repository package contract. Read the
+**Jarvis** (`grav-jarvis`) is the Grav 2 AI-service and agent-integration
+framework. The runnable 0.1.0 package establishes its provider-neutral PHP
+contracts, optional registration event, deterministic test provider, typed
+failure behavior, and secret-redaction boundary. It registers no live provider
+and makes no network request. Admin2 assistance, proposal workflows, and Grav
+REST/MCP composition remain staged roadmap work. Read the
+[Jarvis manual](plugins/grav-jarvis/README.md),
 [Jarvis specification](docs/planned/grav-jarvis.md) and
 [Decision 0004](docs/decisions/0004-grav-jarvis-agent-framework.md).
 
@@ -74,6 +76,7 @@ travels with release ZIPs:
 - [Site Workshop manual](plugins/site-workshop/README.md)
 - [Flexible Markdown Alerts manual](plugins/flexible-markdown-alerts/README.md)
 - [Grav Commander manual](plugins/grav-commander/README.md)
+- [Jarvis manual](plugins/grav-jarvis/README.md)
 - [Spitfire child-theme manual](themes/spitfire/README.md)
 
 ## Repository layout
@@ -133,6 +136,7 @@ Create an installable ZIP containing the required top-level extension folder:
 ./scripts/package-extension.sh plugin site-workshop
 ./scripts/package-extension.sh plugin flexible-markdown-alerts
 ./scripts/package-extension.sh plugin grav-commander
+./scripts/package-extension.sh plugin grav-jarvis
 ./scripts/package-extension.sh theme spitfire
 ```
 

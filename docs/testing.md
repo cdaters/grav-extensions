@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | specification accepted; fake-provider contract is the first 0.1.0 gate |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.0 registration, deterministic response, typed failure, absence, and secret-redaction contract implemented; live adapter boundary next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -139,14 +139,26 @@ must not wait for the whole inventory before receiving its own regression.
 
 ### Jarvis AI boundary contract
 
-Jarvis tests use a deterministic fake provider and local HTTP fixtures by
-default. Before any 0.1.0 package can be called runnable, the external contract
-must prove that an unauthorized request is denied, streamed events arrive in
-order and terminate cleanly, provider errors and logs redact secrets, preview
-does not mutate content, one explicit approval applies once, and a changed
-source rejects a stale proposal. Consumer tests must also prove that Grav
-Commander or another fixture degrades safely when Jarvis is missing, disabled,
-or lacks a requested capability.
+Run the 0.1.0 contract with host PHP or a DDEV project:
+
+```bash
+./scripts/test-grav-jarvis-contract.sh
+```
+
+The runner uses a deterministic fake provider and no credential or network. It
+lints the package and test in PHP, then proves actual plugin service
+registration, `onJarvisProviderRegister`, stable fake output, duplicate/missing
+provider denial, normalized provider failures, disabled/missing/invalid service
+fallback, request credential rejection, and redaction of environment secrets,
+authorization text, successful output, and result metadata. When host PHP is
+absent, it defaults to the canonical DDEV fixture when available or accepts a
+DDEV project path/`GRAV_JARVIS_DDEV_PROJECT`.
+
+Future external contracts must prove that an unauthorized request is denied,
+streamed events arrive in order and terminate cleanly, preview does not mutate
+content, one explicit approval applies once, and a changed source rejects a
+stale proposal. Consumer tests must continue to prove safe degradation when
+Jarvis is missing, disabled, or lacks a requested capability.
 
 Later batch/job coverage must prove target and budget limits, cancellation,
 idempotent resume, per-item permission/source rechecks, and truthful partial-

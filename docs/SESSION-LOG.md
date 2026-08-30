@@ -354,3 +354,37 @@ suite inventory incremental and risk ordered.
   local Markdown target validation. Confirmed canonical Markdown contains no
   the former working-slug identifier. Host PHP was unavailable, so preflight
   skipped PHP syntax; this documentation-only checkpoint adds no PHP.
+
+## 2026-08-30 — Jarvis 0.1.0 contract foundation
+
+- Added the runnable, independently packageable `plugins/grav-jarvis` plugin
+  with Grav metadata, defaults, traveling README/changelog/license, Composer
+  namespace metadata, and `$grav['gravJarvis']` service registration.
+- Added provider-neutral public service, provider, and registry interfaces;
+  immutable completion request/result/usage values; typed registry/provider
+  exceptions; and `onJarvisProviderRegister`. Production boot registers no
+  provider and performs no network request.
+- Added a deterministic fake provider for contract tests only. Optional
+  consumers now have a documented/tested fallback when Jarvis is absent,
+  disabled, invalid, or a provider fails; no Grav Commander source changed.
+- Added credential-key rejection and environment-aware redaction. Provider
+  failures are normalized without chaining the unsafe exception, and both
+  successful output and result metadata are redacted before leaving the public
+  service.
+- Added `scripts/test-grav-jarvis-contract.sh` and a seven-check contract for
+  actual plugin/event registration, deterministic output, duplicate/missing
+  providers, typed failures, optional-consumer fallback, credential rejection,
+  and failure/success/result-metadata redaction.
+- Passed the Jarvis contract and every Jarvis PHP syntax check under PHP 8.3 in
+  the canonical DDEV fixture. Also passed repository structure/YAML/hygiene
+  preflight, whitespace, Composer/JSON and YAML parsing, ZIP integrity,
+  packaged-plugin installation, Grav cache clearing, and public/Admin HTTP 200
+  checks. Host PHP remains unavailable, so root preflight correctly reports
+  its host-side PHP step as skipped rather than claiming it ran.
+- Packaged `grav-jarvis-0.1.0.zip`, SHA-256
+  `b786a65de8a15551ace2a2c2164ac305ffabb74e25c711876a8535ca666b87ab`.
+- Preserved unrelated local Site Workshop/Cache Hearth and Spitfire-theme
+  changes and did not push. The exact next milestone is Jarvis 0.1.1: additive
+  provider validation/model-discovery contracts, an environment credential
+  resolver, deterministic local HTTP fixtures, and adapter-conformance/
+  redaction tests before any live provider is added.

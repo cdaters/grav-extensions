@@ -12,6 +12,6 @@ installation path. Implemented briefs remain as scope records.
 - [Gatehouse](gatehouse.md)
 - [Site Workshop scope record](site-workshop.md) — implemented; Icon Bench available
 - [Edge Console](edge-console.md)
-- [Jarvis](grav-jarvis.md) — accepted Grav 2 AI/agent framework specification;
-  0.1.0 contract skeleton next
+- [Jarvis scope and roadmap](grav-jarvis.md) — 0.1.0 contract foundation
+  implemented; 0.1.1 provider boundary next
 - [Page Studio](page-studio.md)

@@ -20,15 +20,22 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Decision 0004 accepts **Jarvis** (`grav-jarvis`) as a first-class planned Grav
-2 AI-service and agent-integration framework. The canonical specification is
-`docs/planned/grav-jarvis.md`. Jarvis is not a clone of Grav AI Pro: it combines
-an internal provider abstraction with Grav's REST API/MCP authority, page/
-frontmatter/media-aware Admin2 assistance, versioned prompts, streaming/CLI,
-safe proposal/diff/approval, and an optional public service for Grav Commander
-and other plugins. OpenAI, Anthropic, and OpenAI-compatible providers are first;
-Gemini and OpenRouter are later candidates. No installable plugin or runtime
-secret was created in this documentation checkpoint.
+Jarvis 0.1.0 (`grav-jarvis`) is now a runnable, independently packageable Grav
+2 plugin and the first implementation of Decision 0004. It registers the
+provider-neutral `$grav['gravJarvis']` service and
+`onJarvisProviderRegister`, exposes public service/provider/registry contracts
+plus immutable completion request/result/usage values, and includes a
+deterministic fake provider for tests only. Typed failure normalization,
+credential-key rejection, and environment-aware redaction protect exception
+messages, successful provider output, and result metadata. Optional consumers
+have a documented and tested absence/disabled/failure fallback pattern.
+
+The package registers no provider itself and makes no network request. It does
+not yet contain OpenAI, Anthropic, OpenAI-compatible, Gemini, or OpenRouter
+adapters; Admin2 UI; Commander integration; background jobs; content mutation;
+or MCP workflows. Jarvis remains an original framework, not a clone of Grav AI
+Pro, and future site operations continue to use Grav REST/MCP permissions and
+concurrency controls.
 
 Spitfire theme 1.2.1 adds an Admin **Section spacing** selector to Features,
 Text, and Form modular pages. Existing pages default to Normal, Tight reuses
@@ -99,11 +106,20 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- The Jarvis documentation set passes repository structure/YAML/hygiene
-  preflight, whitespace validation, and local Markdown target checks. No legacy
-  former working-slug identifier remains in canonical Markdown. Host PHP was
-  unavailable, so repository preflight explicitly skipped PHP syntax; this
-  checkpoint adds no PHP.
+- Jarvis's seven-check contract passes under PHP 8.3 in the canonical DDEV
+  fixture. It covers actual plugin service/event registration, deterministic
+  fake responses, duplicate/missing providers, normalized failures,
+  missing/disabled/invalid-service consumer fallback, request credential
+  rejection, and secret redaction across failures, successful output, and
+  result metadata.
+- Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
+  structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
+  YAML parsing, ZIP integrity, package installation, Grav cache clearing, and
+  public/Admin HTTP 200 checks pass. Host PHP remains unavailable, so the root
+  preflight truthfully reports its host-side PHP syntax step as skipped; DDEV
+  supplied the PHP lint and runtime evidence.
+- The verified Jarvis package is `dist/grav-jarvis-0.1.0.zip`, SHA-256
+  `b786a65de8a15551ace2a2c2164ac305ffabb74e25c711876a8535ca666b87ab`.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -153,30 +169,27 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Begin Jarvis 0.1.0 with the smallest reviewable contract skeleton. The goal is
-to freeze the public service/provider seam and failure behavior before adding
-live providers, Admin2 UI, background work, or consumer features.
+Jarvis 0.1.1 provider boundary. Preserve the frozen 0.1.0 contracts while
+defining the narrow validation, model-discovery, credential-resolution, and
+HTTP-fixture seams needed for live adapters.
 
 ## Exact next action
 
-First isolate or checkpoint the unrelated local Site Workshop/Cache Hearth and
-Spitfire-theme edits. Then create a runnable `plugins/grav-jarvis` package with
-the repository's required blueprint/defaults/README/changelog/license/plugin
-entry point, `JarvisServiceInterface`, provider registry and
-`onJarvisProviderRegister`, immutable request/result/usage types, a
-`Grav\Plugin\GravJarvis` namespace, deterministic fake provider,
-`$grav['gravJarvis']` registration, and tests for
-service discovery, missing/disabled behavior, provider failure/redaction, and
-optional-consumer fallback. Do not add real API credentials, network providers,
-Admin2 mutation, batch work, or a Grav Commander dependency in that first
-checkpoint.
+Design and implement non-breaking optional provider-validation and model-
+discovery contracts, an environment credential resolver, and deterministic
+local HTTP transport fixtures. Add conformance tests for success, timeout,
+malformed response, authentication failure, and redaction, then review and
+freeze that boundary before adding any live adapter. Do not change the 0.1.0
+`ProviderInterface`, and do not add Admin2, Commander integration, jobs, batch
+work, content mutation, or MCP endpoints in this checkpoint.
 
 ## Explicitly deferred
 
-- OpenAI, Anthropic, OpenAI-compatible, Gemini, and OpenRouter adapters; the
-  Admin2 assistant; live streaming; prompt persistence; caching/retries; usage
-  and cost accounting; chunking; background jobs; batch/site-wide workflows;
-  and MCP-facing endpoints follow the reviewed Jarvis contract skeleton.
+- OpenAI, Anthropic, and OpenAI-compatible live adapters follow the reviewed
+  0.1.1 provider boundary as separate 0.1.x increments. Gemini and OpenRouter,
+  the Admin2 assistant, live streaming, prompt persistence, caching/retries,
+  cost accounting, chunking, background jobs, batch/site-wide workflows, and
+  MCP-facing endpoints remain later work.
 - The previous File Vault black-box milestone remains required under Decision
   0003 and is paused, not cancelled: prove anonymous denial, authorized
   delivery, ACL/password/download-limit enforcement, range/resume behavior,
@@ -200,6 +213,10 @@ checkpoint.
    `docs/SESSION-LOG.md`.
 4. For the active Jarvis milestone, read `docs/planned/grav-jarvis.md` and
    `docs/decisions/0004-grav-jarvis-agent-framework.md` completely.
-5. Run `git status` and `git log --oneline --decorate -10`.
-6. Confirm the active milestone, exact next action, deferred work, and local
+5. Read `plugins/grav-jarvis/README.md`, then run
+   `./scripts/test-grav-jarvis-contract.sh`.
+6. Rebuild with `./scripts/package-extension.sh plugin grav-jarvis` after any
+   package change; checksums are expected to change.
+7. Run `git status` and `git log --oneline --decorate -10`.
+8. Confirm the active milestone, exact next action, deferred work, and local
    uncommitted changes before modifying files.

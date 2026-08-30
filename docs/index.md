@@ -18,6 +18,7 @@ belong in that extension's own README.
 - [Site Workshop](../plugins/site-workshop/README.md)
 - [Flexible Markdown Alerts](../plugins/flexible-markdown-alerts/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
+- [Jarvis](../plugins/grav-jarvis/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 
 ## Maintain the suite

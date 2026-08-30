@@ -1,8 +1,11 @@
 # Jarvis
 
-**Status:** accepted specification; no installable plugin exists yet  
-**Product name:** Jarvis  
-**Plugin slug and future directory:** `grav-jarvis`  
+**Status:** 0.1.0 contract foundation implemented; 0.1.1 provider boundary next
+
+**Product name:** Jarvis
+
+**Plugin slug and directory:** `grav-jarvis`
+
 **Target:** Grav 2, Grav API, and Admin2
 
 Jarvis is a site-agnostic AI service and agent-integration framework for
@@ -60,21 +63,26 @@ class convention: `Grav\Plugin\GravJarvis`. Public contracts live beneath
 `Grav\Plugin\GravJarvis\Contracts`; consumers import those contracts rather
 than concrete provider or service classes.
 
-The public contract will normalize provider differences behind small PHP
-interfaces and immutable request/result objects. The initial vocabulary is:
+The public contract normalizes provider differences behind small PHP
+interfaces and immutable request/result objects. The 0.1.0 vocabulary is:
 
-- `JarvisServiceInterface` for `complete()`, `stream()`, capability discovery,
-  prompt resolution, proposal creation, and usage reporting;
-- `ProviderInterface` for validation, model discovery, synchronous generation,
-  and optional streaming;
+- `JarvisServiceInterface` for synchronous `complete()`, registry discovery,
+  provider identifiers, and capability discovery;
+- `ProviderInterface` for a stable identifier, declared capabilities, and
+  synchronous generation;
 - `ProviderRegistryInterface` plus `onJarvisProviderRegister` so companion
   plugins can add providers without editing Jarvis;
-- `CompletionRequest`, `CompletionResult`, `StreamEvent`, `Usage`, and
-  provider-neutral error categories; and
-- explicit capabilities such as text input, image input, structured output,
-  streaming, usage data, and model discovery.
+- `CompletionRequest`, `CompletionResult`, `Usage`, and provider-neutral error
+  categories; and
+- provider-declared capability strings and usage units without a vendor-
+  specific or token-only vocabulary.
 
-The planned Grav container key is `$grav['gravJarvis']`. Consumers type-check the
+Streaming events, validation/model discovery, prompts, proposals, and cost
+reporting remain additive future contracts. Optional provider capabilities
+must use separate interfaces or capability checks so the 0.1.0 provider
+contract does not accumulate methods every adapter must fake.
+
+The Grav container key is `$grav['gravJarvis']`. Consumers type-check the
 public interface and degrade cleanly when the plugin or a requested capability
 is absent. They never read Jarvis configuration, provider classes, caches,
 jobs, or secrets directly.
@@ -278,23 +286,38 @@ and their native permission systems.
 
 ## Versioned milestones
 
-### 0.1.0 — minimal provider and proposal foundation
+### 0.1.0 — contract foundation (implemented)
 
-- public interfaces, immutable request/result/usage types, provider registry,
-  and a deterministic fake provider for tests;
-- OpenAI, Anthropic, and OpenAI-compatible adapters;
-- environment-only credentials, provider validation, model discovery, timeout,
-  and normalized errors;
-- synchronous `chat`, initial streaming, and CLI `validate`, `models`, `chat`;
-- versioned prompt library and bounded page/frontmatter/media context;
-- Admin2 page context panel with preview/diff/accept/reject; and
-- first optional consumer example or contract fixture, without coupling
-  Commander to unreleased internals.
+- runnable, independently packageable `plugins/grav-jarvis` metadata and entry
+  point;
+- public service/provider/registry interfaces and immutable completion request,
+  result, and provider-declared usage values;
+- `$grav['gravJarvis']`, `onJarvisProviderRegister`, duplicate/missing-provider
+  denial, and a deterministic fake provider that is never registered in
+  production;
+- typed and normalized provider failures, credential-key rejection, and
+  redaction of environment secrets, authorization text, successful output, and
+  result metadata; and
+- executable contracts proving service/event registration, stable fake output,
+  provider failure, missing/disabled/invalid-service fallback, and redaction.
 
-The first coding checkpoint inside 0.1.0 is smaller: scaffold the installable
-plugin, freeze interfaces/DTOs and registration names, add the fake provider,
-and prove service discovery plus absence/failure behavior. Network providers
-and Admin2 follow only after that contract is reviewed.
+There is deliberately no live provider, network request, Admin2 UI, content
+mutation, Commander integration, background job, or MCP workflow in 0.1.0.
+
+### 0.1.1 — provider boundary (next)
+
+- define additive optional contracts for provider validation and model
+  discovery without changing `ProviderInterface`;
+- add an environment credential resolver that returns secrets only to provider
+  adapters and never to request DTOs, logs, configuration, or diagnostics;
+- add deterministic local HTTP transport fixtures for success, timeout,
+  malformed response, authentication failure, and redaction behavior; and
+- freeze adapter conformance tests before implementing a live provider.
+
+OpenAI, Anthropic, and OpenAI-compatible adapters then arrive as separate
+0.1.x increments, followed by synchronous chat, streaming/CLI, prompt/context,
+and Admin2 proposal/diff/approval checkpoints. Gemini and OpenRouter remain
+later candidates.
 
 ### 0.2.0 — reliability and automation
 
@@ -327,7 +350,12 @@ and Admin2 follow only after that contract is reviewed.
 
 ## Testing strategy
 
-Tests are layered and use fake credentials/providers by default:
+Tests are layered and use fake credentials/providers by default. The 0.1.0
+contract runs with `./scripts/test-grav-jarvis-contract.sh`; it uses host PHP
+when available and otherwise the canonical DDEV fixture (or an explicitly
+selected DDEV project).
+
+The continuing strategy is:
 
 1. unit tests for request normalization, capability negotiation, prompt
    rendering, redaction, cache keys, retry classification, chunking, budgets,
@@ -380,7 +408,7 @@ plugin to change its code. Every extension stays independently installable.
 Durable rationale is in
 [Decision 0004](../decisions/0004-grav-jarvis-agent-framework.md). The suite-level
 status and exact next action are in [`CURRENT-STATE.md`](../../CURRENT-STATE.md).
-Before implementation, re-check the current official
+Before live-provider or API implementation, re-check the current official
 [Grav API developer guide](https://learn.getgrav.org/20/api/developer-guide),
 [Grav MCP security model](https://learn.getgrav.org/20/advanced/mcp-server),
 and each provider's official API documentation; those external interfaces can

@@ -63,4 +63,12 @@ retrieved material as separate trust boundaries.
 The full boundary is specified in
 [`docs/planned/grav-jarvis.md`](planned/grav-jarvis.md).
 
+Jarvis 0.1.0 implements the first portion of this boundary: request options and
+metadata reject credential keys; `GRAV_JARVIS_*` environment values are loaded
+only into an in-memory redactor; provider failures are converted to typed
+exceptions without chaining the unsafe original; and successful provider
+output/metadata is redacted before it crosses the public service. The release
+contains no live provider, remote endpoint, API route, UI, persistent history,
+or mutation path.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

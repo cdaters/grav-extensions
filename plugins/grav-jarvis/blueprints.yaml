@@ -1,0 +1,35 @@
+name: Jarvis
+slug: grav-jarvis
+type: plugin
+version: 0.1.0
+description: Provider-neutral AI service contracts and guarded provider registration for Grav 2.
+icon: microchip
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/grav-jarvis
+keywords: grav, plugin, ai, providers, contracts, security
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+
+compatibility:
+  grav: ['2.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    foundation:
+      type: section
+      title: Jarvis 0.1 foundation
+      text: This release provides the provider-neutral PHP contract only. It includes no live provider, Admin2 assistant, background worker, or site mutation.
+      underline: true

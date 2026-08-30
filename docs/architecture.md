@@ -117,7 +117,9 @@ than a toolbar replacement and may optionally consume Jarvis later.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Jarvis:** accepted Grav 2 AI/agent framework specification; no installable
-  plugin yet. The next milestone is the minimal 0.1.0 contract skeleton.
+- **Jarvis 0.1.0:** runnable provider-neutral contract foundation with public
+  service/provider/registry/value-object interfaces, optional registration,
+  deterministic fake-provider tests, typed failures, and secret redaction. It
+  has no live provider or network behavior.
 - **Other later roadmap plugins:** Gatehouse, Edge Console, and Page Studio
   remain named and bounded, not yet represented as finished packages.
