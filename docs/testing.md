@@ -132,7 +132,7 @@ produces the expected authenticated request body.
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
 | Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts plus 0.3.1 public-only Commander consumer proof and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
-| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 deterministic PHP source/service/registry contract implemented; Admin2 browser boundary begins with 0.1.1 |
+| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 deterministic PHP contract and 0.1.1 isolated Node/actual-Chrome engine proof implemented; signed-in Admin2 boundary begins with 0.2.0 |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -160,9 +160,20 @@ Every accepted source must have ordered contiguous block coverage and serialize
 to its exact original bytes without an edit. Safe heading edits prove localized
 replacement only; opaque blocks, stale hashes, and replacement text outside the
 0.1.0 safe subset fail deterministically. The suite is process-local because
-0.1.0 owns no HTTP, browser, persistence, renderer, or network boundary. The
-0.1.1 Admin2 field must add a signed-in browser contract before release; direct
-component tests alone will not prove the value/change/save separation.
+0.1.0 owns no HTTP, browser, persistence, renderer, or network boundary.
+
+Run the 0.1.1 isolated editor proof with:
+
+```bash
+./scripts/test-grav-caxton-editor.sh
+```
+
+It clean-installs the exact npm lock, runs component/security/large-input
+fixtures, rebuilds twice to prove identical output, and drives the packaged
+ProseMirror/CodeMirror ES module through actual system Chrome. This proves an
+editor-engine boundary, not Admin2 page integration. The 0.2.0 Admin2 field
+must add a signed-in browser contract before release; direct component tests
+alone do not prove value/change/Save separation.
 
 ### Jarvis AI boundary contract
 

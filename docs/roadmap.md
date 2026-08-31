@@ -17,7 +17,7 @@ can never be mistaken for an installable Grav package.
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
 | 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 runtime; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
-| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.1.0 contract foundation implemented |
+| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.1.1 isolated engine proof implemented; 0.2.0 Admin2 field next |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -125,21 +125,27 @@ Editor Pro behavior reference.
    plain-heading/plain-paragraph edits, opaque fallback, extension registry,
    `onCaxtonExtensionRegister`, and `$grav['gravCaxton']`. No Admin2 editor,
    client engine, endpoint, or Jarvis integration ships in this release.
-2. **0.1.1 — editor-engine proof (exact next milestone):** pin audited
+2. **0.1.1 — editor-engine proof (implemented):** pinned audited
    ProseMirror core and CodeMirror 6 dependencies behind Caxton-owned adapters;
-   prove paragraph/heading/thematic-break visual nodes, opaque cards, selection
-   mapping, and visual/source switches without dirtying or normalization in an
-   isolated deterministic component harness. Record licenses and bundle size.
-   Do not replace an Admin2 page field or add a persistence route yet.
-3. **0.2.x — Grav-aware authoring:** configuration-aware Markdown, media,
+   proved safe semantic nodes, inert opaque cards, localized edits,
+   conservative selection mapping, and source/visual switches without false
+   dirtying or normalization in deterministic Node and actual Chrome harnesses.
+   The dependency/license/size inventory and reproducible internal ES module
+   are recorded; no Admin2 page field or persistence route exists.
+3. **0.2.0 — first Grav-aware Admin2 field (exact next milestone):** wrap the
+   private adapter lifecycle in Admin2's documented custom-field contract,
+   connect only the current unsaved page value, retain normal Save/Publish, and
+   pass the signed-in permission/unsaved/no-persistence browser gate before any
+   default page-field replacement.
+4. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
    links, lists, quotes, tables, fenced code, HTML/Twig/shortcode inert views,
    extension client modules, insertion palette, and page-form integration.
-4. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
+5. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
    modes, safe reorder, large-document profiling, and evidence-driven adapters.
-5. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
+6. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
    preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
    reporting exclusively through public Jarvis contracts.
-6. **1.0.0 — supported editor platform:** public-extension compatibility and
+7. **1.0.0 — supported editor platform:** public-extension compatibility and
    deprecation policy, complete fallback/migration guidance, and release-quality
    accessibility/security/browser/large-document evidence.
 

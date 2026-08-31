@@ -1,12 +1,12 @@
 # Caxton
 
 Caxton is the source-faithful editor foundation for Grav 2 and Admin2. Version
-0.1.0 is a contract release: it provides the bounded source model, exact
-no-edit serializer, localized safe-block edits, extension registry, and Grav
-service on which the visual and source editor adapters will be built.
+0.1.1 preserves the complete 0.1.0 public PHP contract and adds an isolated,
+private ProseMirror/CodeMirror editor-engine proof over authoritative Markdown.
 
-It does **not** replace the Admin2 editor yet. It contains no ProseMirror,
-CodeMirror, Admin2 field, network endpoint, live preview, or Jarvis integration.
+It does **not** replace the Admin2 editor yet. The proof bundle is not loaded or
+registered by the plugin and there is no Admin2 field, network endpoint, live
+preview, persistence route, or Jarvis integration.
 
 ## Install
 
@@ -69,9 +69,12 @@ Run the deterministic contract suite with:
 
 ```bash
 ./scripts/test-grav-caxton-contract.sh
+./scripts/test-grav-caxton-editor.sh
 ```
 
-When host PHP is unavailable the script uses the repository's configured DDEV
-fixture. See `docs/planned/grav-caxton.md` and Decision 0005 for the complete
-architecture, security boundaries, roadmap, compatibility policy, and recovery
-instructions.
+When host PHP is unavailable the contract script uses the repository's
+configured DDEV fixture. The editor proof requires Node.js and a supported
+system Chrome/Chromium. See `docs/caxton-editor-engine.md` for the exact safe
+subset, dependency/license/size inventory, offset contract, evidence, and
+limitations. See `docs/planned/grav-caxton.md` and Decision 0005 for the complete
+architecture, roadmap, compatibility policy, and recovery instructions.

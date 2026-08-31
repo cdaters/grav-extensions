@@ -7,6 +7,15 @@ plugin_dir="$repo_root/plugins/grav-caxton"
 contract_dir="$repo_root/tests/grav-caxton"
 contract_file="$contract_dir/contract.php"
 
+if command -v shasum >/dev/null 2>&1; then
+    (cd "$repo_root" && shasum -a 256 -c tests/grav-caxton/contract-baseline.sha256 >/dev/null)
+elif command -v sha256sum >/dev/null 2>&1; then
+    (cd "$repo_root" && sha256sum -c tests/grav-caxton/contract-baseline.sha256 >/dev/null)
+else
+    echo "ERROR: shasum or sha256sum is required for the Caxton compatibility baseline." >&2
+    exit 69
+fi
+
 if command -v php >/dev/null 2>&1; then
     while IFS= read -r -d '' php_file; do
         php -l "$php_file" >/dev/null

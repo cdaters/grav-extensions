@@ -1,0 +1,174 @@
+# Caxton 0.1.1 editor-engine proof
+
+This is the dependency, architecture, guarantee, and limitation record for the
+isolated Caxton 0.1.1 ProseMirror/CodeMirror proof. It is not an Admin2 field or
+a stable JavaScript extension API.
+
+## Boundary and source authority
+
+The 0.1.0 public PHP contracts are frozen byte-for-byte. Version 0.1.1 adds
+private browser adapters under `tests/grav-caxton/editor/` and a reproducibly
+built internal ES module at
+`plugins/grav-caxton/admin-next/proof/caxton-editor.js`. PHP does not register,
+enqueue, or execute that asset. It is shipped so the exact proven browser code
+is reviewable and install/package behavior can be tested before Admin2 owns it.
+
+The ordinary Markdown string remains authoritative. The browser session keeps
+the baseline/current source and SHA-256 identity; ProseMirror and CodeMirror
+are replaceable views over that string. Merely constructing, mounting,
+focusing, selecting, or switching modes does not mutate source or mark it
+dirty. An intentional visual edit serializes only its safe top-level span and
+then reparses the complete current buffer. Opaque source is never serialized
+from editor state.
+
+Browser offsets are JavaScript UTF-16 source units because that is the native
+selection contract of ProseMirror, CodeMirror, and the DOM. The frozen PHP
+contract uses byte offsets. A future Admin2 boundary must convert explicitly
+against the exact current source and recheck its hash; the two units must never
+be silently mixed.
+
+## Proven safe and opaque constructs
+
+The private visual schema proves headings (ATX and Setext), paragraphs,
+strong/emphasis/inline-code/link marks, blockquotes, horizontal rules, ordered,
+unordered and task lists, fenced code, and inert local/HTTPS media references.
+Localized tests exercise text, mark, link, ordered-list, and fenced-code edits.
+An intentional edit may normalize only that selected safe block.
+
+Frontmatter, raw HTML, Twig, Grav shortcodes, tables, unsafe URLs, mixed source,
+malformed input, unknown extension syntax, excessive nesting, and parser-
+ambiguous blocks render as non-editable opaque cards made only from text DOM.
+They are focusable notes and retain exact source spans. Code fences shield
+HTML-, Twig-, shortcode-, and Markdown-looking body text. Media is an inert
+semantic label: opening a page performs no media request. Prototype keys,
+control characters, unsafe schemes, NUL input, over-2-MiB input, over-20,000
+source spans, and over-128 nesting fail closed or degrade to opaque source.
+
+Selection mapping is exact only where a one-to-one source-unit mapping is
+provable. It returns no mapping for opaque content, unsafe boundaries,
+Markdown escapes, or character references. That conservative failure is a
+contract, not permission to guess.
+
+## Dependency decision and inventory
+
+All direct versions are exact in `package.json` and the full dependency graph
+is frozen by `package-lock.json`. `npm audit` reported zero known
+vulnerabilities on 2026-08-30. All bundled runtime packages are MIT except
+`entities` (BSD-2-Clause); complete packaged notices are in
+`plugins/grav-caxton/THIRD-PARTY-NOTICES.md`.
+
+Approximate unpacked sizes below are registry metadata observed during the
+0.1.1 audit, not promises about future versions. Every runtime row ships in the
+proof bundle. “Adapter-replaceable” means the capability is required for this
+proof but the package is not a persistence or public-contract dependency.
+
+| Exact direct package | Purpose | License | Approx. unpacked | Browser | Posture |
+| --- | --- | --- | ---: | --- | --- |
+| `prosemirror-model` 1.25.11 | Schema/document model | MIT | 518 KiB | Yes | Essential; adapter-replaceable |
+| `prosemirror-state` 1.4.4 | Editor transactions/selection | MIT | 180 KiB | Yes | Essential; adapter-replaceable |
+| `prosemirror-view` 1.42.3 | Safe structured DOM editor | MIT | 882 KiB | Yes | Essential; adapter-replaceable |
+| `prosemirror-transform` 1.12.0 | Transaction transforms | MIT | 318 KiB | Yes | Essential ProseMirror foundation |
+| `prosemirror-commands` 1.7.2 | Base editing commands | MIT | 130 KiB | Yes | Essential proof behavior |
+| `prosemirror-history` 1.5.0 | Visual undo/redo | MIT | 67 KiB | Yes | Essential proof behavior |
+| `prosemirror-keymap` 1.2.3 | Keyboard command binding | MIT | 26 KiB | Yes | Essential proof behavior |
+| `prosemirror-schema-list` 1.5.1 | List transactions | MIT | 53 KiB | Yes | Essential for proven lists |
+| `prosemirror-markdown` 1.13.6 | Safe one-block parse/serialize bridge | MIT | 160 KiB | Yes | Replaceable; never whole-document authority |
+| `@codemirror/state` 6.7.1 | Exact source state/changes/selections | MIT | 426 KiB | Yes | Essential; adapter-replaceable |
+| `@codemirror/view` 6.43.9 | Viewport source editor/focus | MIT | 1.20 MiB | Yes | Essential; adapter-replaceable |
+| `@codemirror/commands` 6.11.0 | Source history/keymaps | MIT | 241 KiB | Yes | Essential proof behavior |
+| `@codemirror/lang-markdown` 6.5.2 | Markdown source language support | MIT | 71 KiB | Yes | Replaceable language layer |
+| `@codemirror/language` 6.12.4 | Language infrastructure | MIT | 303 KiB | Yes | Required by Markdown layer |
+| `@lezer/markdown` 1.7.2 | GFM source spans/tree | MIT | 444 KiB | Yes | Essential proof grammar; replaceable adapter |
+| `esbuild` 0.28.2 | Reproducible minified ES module | MIT | 144 KiB plus platform binary | No | Build-only; replaceable |
+| `playwright-core` 1.62.1 | Drive installed Chrome/Chromium | Apache-2.0 | 12.8 MiB | No | Test-only; replaceable |
+
+The bundle also contains the pinned transitive CodeMirror/Lezer language
+packages, ProseMirror helpers, `markdown-it` 14.3.1, and their small parsing/DOM
+utilities enumerated in the packaged notices. No framework, sanitizer, hosted
+service, network client, collaboration layer, Jarvis code, or reference-plugin
+asset is present.
+
+No diff, source-map, DOM-sanitizer, UI-framework, or AST-utility dependency was
+added. Localized source patches make a diff package unnecessary; source maps
+are intentionally disabled; opaque rendering uses DOM text nodes rather than
+sanitizing executable markup; and Lezer plus the bounded one-block Markdown
+bridge provide the required syntax understanding.
+
+The final minified ES module is 868,783 bytes and 299,453 bytes with gzip -9.
+Its SHA-256 and packaged size are recorded in `CURRENT-STATE.md`. This is a
+proof bundle, not the final loading strategy: 0.2.0 must profile splitting and
+lazy loading before making the engine user-facing.
+
+## Accessibility and focus evidence
+
+Both engines retain their native keyboard primitives. The proof installs
+ProseMirror base/history/list keymaps and CodeMirror default/history keymaps,
+uses semantic multiline textbox roles/labels, exposes source read-only state,
+and gives every opaque note `role="note"`, an accessible construct label, and a
+zero tab index. Actual Chrome proves focus can enter both editor surfaces and
+an opaque note, and that read-only reconfiguration does not require replacing
+the DOM with an inaccessible custom control.
+
+This does not establish production accessibility. Version 0.2.0 still needs
+Admin2-owned labels/help/error/status relationships, toolbar and mode-switch
+keyboard order, screen-reader announcements, selection feedback, skip/focus-
+return behavior, high-contrast/reduced-motion styling, IME composition, RTL UI
+with deliberate source direction, zoom, touch targets, and browser/screen-
+reader matrix evidence. Opaque notes are semantic/focusable but do not yet have
+an Admin2 action for moving focus to the matching source range.
+
+## Deterministic evidence
+
+`./scripts/test-grav-caxton-editor.sh` performs a clean locked install, runs
+the Node component/security/performance suite, rebuilds the package asset,
+drives the real module through system Chrome with Playwright Core, and confirms
+that two builds have the same SHA-256. The fixtures cover LF/CRLF/no-final-
+newline, Unicode, whitespace, nested marks/lists, non-1 ordered lists, task
+lists, fences, media, raw HTML/script/on-handler payloads, Twig, shortcodes,
+tables, malformed syntax, unsafe URLs, prototype keys, and adjacent opaque
+boundaries.
+
+One representative Node 26.7.0 run on the development host observed:
+
+| Fixture | Size / spans | Parse observation |
+| --- | ---: | ---: |
+| Ordinary page | 42 units / 4 spans | 6.9 ms |
+| Many safe blocks | 82,780 units / 10,000 spans | 128.0 ms |
+| Many opaque blocks | 36,890 units / 4,000 spans | 21.4 ms |
+| Large fenced code | 300,012 units / 2 spans; 20,000 lines | 13.8 ms |
+| Combined long document | 419,682 units / 14,002 spans | 138.9 ms |
+
+These timings are diagnostic rather than a support promise and naturally vary
+by host/run. The suite enforces only a generous ten-second pathological ceiling.
+The first Admin2 release still requires signed-in keyboard, IME, screen-reader,
+RTL, theme, responsive, Save separation, permissions, and unsaved-buffer
+browser gates.
+
+## Explicit 0.1.1 limitations
+
+- There is no Admin2 field, page blueprint replacement, toolbar, media browser,
+  extension client loader, page-save route, autosave, preview, or user-facing
+  preference.
+- Direct engine transactions are proof internals. The future host must own
+  adapter callbacks, stale-source reconciliation, lifecycle remount/history,
+  and the PHP-byte/JavaScript-unit conversion boundary.
+- Safe browser grammar is deliberately conservative. Tables, HTML, Twig,
+  shortcodes, unknown syntax, escapes/entities for selection mapping, and any
+  construct without symmetric evidence remain opaque or fail mapping.
+- Performance observations do not claim 100,000-line support or visual
+  virtualization. Accessibility evidence is limited to semantic labels,
+  textbox roles, focusable opaque notes, read-only behavior, and actual browser
+  focus in the isolated proof.
+- There is no Jarvis, Commander, Revision Ledger, collaboration, network,
+  background-job, batch, MCP, or autonomous-write integration.
+
+## Admin2 adapter preparation for 0.2.0
+
+The private proof establishes a narrow lifecycle: canonical string in, changed
+canonical string out, intentional-content-only change notification, source or
+visual mode, owned `mount`/`focus`/`destroy`, read-only control, inherited host
+CSS without a shadow root, and conservative source-selection mapping. Version
+0.2.0 must wrap—not expose—this boundary in Admin2's documented field
+contract, wire editor change events to the current unsaved value, retain normal
+Grav Save/Publish as the only persistence action, and add the signed-in browser
+gate before any default page-field replacement.

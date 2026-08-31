@@ -14,6 +14,6 @@ installation path. Implemented briefs remain as scope records.
 - [Edge Console](edge-console.md)
 - [Jarvis scope and roadmap](grav-jarvis.md) — 0.3.0 runtime and first optional
   Commander consumer implemented
-- [Caxton scope and roadmap](grav-caxton.md) — Page Studio reconciled; 0.1.0
-  source-fidelity contract foundation implemented
+- [Caxton scope and roadmap](grav-caxton.md) — Page Studio reconciled; 0.1.1
+  isolated editor-engine proof implemented; 0.2.0 Admin2 field next
 - [Page Studio](page-studio.md) — superseded name retained as a recovery link

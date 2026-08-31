@@ -45,7 +45,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
 | Jarvis | Plugin | 0.3.0 runtime; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
-| Caxton | Plugin | 0.1.0 source-fidelity contract foundation | `user/plugins/grav-caxton` |
+| Caxton | Plugin | 0.1.1 isolated editor-engine proof | `user/plugins/grav-caxton` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -79,16 +79,20 @@ network request. Broader site-wide and Grav REST/MCP work remains staged. Read t
 ## Caxton source-faithful editing
 
 **Caxton** (`grav-caxton`) is the independent Grav 2/Admin2 editor project that
-replaces the earlier Page Studio working name. The runnable 0.1.0 foundation
-keeps original page bytes authoritative, exposes a bounded source-document and
+replaces the earlier Page Studio working name. The runnable foundation keeps
+original page bytes authoritative, exposes a bounded source-document and
 localized-patch service as `$grav['gravCaxton']`, preserves unsafe or unknown
 constructs as inert opaque blocks, and accepts trusted plugin extensions through
 `onCaxtonExtensionRegister`. A no-edit parse/serialize is byte-identical; the
-only visual-contract edits currently allowed are plain headings and plain
-single-line paragraphs guarded by a source SHA-256. The Admin2, ProseMirror,
-and CodeMirror adapters begin in 0.1.1, so 0.1.0 does not replace the editor UI.
+public PHP edits currently allowed are plain headings and plain single-line
+paragraphs guarded by a source SHA-256. Version 0.1.1 preserves every 0.1.0
+public contract and adds private, pinned ProseMirror/CodeMirror adapters with
+deterministic and actual-browser proof. The internal module is not loaded by
+PHP and does not replace an Admin2 field; 0.2.0 is the first user-facing field
+milestone.
 Jarvis is an optional future proposal service and is not a dependency. Read the
 [Caxton manual](plugins/grav-caxton/README.md),
+[Caxton editor-engine proof](docs/caxton-editor-engine.md),
 [Caxton specification](docs/planned/grav-caxton.md), and
 [Decision 0005](docs/decisions/0005-grav-caxton-source-fidelity-editor.md).
 

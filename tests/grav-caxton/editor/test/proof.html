@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Caxton 0.1.1 editor proof</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; color: CanvasText; background: Canvas; }
+    #visual, #source { border: 1px solid currentColor; padding: 0.5rem; margin: 1rem; }
+    [data-caxton-opaque] { border-inline-start: 0.25rem solid #b26a00; padding: 0.5rem; }
+    [data-caxton-opaque] pre { white-space: pre-wrap; max-height: 8rem; overflow: auto; }
+    .ProseMirror:focus-visible, .cm-content:focus-visible { outline: 0.2rem solid Highlight; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Caxton isolated editor proof</h1>
+    <div id="visual"></div>
+    <div id="source"></div>
+  </main>
+</body>
+</html>

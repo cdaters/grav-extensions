@@ -144,10 +144,13 @@ toolbar replacement and may optionally consume Jarvis later.
   Grav/Markdown chunk provenance. Large-context execution is summarize-only
   with bounded partials/final synthesis. It adds no job/history database,
   external telemetry, retrieval/RAG, recursive expansion, or write authority.
-- **Caxton 0.1.0:** runnable source-fidelity contract foundation with exact
+- **Caxton 0.1.1:** runnable source-fidelity contract foundation with exact
   no-edit serialization, ordered byte spans, safe localized heading/paragraph
   edits, opaque executable/ambiguous/unknown constructs, stale-source hashing,
   a public `$grav['gravCaxton']` service, and a namespaced extension registry.
-  It contains no Admin2 field or editor-engine bundle yet.
+  The byte-identical 0.1.0 public contracts are joined by private, replaceable
+  ProseMirror/CodeMirror/Lezer browser adapters over the authoritative string,
+  an isolated actual-browser proof, and a packaged internal ES module. PHP does
+  not load that module, and there is still no Admin2 field or persistence route.
 - **Other later roadmap plugins:** Gatehouse and Edge Console remain named and
   bounded, not yet represented as finished packages.

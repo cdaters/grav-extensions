@@ -1,7 +1,8 @@
 # Caxton
 
 **Status:** architecture accepted; Page Studio reconciled into Caxton; 0.1.0
-source-fidelity contract foundation implemented; 0.1.1 engine proof next
+source-fidelity contracts and 0.1.1 isolated editor-engine proof implemented;
+0.2.0 Admin2 field next
 
 - **Product name:** Caxton
 - **Plugin slug:** `grav-caxton`
@@ -118,13 +119,13 @@ itself.
 | Headings | Safe semantic block | Edited block may use canonical ATX form; untouched bytes preserved |
 | Paragraphs | Safe only when no ambiguous embedded construct exists | Localized canonical edit; untouched bytes preserved |
 | Emphasis/strong/links | Semantic inline marks after grammar proof | Delimiter/style preserved until edited; localized normalization after edit |
-| Ordered/unordered/task lists | Opaque in 0.1.0; structured after nested-list corpus passes | Byte-preserved until supported |
-| Blockquotes | Opaque in 0.1.0 | Byte-preserved until supported |
+| Ordered/unordered/task lists | Opaque in public PHP 0.1.0; structured in private browser 0.1.1 proof after nested/non-1/task fixtures | Exact until an intentional whole-list edit; only edited list normalizes |
+| Blockquotes | Opaque in public PHP 0.1.0; structured in private browser 0.1.1 proof | Exact until intentional block edit support is exposed |
 | Horizontal rules | Recognized atomic source block | Byte-preserved; later replacement explicit |
-| Fenced code | Recognized atomic source block; code text never reparsed as Markdown | Fence/body byte-preserved unless explicitly edited in source/code mode |
-| Inline code | Part of safe paragraph only after delimiter grammar proof | Byte-preserved until edited |
+| Fenced code | Private 0.1.1 semantic block; code text never reparsed as Markdown | Exact until explicit code edit; original fence/info/newline retained in proof |
+| Inline code | Private 0.1.1 safe mark where grammar is unambiguous | Exact until edited; edited paragraph may normalize locally |
 | Tables | Recognized opaque table block initially | Byte-preserved; visual table editing waits for symmetric serializer |
-| Images/media references | Recognized source block/inline token; preview URI resolved separately | Original Markdown target/title/spacing preserved until explicit edit |
+| Images/media references | Private 0.1.1 inert semantic label; preview URI resolution remains separate | Original Markdown target/title/spacing preserved until explicit edit |
 | Raw HTML | Escaped/inert opaque block | Byte-preserved; never executed by the editor |
 | Twig | Escaped/inert opaque block | Byte-preserved; never evaluated merely for display |
 | Grav shortcodes | Opaque block/inline span unless an extension supplies a proven adapter | Byte-preserved, including whitespace and nesting |
@@ -383,7 +384,7 @@ LF/CRLF/CR/mixed line-ending, no-final-newline, Unicode, contiguous-coverage,
 NUL/size-bound, stale-hash, localized-edit, registry, absence, and failure-log
 behavior.
 
-### 0.1.1 — visual/source engine proof
+### 0.1.1 — visual/source engine proof (implemented)
 
 - pinned/audited ProseMirror core and CodeMirror 6 dependencies;
 - private adapters over the shared source-backed document contract;
@@ -393,7 +394,24 @@ behavior.
 - bundle/license/size inventory; and
 - still no automatic page-field replacement or page persistence route.
 
-### 0.2.0 — Grav-aware Admin2 field
+The release preserves all 0.1.0 public PHP contracts byte-for-byte. Its private
+browser layer uses an exact-lockfile ProseMirror/CodeMirror/Lezer stack and
+keeps the canonical Markdown string plus SHA-256 authoritative. It proves safe
+semantic headings, paragraphs, marks/links, lists/tasks, blockquotes,
+horizontal rules, fenced code, and inert media representations; text-only
+opaque cards preserve frontmatter, HTML, Twig, shortcodes, tables, unsafe URLs,
+mixed/malformed/unknown source, and excessive nesting. Localized edits, exact
+no-edit mode switches, conservative source/visual mapping, content-only dirty
+state, stale-source denial, read-only/focus behavior, hostile source, bounds,
+and diagnostic large-input fixtures pass in Node and actual system Chrome.
+
+The internal ES module is packaged but not registered or loaded by PHP. Its
+private lifecycle, dependency/license/bundle inventory, UTF-16 browser versus
+PHP-byte offset boundary, reproducibility procedure, evidence, and limitations
+are recorded in [the engine proof](../caxton-editor-engine.md). It is not a
+public JavaScript extension contract and does not authorize Admin2 integration.
+
+### 0.2.0 — Grav-aware Admin2 field (exact next milestone)
 
 - self-contained `caxton` Admin2 field and scoped page blueprint integration;
 - page permission and current unsaved value handling;

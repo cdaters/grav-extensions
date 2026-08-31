@@ -20,34 +20,47 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Caxton 0.1.0 is complete as the source-fidelity contract foundation for the
-suite's modern Grav 2/Admin2 editor. The previous **Page Studio** working name
-has been reconciled into Caxton (`grav-caxton`) and is not a separate product.
-Decision 0005 makes ordinary page source authoritative: no-edit serialization
-is byte-identical, an intentional safe-block edit may change only its bounded
-span against the expected source SHA-256, and unknown, ambiguous, malformed,
-HTML, Twig, shortcode, media, table, list, quote, and fenced-code constructs
-remain inert and exact until a symmetric adapter is proven.
+Caxton 0.1.1 is complete as the isolated editor-engine proof for the suite's
+modern Grav 2/Admin2 editor. The previous **Page Studio** working name remains
+reconciled into Caxton (`grav-caxton`) and is not a separate product. Decision
+0005 still makes ordinary page source authoritative. All fourteen public 0.1.0
+PHP contract files remain byte-identical and are now protected by a checked-in
+SHA-256 baseline.
 
-The runnable plugin registers `$grav['gravCaxton']`, public source document,
-block, diagnostic, edit, service, and extension contracts, a deterministic
-bounded parser/serializer, localized plain-heading/plain-paragraph edits, a
-namespaced extension registry, and `onCaxtonExtensionRegister`. A disabled
-plugin leaves the service absent; extension-registration failure cannot prevent
-the core service and logs only the failure class, not exception/source content.
-The default document bound is 2 MiB, replacements are bounded, NUL is rejected,
-and stale hashes, opaque blocks, malformed extension IDs, and duplicates fail
-closed. Caxton 0.1.0 has no Admin2 field, editor-engine bundle, endpoint,
-renderer, network path, page write, autosave, credential, Jarvis dependency, or
-executable extension module.
+The unchanged runnable PHP foundation registers `$grav['gravCaxton']`, public
+source document/block/diagnostic/edit/service/extension contracts, a bounded
+exact parser/serializer, localized plain-heading/plain-paragraph edits, a
+namespaced registry, and `onCaxtonExtensionRegister`. Version 0.1.1 adds private
+browser adapters and an internal ES module built from exact-lockfile
+ProseMirror, CodeMirror 6, and Lezer dependencies. The module is shipped for
+review/install proof but PHP does not register or load it, so there is still no
+Admin2 field or page integration.
+
+The browser session retains canonical Markdown plus baseline/current SHA-256.
+No-edit construction, mount, focus, selection, and source/visual switching are
+exact and do not dirty content. Safe headings, paragraphs, marks/links, lists/
+tasks, blockquotes, horizontal rules, fenced code, and inert media receive
+semantic nodes. An intentional edit serializes only its selected safe top-level
+span. Frontmatter, HTML/script/on-handler source, Twig, shortcodes, tables,
+unsafe URLs, mixed/malformed/unknown syntax, and excessive nesting become
+focusable text-only opaque cards and retain their exact spans. Media does not
+fetch. Unsafe schemes, prototype keys, control characters, NUL, 2-MiB source,
+20,000-span, 128-depth, and replacement limits fail closed or degrade opaque.
+
+Selection mapping returns a result only where exact JavaScript UTF-16 source-
+unit boundaries are provable; opaque content, escapes, entities, and unsafe
+boundaries fail safely. The frozen PHP contracts use byte offsets, so 0.2.0
+must implement and test an explicit same-source/hash conversion boundary and
+must never mix the two units. Engine adapters and their lifecycle remain
+private and replaceable; persisted pages contain no editor-engine JSON.
 
 The clean-room Editor Pro 2.0.10 behavior reference remains only at
 `~/Downloads/editor-pro.zip`, SHA-256
 `15617f2adbeb6012204507dcb8eff93d6accf2d59a4015cc7a977dd70ec6f0a8`.
-No code or asset from it entered this repository. ProseMirror core is selected
-for the future visual adapter and CodeMirror 6 for source mode, both behind
-Caxton-owned interfaces and neither as a persisted content format. TipTap,
-Milkdown, and Lexical were evaluated and are not the initial core.
+No code or asset from it entered this repository. TipTap, Milkdown, and Lexical
+remain unselected. The complete 0.1.1 dependency/license/size, safe-subset,
+mapping, performance, accessibility, limitation, and Admin2-preparation record
+is `docs/caxton-editor-engine.md`.
 
 Jarvis 0.3.1 is complete as an optional consuming-plugin milestone through
 Grav Commander 0.3.12. Jarvis itself remains the unchanged 0.3.0 runtime and
@@ -290,23 +303,47 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- Caxton's deterministic PHP contract passes in DDEV PHP 8.3.31. It proves
-  plugin service/event registration, namespaced extension discovery, duplicate/
-  malformed denial, disabled absence, existing-service preservation, failure
-  isolation and log redaction; exact contiguous no-edit round trips for the
-  Grav-specific golden corpus, malformed fences, Unicode, LF/CRLF/CR/mixed
-  endings, and no final newline; localized heading editing; opaque/stale/unsafe
-  edit denial; and NUL/2 MiB bounds. The suite makes no network request.
-- Every Caxton PHP file passes PHP 8.3 syntax in DDEV. Composer strict
-  validation, repository YAML/JSON/shell syntax, structure/hygiene preflight,
-  whitespace checks, package forbidden-file scan, ZIP integrity, one-top-level-
-  directory inspection, fresh packaged installation, Grav cache clearing,
-  public/Admin HTTP 200, and relevant recent fatal/uncaught log inspection pass.
-  Host PHP remains absent, so host preflight truthfully skipped PHP.
-- The verified package is `dist/grav-caxton-0.1.0.zip`, SHA-256
+- Caxton's unchanged deterministic PHP contract passes in DDEV PHP 8.3.31 and
+  all fourteen 0.1.0 public contract hashes pass. It proves service/event
+  registration, extension discovery/denial/failure isolation/redaction, exact
+  no-edit source, localized heading edits, opaque/stale/unsafe edit denial, and
+  source bounds without a network request.
+- Sixteen Node component/security/performance checks pass against the actual
+  ProseMirror/CodeMirror/Lezer adapters. They prove safe nodes and opaque cards,
+  byte-exact LF/CRLF/no-final/Unicode mode round trips, localized text/mark/link/
+  non-1-list/fenced-code edits, exact or safely absent selection mapping,
+  content-only dirty/stale/read-only behavior, inert hostile constructs/media,
+  scheme/prototype/control/NUL/source/block/depth bounds, and deterministic
+  offline behavior. Diagnostic observations cover 10,000 safe spans, 4,000
+  opaque/trivia spans, a 20,000-line fence, and a 419,682-unit/14,002-span
+  combined document under the generous ten-second ceiling.
+- Actual system Chrome loads the packaged private ES module and mounts both
+  real editors. Focus, source transactions, read-only reconfiguration, semantic
+  labels/roles, focusable opaque notes, exact safe selection mapping, no false
+  dirty state, inert script/Twig, text-only opaque DOM, no leaked global API,
+  and clean page/console state pass. Two clean builds produce identical SHA-256
+  `3cdd481694ce3b86986c0c41d10de72595e946d4f4b1dc6fe1c93b1c8984e8c5`.
+  The minified module is 868,783 bytes (299,453 bytes with gzip -9).
+- `npm ci --ignore-scripts` and audit pass with zero known vulnerabilities.
+  Exact runtime/build versions, all bundled transitive packages, MIT/BSD/
+  Apache licensing, notices, and the non-shipping build/test boundary are
+  documented. Node/JavaScript and shell syntax, Composer strict validation,
+  Caxton YAML/JSON, whitespace/hygiene, changed-documentation links,
+  credential/forbidden-file scans, ZIP CRC, one-root inspection, and final
+  repository-wide preflight pass. A transient concurrent Jarvis 0.3.2 edit
+  briefly made one preflight rerun fail at its blueprint; that unrelated work
+  was not modified or included and its own session cleared the error before the
+  final audit. Host PHP remains absent, so host preflight truthfully skipped
+  PHP; DDEV PHP 8.3.31 supplied PHP syntax/runtime evidence.
+- Exact packaged 0.1.0-to-0.1.1 upgrade and fresh 0.1.1 installation pass in
+  DDEV, including cache clear, public/Admin HTTP 200, package asset hash, and no
+  recent Caxton/fatal/uncaught log match. The fixture was restored to its prior
+  Caxton-absent/config-free state; Commander 0.3.12 and Jarvis 0.3.0 remain
+  installed and unchanged.
+- The verified package is `dist/grav-caxton-0.1.1.zip` (321,139 bytes), SHA-256
+  `45f2c2e976e75b2552535f4b9e54f4cd12586a6205d56bafee308e6341d88bd0`.
+  The 0.1.0 archive remains intact at SHA-256
   `21604885f1f551f20f482d00021d6a2bbf02c0d1654da585725794725bbf381c`.
-  The DDEV fixture had no preceding Caxton release to upgrade; its fresh test
-  installation was removed and the prior absent/config-free state restored.
 - Commander 0.3.12 passes ten deterministic PHP integration checks and six
   isolated browser-component checks. They prove public-contract-only service
   discovery, all five actions, bounded/redacted context, safe large-Markdown
@@ -430,21 +467,29 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Caxton 0.1.0 is complete and packaged. The active editor plan is Caxton; Page
-Studio is a superseded recovery link only. Jarvis 0.3.1 remains complete through
-Grav Commander 0.3.12, and the previously recommended Commander 0.3.13 work is
-paused—not cancelled—because the owner explicitly selected Caxton next.
+Caxton 0.1.1 is complete and packaged as the private editor-engine proof. The
+active editor plan is Caxton; Page Studio is a superseded recovery link only.
+Jarvis 0.3.1 remains complete through Grav Commander 0.3.12, and the previously
+recommended Commander 0.3.13 work is paused—not cancelled—because the owner
+explicitly selected Caxton.
 
 ## Exact next action
 
-Implement Caxton 0.1.1 as an additive visual/source engine proof. Pin audited
-ProseMirror core and CodeMirror 6 dependencies; keep them behind private
-Caxton-owned adapters; prove paragraph, heading, thematic-break, opaque-card,
-selection-mapping, and visual/source-switch behavior against the frozen 0.1.0
-source contracts; and record licenses and bundle size. Mode switches and mounts
-must not dirty or normalize source. Use an isolated deterministic component
-harness and do not replace an Admin2 page field, add a persistence route,
-integrate Jarvis, or expand the safe parser subset in the same milestone.
+Implement Caxton 0.2.0 as the first genuinely user-usable Admin2 field. Begin
+with a narrow additive wrapper around the private 0.1.1 adapter lifecycle and
+Admin2's documented custom-field/value/change contract. Load the engines only
+for the field, bind them to the current unsaved page value, explicitly convert
+JavaScript UTF-16 selections to/from frozen PHP byte offsets against the same
+source/hash, and keep normal Grav Save/Publish as the only persistence action.
+
+Before any default Markdown-field replacement, add a repeatable signed-in DDEV
+browser gate proving permission denial, exact no-edit open/mode switch, one safe
+localized edit, opaque-byte survival, current-unsaved value/change behavior,
+reload-before-Save non-persistence, ordinary Save only after explicit user
+action, keyboard/focus/read-only behavior, theme/responsive basics, no console/
+page errors, and clean relevant logs. Do not add Jarvis, collaboration, batch,
+MCP, background jobs, autosave, a parallel page-write route, or broad rich-
+construct scope to that initial field milestone.
 
 ## Explicitly deferred
 
@@ -455,11 +500,10 @@ integrate Jarvis, or expand the safe parser subset in the same milestone.
   durable accounting/history, background jobs, batch/site-wide workflows, and
   MCP-facing endpoints remain later work. Rewrite/proofread chunk execution is
   deferred until deterministic structure-preserving reconstruction exists.
-- Caxton's Admin2 field, page-form replacement, media browser, live preview,
-  richer Markdown/HTML/Twig/shortcode adapters, client extension loading,
-  collaboration, and Jarvis proposals remain after the isolated 0.1.1 engine
-  proof. The first real field release requires the signed-in browser boundary
-  specified in `docs/testing.md`.
+- Caxton's richer media browser/resolver, live preview, table/HTML/Twig/
+  shortcode editing, client extension loading, split view, collaboration, and
+  Jarvis proposals remain beyond the narrow 0.2.0 field. Default page-field
+  replacement is conditional on the signed-in boundary in `docs/testing.md`.
 - Commander 0.3.13 ordinary-Save optimistic-concurrency hardening remains the
   exact next Commander milestone after the explicitly selected Caxton work.
 - The previous File Vault black-box milestone remains required under Decision
@@ -487,10 +531,10 @@ integrate Jarvis, or expand the safe parser subset in the same milestone.
    `plugins/grav-caxton/README.md`, and every file under
    `tests/grav-caxton/` before changing the source model or engine adapters.
    The Editor Pro ZIP is not a build/test dependency and must not be copied.
-5. Run `./scripts/test-grav-caxton-contract.sh`. For 0.1.1, add and run the
-   isolated component harness described by the specification; do not call it an
-   Admin2 integration test. The real signed-in Admin2 browser gate begins with
-   the first field release.
+5. Run `./scripts/test-grav-caxton-contract.sh` and
+   `./scripts/test-grav-caxton-editor.sh`. The latter is an isolated engine
+   proof, not an Admin2 integration test. For 0.2.0, preserve both baselines and
+   add the real signed-in Admin2 browser gate before field replacement.
 6. Rebuild only the package whose source changed. For the active milestone use
    `./scripts/package-extension.sh plugin grav-caxton`; Jarvis and Commander
    packages remain their existing verified releases.

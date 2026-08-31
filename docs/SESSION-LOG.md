@@ -883,3 +883,68 @@ suite inventory incremental and risk ordered.
   cards in an isolated deterministic component harness with license/bundle-size
   inventory. Do not add the Admin2 field/persistence boundary, Jarvis, or richer
   parser coverage in that milestone. Commander 0.3.13 is paused, not cancelled.
+
+## 2026-08-30 — Caxton 0.1.1 isolated editor-engine proof
+
+- Re-read the canonical state/specification/ADR/roadmap/architecture/security/
+  testing/release guidance and every Caxton 0.1.0 implementation/test file.
+  Captured SHA-256 for all fourteen public PHP contract files and kept them
+  byte-identical. Preserved unrelated Site Workshop/Cache Hearth, Spitfire
+  theme, and concurrent Jarvis work outside the Caxton checkpoint.
+- Audited and exact-pinned ProseMirror core, CodeMirror 6, Lezer Markdown,
+  esbuild, and Playwright Core. The locked install reports zero known
+  vulnerabilities. Recorded all bundled direct/transitive versions, MIT/BSD-
+  2-Clause notices, build/test licenses, unpacked/bundle cost, and why no UI
+  framework, sanitizer, network client, hosted service, or reference-plugin
+  asset is included.
+- Added private source-document, ProseMirror visual, CodeMirror source, and
+  dual-mode session adapters. The canonical source string/current SHA-256 stays
+  authoritative; editor state is never persisted. Safe headings, paragraphs,
+  marks/links, lists/tasks, quotes, horizontal rules, fenced code, and inert
+  media receive semantic nodes. Frontmatter, HTML/script/on-handler source,
+  Twig, shortcodes, tables, unsafe URLs, mixed/malformed/unknown source, and
+  excessive nesting become focusable text-only opaque cards.
+- Added localized paragraph/heading, strong/emphasis/link, non-1 ordered-list,
+  and fence-preserving code edits; content-only dirty/stale/read-only state;
+  exact-or-absent source/visual mapping; and an explicit JavaScript UTF-16
+  versus PHP-byte offset boundary. Escapes, entities, opaque content, and
+  unsafe crossings refuse mapping rather than guessing. Mount/focus/mode/UI
+  changes do not dirty or normalize source.
+- Added complex/hostile/malformed fixtures plus sixteen deterministic Node
+  component/security/performance checks. Evidence includes LF/CRLF/no-final-
+  newline, Unicode, nested marks/lists, task/media, fences that shield Twig/
+  shortcode-like code, XSS/on-handler/unsafe-URL/prototype/control/NUL/source/
+  block/depth bounds, adjacent opaque spans, 10,000 safe spans, 4,000 opaque/
+  trivia spans, a 20,000-line fence, and a 419,682-unit/14,002-span combined
+  document.
+- Added an actual system-Chrome Playwright proof that imports the packaged ES
+  module, mounts real ProseMirror/CodeMirror views, and proves focus, labels/
+  roles, focusable opaque notes, read-only/source transactions, selection,
+  clean mode switches, inert hostile source, text-only cards, no leaked global
+  API, and no browser error. Two builds are identical at SHA-256
+  `3cdd481694ce3b86986c0c41d10de72595e946d4f4b1dc6fe1c93b1c8984e8c5`;
+  the minified module is 868,783 bytes and 299,453 bytes with gzip -9.
+- Passed the frozen PHP contract and all Caxton PHP syntax in DDEV PHP 8.3.31;
+  clean npm install/audit; Node and shell syntax; Composer strict validation;
+  Caxton YAML and JSON; whitespace/hygiene, changed-documentation links,
+  credential and forbidden-file scans; ZIP CRC/one-root inspection; exact
+  packaged 0.1.0-to-0.1.1 upgrade; fresh packaged 0.1.1
+  install; cache clear; public/Admin HTTP 200; and recent Caxton/fatal/uncaught
+  log inspection. Host PHP remains absent, so host preflight truthfully skipped
+  PHP. A transient concurrent Jarvis 0.3.2 blueprint edit briefly blocked one
+  repository-wide preflight rerun; that unrelated work was left untouched, its
+  own session cleared the error, and final preflight passes. A regenerated
+  ignored `plugins/.DS_Store` was moved recoverably to
+  `/tmp/grav-extensions-plugins.DS_Store.caxton-011-20260830`.
+- Restored the DDEV fixture to its prior Caxton-absent/config-free state while
+  leaving Commander 0.3.12 and Jarvis 0.3.0 installed and unchanged. Packaged
+  `dist/grav-caxton-0.1.1.zip` (321,139 bytes), SHA-256
+  `45f2c2e976e75b2552535f4b9e54f4cd12586a6205d56bafee308e6341d88bd0`.
+  The 0.1.0 archive/hash remains intact.
+- Set exact next milestone to Caxton 0.2.0: a narrow Admin2 custom field over
+  the private adapter lifecycle/current unsaved value, explicit UTF-16/byte
+  conversion, normal Save/Publish only, and a signed-in DDEV browser gate for
+  permissions, no-edit fidelity, localized edit, opaque survival, unsaved-
+  only reload, explicit Save, keyboard/focus/read-only, responsive/theme,
+  console, and logs before default page-field replacement. Do not add Jarvis,
+  collaboration, jobs, batch, MCP, autosave, or broad rich-construct work.
