@@ -1253,3 +1253,19 @@ suite inventory incremental and risk ordered.
   upload/save route, table/HTML/Twig/shortcode visual editing, Jarvis,
   collaboration, batch, MCP, background jobs, or autosave, and do not start the
   milestone automatically.
+
+## 2026-08-31 — Caxton 0.2.2 visual-rhythm requirement recorded
+
+- The owner reported that distinct Markdown headings and paragraphs appear to
+  run together in Caxton 0.2.1 Visual mode even though Source mode retains the
+  correct blank lines. Inspection confirmed this is not a ProseMirror or source-
+  model limitation: Caxton sets line height and heading sizes but does not own
+  paragraph/heading margins, so Admin2's reset removes the browser defaults.
+- Added an explicit 0.2.2 acceptance requirement for theme-safe Caxton-owned
+  spacing around paragraphs, headings, lists, blockquotes, and code blocks,
+  with first/last-edge cleanup. This is presentation-only: mounting, switching
+  themes, and applying the styles must preserve the exact Markdown, emit no
+  change event, and never dirty the field.
+- Required computed-style coverage in light and dark signed-in Admin2. No code,
+  package, installed DDEV plugin, version, or release artifact changed in this
+  documentation-only checkpoint.

@@ -171,7 +171,9 @@ Editor Pro behavior reference.
 5. **0.2.2 — media and insertion hardening (exact next milestone):** integrate
    the current page-media inventory through public Admin2 data/events; add safe
    media insertion/editing, horizontal rules, code-fence language selection,
-   and multi-item list operations; preserve exact unresolved media and prove
+   and multi-item list operations; add explicit paragraph/heading/list/quote/
+   code-block vertical rhythm that is independent of Admin2's CSS reset and
+   cannot dirty or rewrite source; preserve exact unresolved media and prove
    upload/selection permissions without introducing a Caxton upload or save
    route.
 6. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
@@ -182,7 +184,7 @@ Editor Pro behavior reference.
 8. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
    preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
    reporting exclusively through public Jarvis contracts.
-8. **1.0.0 — supported editor platform:** public-extension compatibility and
+9. **1.0.0 — supported editor platform:** public-extension compatibility and
    deprecation policy, complete fallback/migration guidance, and release-quality
    accessibility/security/browser/large-document evidence.
 

@@ -457,9 +457,14 @@ mutation needs its own explicit policy and fixtures.
 - insert/edit safe media references without a Caxton upload or persistence API;
 - add horizontal-rule insertion, code-fence language choice, and bounded multi-
   item list operations;
+- restore deliberate Visual-mode vertical rhythm with Caxton-owned margins for
+  paragraphs, headings, lists, blockquotes, and code blocks; remove only the
+  first block's top and last block's bottom margin, remain independent of
+  Admin2/browser reset styles, and make no source/value/dirty-state change;
 - preserve unresolved/unsafe media as exact inert source; and
-- prove media/read/write permission, keyboard, responsive, light/dark, and
-  ordinary Save-only behavior in the signed-in DDEV boundary.
+- prove media/read/write permission, keyboard, responsive, light/dark, computed
+  inter-block spacing, no false change event, and ordinary Save-only behavior
+  in the signed-in DDEV boundary.
 
 ### 0.2.x — richer Grav constructs
 

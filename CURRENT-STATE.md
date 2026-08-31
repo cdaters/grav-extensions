@@ -631,8 +631,11 @@ because the owner explicitly selected Caxton.
 Implement Caxton 0.2.2 as media and insertion hardening. Read only the current
 page-media inventory through public Admin2 data/events; add safe media reference
 insertion/editing, horizontal-rule insertion, code-fence language selection,
-and bounded multi-item list operations. Preserve unresolved or unsafe media as
-exact inert source and prove media/read/write permission plus ordinary Save-only
+and bounded multi-item list operations. Correct Visual mode's missing block
+rhythm with Caxton-owned paragraph, heading, list, quote, and code-block spacing
+that survives Admin2's CSS reset without changing Markdown or dirtying the
+field. Preserve unresolved or unsafe media as exact inert source and prove
+media/read/write permission, computed visual spacing, plus ordinary Save-only
 behavior in signed-in DDEV. Do not add a Caxton upload/save route, table/HTML/
 Twig/shortcode visual editing, Jarvis, collaboration, batch, MCP, background
 jobs, autosave, or a parallel page store.

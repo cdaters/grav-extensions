@@ -187,6 +187,11 @@ safe link/title handling, strikethrough, paragraph split/undo/join, quote/list
 structure, ordered toolbar settings, explicit visual/source dark contrast,
 narrow layout, and no relevant browser/page/log error.
 
+Caxton 0.2.2 must add computed-style regression coverage for visible separation
+between adjacent paragraphs and around headings, lists, blockquotes, and code
+blocks in both themes. The assertion must also prove mounting and theme changes
+emit no content change and preserve the exact source value.
+
 ### Jarvis AI boundary contract
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
