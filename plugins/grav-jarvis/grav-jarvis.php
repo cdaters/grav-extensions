@@ -25,6 +25,10 @@ final class GravJarvisPlugin extends Plugin
     {
         return [
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
+            'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
+            'onApiSidebarItems' => ['onApiSidebarItems', 0],
+            'onApiPluginPageInfo' => ['onApiPluginPageInfo', 0],
+            'onApiContextPanels' => ['onApiContextPanels', 0],
         ];
     }
 
@@ -123,6 +127,102 @@ final class GravJarvisPlugin extends Plugin
             $service = new JarvisService($registry, $redactor);
             $this->grav[self::SERVICE_KEY] = static fn (): JarvisService => $service;
         }
+    }
+
+    public function onApiRegisterRoutes(Event $event): void
+    {
+        if (!$this->enabled()) {
+            return;
+        }
+        require_once __DIR__ . '/classes/Controller/ApiController.php';
+        $controller = \Grav\Plugin\GravJarvis\Controller\ApiController::class;
+        $event['routes']->group('/grav-jarvis', static function ($group) use ($controller): void {
+            $group->get('/bootstrap', [$controller, 'bootstrap']);
+            $group->post('/providers/{id}/validate', [$controller, 'validateProvider']);
+            $group->get('/providers/{id}/models', [$controller, 'models']);
+            $group->post('/completions', [$controller, 'complete']);
+            $group->get('/page-context', [$controller, 'pageContext']);
+            $group->post('/proposals', [$controller, 'propose']);
+            $group->post('/proposals/{id}/accept', [$controller, 'accept']);
+        });
+    }
+
+    public function onApiSidebarItems(Event $event): void
+    {
+        if (!$this->enabled() || !$this->config->get('plugins.' . self::SLUG . '.admin.show_sidebar', true)) {
+            return;
+        }
+        $user = $event['user'] ?? null;
+        if (!is_object($user) || !$this->userCan($user, 'grav-jarvis.access')) {
+            return;
+        }
+        $items = (array) ($event['items'] ?? []);
+        $items[] = [
+            'id' => self::SLUG,
+            'plugin' => self::SLUG,
+            'label' => 'Jarvis',
+            'icon' => 'fa-wand-magic-sparkles',
+            'route' => '/plugin/' . self::SLUG,
+            'priority' => 9,
+            'authorize' => ['grav-jarvis.access'],
+        ];
+        $event['items'] = $items;
+    }
+
+    public function onApiPluginPageInfo(Event $event): void
+    {
+        if (($event['plugin'] ?? null) !== self::SLUG || !$this->enabled()) {
+            return;
+        }
+        $user = $event['user'] ?? null;
+        if (is_object($user) && !$this->userCan($user, 'grav-jarvis.access')) {
+            return;
+        }
+        $event['definition'] = [
+            'id' => self::SLUG,
+            'plugin' => self::SLUG,
+            'title' => 'Jarvis',
+            'icon' => 'fa-wand-magic-sparkles',
+            'page_type' => 'component',
+        ];
+    }
+
+    public function onApiContextPanels(Event $event): void
+    {
+        if (!$this->enabled() || !$this->config->get('plugins.' . self::SLUG . '.admin.show_page_panel', true)) {
+            return;
+        }
+        $user = $event['user'] ?? null;
+        if (!is_object($user) || !$this->userCan($user, 'grav-jarvis.use')) {
+            return;
+        }
+        $panels = (array) ($event['panels'] ?? []);
+        $panels[] = [
+            'id' => self::SLUG,
+            'plugin' => self::SLUG,
+            'label' => 'Jarvis',
+            'icon' => 'sparkles',
+            'contexts' => ['pages'],
+            'priority' => 20,
+            'width' => 620,
+        ];
+        $event['panels'] = $panels;
+    }
+
+    private function enabled(): bool
+    {
+        return (bool) $this->config->get('plugins.' . self::SLUG . '.enabled', true);
+    }
+
+    private function userCan(object $user, string $permission): bool
+    {
+        foreach ([$permission, 'api.super', 'admin.super'] as $candidate) {
+            if ((method_exists($user, 'authorize') && (bool) $user->authorize($candidate))
+                || (method_exists($user, 'get') && (bool) $user->get('access.' . $candidate))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function logRegistrationFailure(

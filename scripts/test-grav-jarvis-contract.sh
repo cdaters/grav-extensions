@@ -11,6 +11,7 @@ contract_files=(
     "$contract_dir/openai-provider.php"
     "$contract_dir/compatible-provider.php"
     "$contract_dir/anthropic-provider.php"
+    "$contract_dir/admin-backend.php"
 )
 
 if command -v php >/dev/null 2>&1; then

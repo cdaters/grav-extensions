@@ -1,21 +1,21 @@
 # Jarvis
 
-Jarvis 0.1.4 is the provider-neutral AI service foundation for Grav 2. It gives
-plugins one optional PHP seam for registering, validating, inspecting, and
-calling model providers without exposing provider credentials or coupling
-consumers to a vendor response shape. This release provides a bounded
-production HTTP transport, isolated official OpenAI and Anthropic adapters,
-and a separate opt-in adapter for an explicitly documented OpenAI Responses-
-compatible subset.
+Jarvis 0.2.0 is the first user-usable Admin2 release of the provider-neutral AI
+service for Grav 2. It adds a permission-filtered general assistant and native
+page-editor context panel to the bounded OpenAI, Anthropic, and configured
+OpenAI-compatible provider foundation.
 
-This release contains no Admin2 assistant, content mutation, background
-worker, MCP workflow, or Grav Commander integration. Enabling it registers the
-OpenAI and Anthropic adapters but does not resolve a credential or make a
-network request.
+Page actions are review-first. Jarvis captures the current unsaved Markdown
+buffer, produces a proposal, and shows a before/after comparison. **Accept**
+updates only that unsaved buffer; it never saves, publishes, deletes, or
+otherwise mutates a page. **Reject** changes nothing. Provider credentials stay
+in server environment variables and never enter Admin2.
 
 ## Requirements
 
-- Grav 2.0 or newer
+- Grav 2.0.19 or newer
+- Grav API plugin 1.0.21 or newer
+- Admin2 2.1.2 or newer for the native page-editor context panel
 - PHP 8.3 or newer, following Grav 2's supported runtime
 - PHP cURL extension for production provider requests
 
@@ -63,6 +63,69 @@ providers:
 
 The environment-variable name must belong to the instance identifier's Jarvis
 namespace. Its value exists only in the process environment.
+
+## Admin2 assistant and page actions
+
+Jarvis adds a sidebar page for general prompts and a native context-panel
+launcher in the Admin2 page editor. Both call Jarvis through authenticated Grav
+API routes; the browser never calls a provider endpoint.
+
+The assistant shows registered providers, discovered models when available,
+safe validation state, loading/error/retry feedback, normalized output, and
+provider-reported usage. A discovery failure leaves the configured provider
+default available. Provider and model choices are not persisted in 0.2.0.
+
+The page panel supports Rewrite, Proofread, Shorten, Expand, Summarize, and
+Custom Prompt. The internal prompt library has stable action identifiers,
+separates the authorized instruction from untrusted page context, preserves
+useful Markdown, and tells providers not to invent frontmatter or claim a
+save/publish action. Custom Prompt keeps the user instruction separate from
+the page context and current content.
+
+Jarvis uses Admin2's public `grav:editor:get-content`,
+`grav:editor:content-response`, and `grav:editor:insert-content` events. The
+last event uses `mode: replace`, which keeps the update inside Admin2's normal
+dirty/undo/editor behavior. Jarvis does not dispatch save or publish events.
+
+Selection-aware editing is intentionally deferred: Admin2 2.1.2 does not
+publish a stable selected-text contract. Version 0.2.0 operates on the whole
+current buffer rather than reaching into editor internals.
+
+### Permissions
+
+- `grav-jarvis.access` — see the Jarvis assistant and provider status;
+- `grav-jarvis.use` — run prompts and create current-page proposals; and
+- `grav-jarvis.approve` — accept a reviewed proposal into the unsaved buffer.
+
+The server enforces these permissions even if a control is bypassed. Page
+context additionally requires effective `api.pages.read`; acceptance requires
+effective `api.pages.write` and honors page frontmatter ACLs, API-key scopes,
+demo restrictions, and Grav super-user behavior. A user without the relevant
+Jarvis permission does not receive the sidebar or page-panel registration.
+
+### Bounded context and proposal receipts
+
+The current page envelope includes only route, title, template, language,
+parsed frontmatter, current unsaved Markdown, and bounded media metadata. It
+never contains media bytes, filesystem paths, arbitrary site pages, provider
+credentials, or unrelated site content.
+
+- content: 49,152 bytes, using a deterministic head/tail window;
+- frontmatter: 8,192 encoded bytes;
+- media metadata: 4,096 encoded bytes and at most 32 items; and
+- reviewable provider output: 65,536 bytes.
+
+Secret-like frontmatter keys and every known `GRAV_JARVIS_*` environment value
+are redacted before context reaches a provider. Truncation is visible. If the
+current content or provider output exceeds the reviewable limit, Jarvis returns
+a preview-only proposal with no acceptance receipt.
+
+Reviewable proposals receive a random, one-time receipt that expires after 15
+minutes. The private Grav cache record stores only actor, route, source, and
+proposal hashes plus expiry—never the prompt, page content, or provider output.
+Accept rechecks the actor, route, current unsaved-buffer hash, proposal hash,
+page update permission, and one-time receipt. Changed, expired, mismatched, or
+replayed proposals fail closed.
 
 ## Public contracts
 
@@ -351,13 +414,24 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2
-transport/OpenAI, 0.1.3 compatible-provider, and 0.1.4 Anthropic suite with
-host PHP or the repository's DDEV fixture:
+Run the complete frozen 0.1.x provider suite plus the 0.2.0 Admin backend
+contract with host PHP or the repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
 ```
+
+Run the deterministic browser-component contract with Node.js:
+
+```bash
+./scripts/test-grav-jarvis-admin-ui.sh
+```
+
+The Admin contracts cover all six actions, bounded context and truncation,
+frontmatter/media filtering, known-secret redaction, provider/model/status
+data, one-time acceptance and replay/stale failure, absence handling, official
+unsaved-buffer events, Reject non-mutation, and absence of save/publish or
+browser-to-provider traffic. No live credential or network provider is needed.
 
 Repository contributors may explicitly opt into a tiny live end-to-end smoke
 through the public Jarvis service:
@@ -378,9 +452,10 @@ fixtures remain the release gate; a live account request is optional.
 - Gemini and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
-- prompt libraries and page/frontmatter/media context
-- Admin2 UI and proposal/diff/approval workflows (the next 0.2.0 milestone)
 - retries, caching, cost reports, chunking, and background jobs
+- selection-aware editing until Admin2 exposes a stable selection contract
+- structured metadata/frontmatter proposal application
+- prompt/response history or conversational memory
 - batch work, REST/MCP workflows, and suite integrations
 
 See the repository's `docs/planned/grav-jarvis.md` for the staged roadmap.

@@ -117,13 +117,13 @@ than a toolbar replacement and may optionally consume Jarvis later.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Jarvis 0.1.4:** provider-neutral contract and provider-boundary foundation
-  with optional validation/model discovery, environment-only credentials,
-  bounded production HTTP, isolated official OpenAI and Anthropic adapters,
-  explicitly profiled compatible-provider instances, deterministic conformance
-  fixtures, typed failures, and secret redaction. Two distinct first-party
-  wire families now preserve byte-identical shared interfaces; vendor
-  structures remain adapter-private, capabilities are declared rather than
-  inferred, and plugin boot performs no network request.
+- **Jarvis 0.2.0:** provider-neutral service plus permission-filtered Admin2
+  assistant and native page context panel. Six internal prompt actions operate
+  on bounded title/frontmatter/media/current-unsaved-buffer context. Proposals
+  render before/after, use one-time actor/route/source/proposal hash receipts,
+  and can replace only the unsaved editor buffer after explicit approval; no
+  Jarvis route saves or publishes. The 0.1.x OpenAI, Anthropic, compatible-
+  provider, bounded HTTP, environment-secret, typed-failure, and frozen public
+  contract boundaries remain unchanged.
 - **Other later roadmap plugins:** Gatehouse, Edge Console, and Page Studio
   remain named and bounded, not yet represented as finished packages.

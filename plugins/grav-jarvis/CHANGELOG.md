@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.2.0 — 2026-08-30
+
+- Added a permission-filtered Admin2 Jarvis page with provider/model selection,
+  safe provider validation, general prompts, normalized responses, loading,
+  retry, missing-credential, and unavailable-provider states.
+- Added the native page-editor context panel using Admin2's published current-
+  buffer and replace-buffer events, with Rewrite, Proofread, Shorten, Expand,
+  Summarize, and Custom Prompt actions.
+- Added a provider-neutral internal prompt library and deterministic 49,152-
+  byte content, 8,192-byte frontmatter, and 4,096-byte/32-item media context
+  bounds. Known environment secrets and credential-like fields are redacted;
+  truncation is visible and content-truncated proposals are preview-only.
+- Added before/after review, explicit Accept/Reject, separate access/use/approve
+  permissions, page ACL and API-scope enforcement, source/proposal hash checks,
+  and 15-minute one-time receipts that persist hashes only. Accept changes only
+  the unsaved editor buffer; no route saves, publishes, or deletes a page.
+- Added deterministic Admin backend and browser-component contracts covering
+  all six actions, provider/model/status states, bounded context, redaction,
+  absence/failure behavior, accept-once/stale behavior, Reject non-mutation,
+  and no browser provider traffic or save/publish event.
+- Preserved every frozen 0.1.0/0.1.1 public interface byte-for-byte. Selection-
+  aware editing is deferred because Admin2 2.1.2 exposes no stable selected-
+  text contract.
+
 ## 0.1.4 — 2026-08-30
 
 - Added an isolated official Anthropic provider using versioned Models and

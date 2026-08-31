@@ -20,11 +20,43 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Jarvis 0.1.4 (`grav-jarvis`) completes the infrastructure-heavy provider
-foundation under Decision 0004. The 0.1.0 `JarvisServiceInterface`,
-`ProviderInterface`, and `ProviderRegistryInterface` files and every additive
-0.1.1 validation, discovery, credential, HTTP, and DTO interface remain byte-
-identical to the compatibility baseline.
+Jarvis 0.2.0 (`grav-jarvis`) is the first genuinely user-usable Admin2 release
+under Decision 0004. The 0.1.0 `JarvisServiceInterface`, `ProviderInterface`,
+and `ProviderRegistryInterface` files and every additive 0.1.1 validation,
+discovery, credential, HTTP, and DTO interface remain byte-identical to the
+compatibility baseline.
+
+Admin2 now receives a permission-filtered Jarvis sidebar page and a native
+`onApiContextPanels` page-editor panel. The main page provides provider/model
+selection, safe validation/status, general prompt/response, usage, loading,
+error, unavailable, and retry states. The page panel implements Rewrite,
+Proofread, Shorten, Expand, Summarize, and Custom Prompt through the versioned
+provider-neutral `ActionPromptLibrary`.
+
+The panel reads the current unsaved Markdown through Admin2's public
+`grav:editor:get-content`/`grav:editor:content-response` events. Jarvis builds a
+deterministic envelope with route/title/template/language, parsed frontmatter,
+49,152 content bytes, and at most 4,096 bytes/32 media metadata items;
+frontmatter is capped at 8,192 encoded bytes. Credential-like keys and known
+environment-secret values are redacted. No media bytes, filesystem paths,
+unrelated pages, arbitrary endpoints, provider headers, or credential names
+come from the browser.
+
+Every edit is a proposal with before/after review. A reviewable proposal gets a
+private 15-minute one-time receipt containing only actor/route/source/proposal
+hashes and expiry. Accept requires `grav-jarvis.approve`, effective page update
+authority, matching current unsaved-buffer/proposal hashes, and unused receipt;
+it dispatches only Admin2's replace-buffer event. Reject changes nothing.
+Content-truncated or over-65,536-byte output is preview-only. No Jarvis route or
+component saves, publishes, deletes, executes, or persists prompt/page/output
+content.
+
+Permissions are `grav-jarvis.access`, `grav-jarvis.use`, and
+`grav-jarvis.approve`; page context/accept also use API plugin page read/write,
+frontmatter ACL, API-key scope, demo, and super-user rules. Authenticated Grav
+API requests use fixed routes and Admin2's API token with browser credentials
+omitted. Missing Jarvis/provider/credential/model paths disable or fail only
+Jarvis controls with concise redacted errors.
 
 `BoundedHttpTransport` provides the production network path behind the existing
 `HttpTransportInterface`. Exact HTTPS origin/base paths are allowlisted; every
@@ -64,16 +96,18 @@ Responses text subset is documented; Chat Completions-only and partial shapes
 fail closed. Only text completion, provider validation, and optional discovery
 are declared—streaming, structured output, and tool calling are not overclaimed.
 
-The separate live-smoke harness supports OpenAI and Anthropic through the
+The separate live-smoke harness still supports OpenAI and Anthropic through the
 public service/registry, environment resolver, bounded production transport,
 adapter, and neutral result. Both shell and PHP entry points require explicit
 `GRAV_JARVIS_LIVE_SMOKE=1`; absence of the selected credential is a clean skip.
 Output is capped and request/response content is not printed. No credential was
-available for the 0.1.4 release validation, so no live request was attempted.
+available for the 0.2.0 release validation, so no live request was attempted.
 
-Jarvis still has no Admin2 assistant, CLI command, Gemini/OpenRouter adapter,
-Commander integration, background job, streaming/tool call, content mutation,
-or MCP workflow.
+Selection-aware editing is deferred because Admin2 2.1.2 publishes no stable
+selected-text contract. Jarvis still has no CLI command, Gemini/OpenRouter
+adapter, Commander integration, background job, streaming/tool call, durable
+conversation/proposal history, structured frontmatter apply, automatic page
+mutation, or MCP workflow.
 
 Spitfire theme 1.2.1 adds an Admin **Section spacing** selector to Features,
 Text, and Form modular pages. Existing pages default to Normal, Tight reuses
@@ -144,7 +178,7 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- Jarvis's full suite passes forty-four checks under DDEV PHP 8.3.31: seven
+- Jarvis's full suite passes fifty-eight checks: seven
   frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
   provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
   Those checks cover destination policy/DNS pinning, generic service routing,
@@ -159,21 +193,24 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   ordered multiple text blocks, usage/no-usage success, empty/malformed/
   incomplete output, credential/configuration denial, auth/rate/other 4xx/5xx/
   timeout classification, offline determinism, redaction, and byte-identical
-  frozen-interface hashes.
+  frozen-interface hashes. Seven 0.2.0 backend checks add the prompt library,
+  all six actions, bounded/redacted current-page context, provider/model/status
+  bootstrap, hash-only receipts, accept once, replay/stale denial, and preview-
+  only truncation. Seven Node browser-component checks add same-API/no-store
+  transport, graceful absence, output escaping, official unsaved-buffer events,
+  replace-only Accept, non-mutating Reject, and no save/publish/provider path.
 - Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
   structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
-  YAML parsing, Composer validation, ZIP integrity, 0.1.3-to-0.1.4 packaged
-  upgrade, fresh 0.1.4 package install, Grav cache clearing, cURL availability,
-  and public/Admin HTTP 200 checks pass. Relevant logs contain no Jarvis,
-  fatal, or uncaught match. Host PHP remains unavailable, so the root preflight
-  truthfully reports its host-side PHP syntax step as skipped; DDEV supplied
-  PHP lint and runtime evidence. Both live-smoke providers cleanly skipped
-  because neither credential existed on the host or in DDEV; no live provider
-  request was attempted.
-- The verified Jarvis package is `dist/grav-jarvis-0.1.4.zip`, SHA-256
-  `242fef895caaf6ea926a17ad0e711f7801d2f39e0779bf67db487e3c82d02a8b`.
-  Versioned 0.1.0 through 0.1.3 packages and their recorded hashes remain in
-  `dist/`.
+  YAML parsing, Composer validation, JavaScript syntax/component contracts,
+  ZIP integrity, 0.1.4-to-0.2.0 packaged upgrade, fresh 0.2.0 package install,
+  Grav cache clearing, cURL availability, public/Admin HTTP 200, anonymous 401,
+  scoped 403, authenticated Jarvis/API/Admin2-asset 200, and clean relevant log
+  checks pass. Host PHP remains unavailable, so root preflight truthfully skips
+  host PHP; DDEV PHP 8.3.31 supplied lint/runtime evidence. No live credential
+  existed, so no live provider request or charge occurred.
+- The verified Jarvis package is `dist/grav-jarvis-0.2.0.zip`, SHA-256
+  `1ef863da43c0e0038764f7564e72a77175add1a5c8bce89526c01318817455ae`.
+  Versioned 0.1.0 through 0.1.4 packages and hashes remain intact.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -223,26 +260,27 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.2.0 first Admin2 usability slice: expose the completed provider
-foundation to an operator without adding automatic persistence or broader
-automation.
+Jarvis 0.2.1 Admin2 hardening is next. Jarvis 0.2.0 is complete; do not extend
+it after the focused release commit.
 
 ## Exact next action
 
-Design the permission-filtered Jarvis Admin2 sidebar entry and page-editor
-launcher against current Grav 2 extension conventions, then implement the
-small synchronous UI boundary specified in `docs/planned/grav-jarvis.md`:
-provider/model selectors, safe validation state, prompt/response, inspectable
-current-page context, six initial actions, diff preview, and explicit Accept/
-Reject into the unsaved editor buffer. Recheck page permission and source hash;
-never auto-save. Add external Admin2 coverage for absent/misconfigured/provider-
-failure states, preview non-mutation, reject, accept-once, stale-source denial,
-and secret/browser/log isolation before expanding scope.
+Build a repeatable full signed-in Admin2 browser regression using a deterministic
+server provider. Cover sidebar and page panel discovery, all six actions,
+missing/failing provider states, retry, visible truncation, before/after review,
+Reject, Accept once, stale source, keyboard use, and narrow/light/dark layouts.
+Then add optional non-secret per-user provider/model preference and accessibility
+refinements justified by that evidence. Re-evaluate selection/metadata actions
+only if Admin2 publishes stable public editor/form events; never reach into
+private Editor Pro state. Do not begin 0.3.0 reliability or Commander work in
+the 0.2.1 checkpoint.
 
 ## Explicitly deferred
 
+- Selection-aware editing and structured metadata proposal application are
+  deferred until stable public Admin2 events exist.
 - Gemini and OpenRouter, private/local compatible endpoints, broader compatible
-  profiles, live streaming, prompt persistence,
+  profiles, live streaming, prompt/response persistence,
   caching/retries, cost accounting, chunking, background jobs, batch/site-wide
   workflows, and MCP-facing endpoints remain later work.
 - The previous File Vault black-box milestone remains required under Decision
@@ -269,7 +307,8 @@ and secret/browser/log isolation before expanding scope.
 4. For the active Jarvis milestone, read `docs/planned/grav-jarvis.md` and
    `docs/decisions/0004-grav-jarvis-agent-framework.md` completely.
 5. Read `plugins/grav-jarvis/README.md`, then run
-   `./scripts/test-grav-jarvis-contract.sh`.
+   `./scripts/test-grav-jarvis-contract.sh` and
+   `./scripts/test-grav-jarvis-admin-ui.sh`.
 6. Rebuild with `./scripts/package-extension.sh plugin grav-jarvis` after any
    package change; checksums are expected to change.
 7. Run `git status` and `git log --oneline --decorate -10`.

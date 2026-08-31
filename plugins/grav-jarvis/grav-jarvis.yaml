@@ -1,4 +1,7 @@
 enabled: true
+admin:
+  show_sidebar: true
+  show_page_panel: true
 providers:
   openai:
     enabled: true

@@ -604,3 +604,62 @@ suite inventory incremental and risk ordered.
   No Gemini/OpenRouter, CLI commands, streaming, tools, structured output,
   jobs, MCP, Commander integration, site-wide mutation, push, tag, or publish
   was performed.
+
+## 2026-08-30 — Jarvis 0.2.0 first user-usable Admin2 release
+
+- Re-read the canonical handoff, Jarvis specification/ADR/manual, roadmap,
+  architecture, security/testing guidance, recent history, every frozen public
+  contract, every provider/transport/security implementation, and current API/
+  Admin2 source before editing. Preserved unrelated Site Workshop/Cache Hearth
+  and Spitfire-theme work.
+- Added a permission-filtered Jarvis Admin2 sidebar page with provider/model
+  selection, safe validation and missing-credential state, general prompt/
+  response, provider usage, loading, error, retry, and graceful absent/no-
+  provider behavior. Browser code calls only fixed authenticated Jarvis API
+  routes with no-store and browser credentials omitted; it cannot supply a
+  provider class, URL, header, endpoint, or environment name.
+- Added the native `onApiContextPanels` page-editor panel and the six versioned
+  provider-neutral actions: Rewrite, Proofread, Shorten, Expand, Summarize, and
+  Custom Prompt. It reads the current unsaved Markdown only through Admin2's
+  public get/content-response events and accepts only through replace-buffer.
+  Admin2 2.1.2 has no stable selection contract, so whole-buffer editing is
+  explicit and selection-aware behavior is deferred.
+- Added deterministic 49,152-byte current-content, 8,192-byte frontmatter, and
+  4,096-byte/32-item media-metadata bounds plus a 65,536-byte reviewable-output
+  limit. Secret-like keys and known `GRAV_JARVIS_*` values are redacted; media
+  bytes/paths and unrelated pages are excluded. Content/output over the review
+  boundary is visibly preview-only.
+- Added a before/after proposal flow and 15-minute one-time private receipt
+  containing only actor/route/source/proposal hashes and expiry. Access/use/
+  approve permissions, API key scopes, page read/update ACL, current unsaved-
+  buffer hash, proposal hash, expiry, and one-time consumption are rechecked.
+  Reject is non-mutating; Accept changes only the unsaved editor buffer. No
+  Jarvis route or component saves, publishes, deletes, executes, or persists
+  prompt/page/provider-output content.
+- Preserved all six public interface files byte-for-byte. The original forty-
+  four provider checks plus seven Admin backend and seven browser-component
+  checks all pass (fifty-eight total). New coverage proves all six actions,
+  provider/model/status, bounded/redacted context, hash-only receipts, accept
+  once/replay/stale denial, truncation, same-API browser transport, response
+  escaping, graceful absence, current-buffer events, Replace-only Accept,
+  Reject, and no save/publish/provider-browser path.
+- Passed DDEV PHP 8.3.31 syntax/runtime and cURL checks, Node syntax, Composer/
+  JSON/YAML validation, repository preflight (host PHP truthfully skipped),
+  Markdown-link/whitespace/hygiene and package credential scans, ZIP integrity,
+  packaged 0.1.4-to-0.2.0 upgrade, fresh 0.2.0 install, cache clear, public/
+  Admin/Jarvis Admin/page-editor HTTP 200 health, anonymous 401, limited-scope
+  Admin/page 403, authenticated bootstrap/validation/models/page-context/page-
+  script/panel-script/context-panel 200, malformed/unsupported 422, missing-
+  credential 503, stale receipt 409, and zero relevant recent log/browser-
+  console matches. Short-lived test API keys were revoked; the disposable
+  fixture was restored with Jarvis uninstalled. No live provider request or
+  charge occurred.
+- Packaged `dist/grav-jarvis-0.2.0.zip`, SHA-256
+  `1ef863da43c0e0038764f7564e72a77175add1a5c8bce89526c01318817455ae`.
+  Prior 0.1.0 through 0.1.4 archives remain intact.
+- Set exact next milestone to Jarvis 0.2.1 Admin2 hardening: a repeatable full
+  signed-in browser regression with a deterministic server provider, then non-
+  secret provider/model preference and accessibility/responsive refinements.
+  Selection/metadata editing is reconsidered only if stable public Admin2 events
+  exist. No 0.2.1, Commander, jobs, batch, MCP, new provider, push, tag, or
+  publish work was started.

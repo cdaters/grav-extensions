@@ -121,4 +121,30 @@ DTOs; empty, malformed, incomplete, tool-oriented, or refusal-style responses
 fail closed. The opt-in live harness hard-bounds output, prints no prompt or
 response, and cleanly skips without a configured credential.
 
+Jarvis 0.2.0 adds an authenticated Admin2/API boundary without granting the
+model or browser page authority. `grav-jarvis.access`, `grav-jarvis.use`, and
+`grav-jarvis.approve` are independently enforced server-side; page context and
+acceptance additionally pass through Grav's page ACL, API-key-scope, demo, and
+`api.pages.read`/`api.pages.write` checks. The browser supplies only provider
+ID, model ID, action, user instruction, and current editor state to fixed
+Jarvis routes. It cannot supply provider classes, URLs, headers, paths, or
+environment-variable names and uses Admin2's API token with browser credentials
+omitted.
+
+Current-page context is deterministic and minimal: 49,152 content bytes,
+8,192 encoded frontmatter bytes, and 4,096 encoded media-metadata bytes/32
+items. Media bytes and paths never enter the envelope. Credential-like keys and
+known `GRAV_JARVIS_*` values are redacted before provider submission. A
+content-truncated or over-65,536-byte provider proposal is preview-only.
+
+Acceptance uses a private 15-minute one-time cache receipt containing only
+hashed actor, route, current source, and proposal plus expiry. No prompt, page
+body, output, provider response, credential, or conversation history is
+persisted. Accept rechecks Jarvis approval, page update authority, route,
+current unsaved-buffer hash, proposal hash, expiry, and one-time consumption,
+then dispatches only Admin2's replace-buffer event. Reject is non-mutating, and
+no Jarvis endpoint or browser component saves, publishes, deletes, or executes
+model output. Selection-aware editing is deferred rather than reading private
+editor state.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

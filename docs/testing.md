@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.1.4 bounded OpenAI/Anthropic and compatible-provider fixtures implemented; Admin2 preview/accept boundary next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.2.0 provider and Admin2 backend/UI contracts implemented; authenticated DDEV route allow/deny and packaged install evidence recorded; deterministic full signed-in browser regression next |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -140,8 +140,8 @@ must not wait for the whole inventory before receiving its own regression.
 ### Jarvis AI boundary contract
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
-transport/OpenAI, 0.1.3 compatible-provider, and 0.1.4 Anthropic suite with
-host PHP or a DDEV project:
+transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0 Admin
+backend suite with host PHP or a DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -181,6 +181,39 @@ classification, no network fallback, redaction, and byte-identical frozen
 interfaces. When host PHP is absent, the runner defaults to the canonical DDEV
 fixture when available or accepts a DDEV project path/
 `GRAV_JARVIS_DDEV_PROJECT`.
+
+The 0.2.0 backend contract keeps every frozen interface byte-identical and
+proves the six-action prompt library, deterministic current-page envelope,
+content/frontmatter/media/output bounds, key- and value-based secret redaction,
+provider/model/status bootstrap, all six offline proposal paths, hash-only
+receipt storage, accept-once/replay denial, and preview-only truncation. Static
+controller assertions complement the DDEV HTTP checks for Jarvis access/use/
+approve and page read/write gates and absence of page persistence primitives.
+
+Run the isolated Admin2 browser-component contract on the host:
+
+```bash
+./scripts/test-grav-jarvis-admin-ui.sh
+```
+
+It loads the shipped plugin page and context-panel scripts in a disposable DOM/
+event harness. It proves Admin2 API-token/no-store transport with browser
+credentials omitted, no provider endpoint or provider credential in browser
+code, safe response escaping, provider-neutral completion, graceful disabled
+service behavior, the official current-unsaved-buffer request/response event,
+explicit replace-buffer Accept, non-mutating Reject, no save/publish event, and
+the visible selection-aware deferral.
+
+The canonical DDEV release check additionally uses short-lived API keys that
+are revoked by cleanup: an unrestricted key receives 200 from bootstrap,
+provider validation, model discovery, current-page context, page-script,
+panel-script, and context-panel registration; a key scoped only to
+`api.access` receives 403 from both Jarvis Admin and page-context routes; an
+anonymous request receives 401. Missing provider credentials produce a safe
+`misconfigured` state without a live request. Full signed-in visual browser
+automation with a server-registered deterministic provider is the exact 0.2.1
+black-box follow-up; the deterministic component contract and authenticated
+HTTP boundary are the 0.2.0 release gates.
 
 Live-provider smoke is a separate explicit path:
 

@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.1.4
-description: Provider-neutral AI services with bounded HTTP, official OpenAI and Anthropic adapters, and explicit compatible-provider profiles for Grav 2.
+version: 0.2.0
+description: Permission-filtered Jarvis assistance and review-first page editing for Grav 2 Admin2.
 icon: microchip
 author:
   name: Craig Daters
@@ -12,7 +12,8 @@ keywords: grav, plugin, ai, providers, contracts, security
 license: MIT
 
 dependencies:
-  - { name: grav, version: '>=2.0.0' }
+  - { name: grav, version: '>=2.0.19' }
+  - { name: api, version: '>=1.0.21' }
 
 compatibility:
   grav: ['2.0']
@@ -30,9 +31,26 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.1 provider foundation
-      text: This release provides bounded HTTPS transport, isolated official OpenAI and Anthropic adapters, and opt-in Responses-compatible provider instances behind unchanged provider-neutral contracts. Provider credentials are accepted only from server environment variables. It includes no Admin2 assistant, background worker, or site mutation.
+      title: Jarvis 0.2 Admin2 assistant
+      text: Jarvis provides a permission-filtered assistant and review-first page proposals in Admin2. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer. Provider credentials remain server-environment-only.
       underline: true
+
+    admin.show_sidebar:
+      type: toggle
+      label: Show Jarvis assistant in Admin2
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    admin.show_page_panel:
+      type: toggle
+      label: Show Jarvis in the page editor
+      help: Users still need Jarvis and page permissions. Accept changes only the unsaved editor buffer.
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
 
     providers.openai.enabled:
       type: toggle

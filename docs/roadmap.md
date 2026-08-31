@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.1.4 development release; bounded official OpenAI/Anthropic and explicitly profiled compatible-provider instances available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.2.0 development release; permission-filtered Admin2 assistant and review-first page proposals available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -67,19 +67,25 @@ The version sequence is:
    non-generating validation/discovery, ordered text and usage normalization,
    deterministic vendor-specific failure/redaction fixtures, and an opt-in
    bounded live-smoke path. Frozen shared interfaces remain byte-identical.
-6. **0.2.0 — first Admin2 usability slice (next):** permission-filtered Jarvis
+6. **0.2.0 — first Admin2 usability slice (implemented):** permission-filtered Jarvis
    and page-editor entry points; provider/model selection and status; prompt,
    current-page context, and Rewrite/Proofread/Shorten/Expand/Summarize/Custom
    actions; response/diff preview; explicit Accept/Reject into the unsaved
    editor buffer; source/permission rechecks; and graceful absence/failure
    states with no automatic save.
-7. **0.3.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+7. **0.2.1 — Admin2 hardening (next):** add a full authenticated browser
+   regression with a deterministic server provider, non-secret per-user
+   provider/model preference, clearer capability/usage presentation, and
+   accessibility/responsive refinements. Selection-aware editing and
+   structured metadata proposals remain conditional on stable public Admin2
+   editor/form events; do not reach into editor internals.
+8. **0.3.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
    Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
    checkpoints, and a stable consumer contract.
-8. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
+9. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-9. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+10. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

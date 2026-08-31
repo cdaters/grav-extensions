@@ -65,7 +65,7 @@ final class NativeCurlHttpExecutor implements HttpExecutorInterface
                 CURLOPT_RETURNTRANSFER => false,
                 CURLOPT_HEADER => false,
                 CURLOPT_ENCODING => '',
-                CURLOPT_USERAGENT => 'Grav-Jarvis/0.1.4',
+                CURLOPT_USERAGENT => 'Grav-Jarvis/0.2.0',
                 CURLOPT_RESOLVE => [
                     $destination->hostname . ':' . $destination->port . ':' . $pinnedAddress,
                 ],
