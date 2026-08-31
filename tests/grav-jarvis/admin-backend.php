@@ -197,6 +197,10 @@ namespace GravJarvisAdminContract {
     expect(!preg_match('/api[_-]?key|secret|password|credential/i', $pluginYaml), 'Persisted plugin YAML contains credential fields.');
     echo "PASS: permission gates, no page persistence, and environment-only secret boundary\n";
 
+    foreach (glob($temp . '/*') ?: [] as $file) {
+        if (is_file($file)) @unlink($file);
+    }
+    if (is_file($temp . '/.lock')) @unlink($temp . '/.lock');
     if (is_dir($temp)) @rmdir($temp);
     echo "Jarvis Admin2 backend contract passed (7 checks).\n";
 }

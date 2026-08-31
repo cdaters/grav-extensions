@@ -147,4 +147,23 @@ no Jarvis endpoint or browser component saves, publishes, deletes, or executes
 model output. Selection-aware editing is deferred rather than reading private
 editor state.
 
+Jarvis 0.2.1 makes receipt closure explicit and bounded. Reject consumes the
+actor/route-bound receipt, and a successful regeneration consumes the receipt
+it replaces; a failed regeneration preserves it. The private directory is
+owner-only, each receipt and its coordination lock are owner-readable only,
+active receipts are capped at 128, and deterministic expiry cleanup reads only
+the non-secret receipt metadata. Cross-user, cross-page, stale, expired,
+rejected, replaced, accepted, and replayed identifiers fail closed. Opaque
+random identifiers disclose no actor, route, page, provider, or content data.
+
+Admin-facing failures are mapped to stable safe categories for missing or
+malformed credentials, invalid configuration, authentication, rate limit,
+timeout, unsupported capability, invalid response, and unavailability. Raw
+provider JSON, request/response bodies, stack traces, credentials,
+Authorization headers, endpoints, and environment-variable authority never
+cross the API boundary. Retry is presented only where the category is
+transient. The deterministic signed-in browser regression deliberately tries
+anonymous token omission and browser-supplied endpoint/environment authority;
+both are denied without a provider request.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

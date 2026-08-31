@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.2.0 provider and Admin2 backend/UI contracts implemented; authenticated DDEV route allow/deny and packaged install evidence recorded; deterministic full signed-in browser regression next |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.2.1 provider/Admin2 backend/component contracts and deterministic full signed-in browser regression implemented; reliability and later batch/job boundaries remain |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -140,7 +140,7 @@ must not wait for the whole inventory before receiving its own regression.
 ### Jarvis AI boundary contract
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
-transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0 Admin
+transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0/0.2.1 Admin
 backend suite with host PHP or a DDEV project:
 
 ```bash
@@ -189,6 +189,11 @@ provider/model/status bootstrap, all six offline proposal paths, hash-only
 receipt storage, accept-once/replay denial, and preview-only truncation. Static
 controller assertions complement the DDEV HTTP checks for Jarvis access/use/
 approve and page read/write gates and absence of page persistence primitives.
+The additive 0.2.1 hardening contract proves opaque identifiers; deterministic
+receipt expiry and a 128-receipt bound; cross-user, cross-page, stale, rejected,
+replaced, and replay denial; fresh regeneration; safe failure category/
+retryability mapping; coded redacted API errors; and rejection of request
+fields that could widen provider authority.
 
 Run the isolated Admin2 browser-component contract on the host:
 
@@ -202,7 +207,29 @@ credentials omitted, no provider endpoint or provider credential in browser
 code, safe response escaping, provider-neutral completion, graceful disabled
 service behavior, the official current-unsaved-buffer request/response event,
 explicit replace-buffer Accept, non-mutating Reject, no save/publish event, and
-the visible selection-aware deferral.
+the visible selection-aware deferral. Its 0.2.1 assertions also cover semantic
+status/error roles, accessible labels, visible focus rules, replacement and
+discard requests, safe proposal retention, inherited theme variables, and
+responsive layout rules.
+
+Run the authenticated Admin2 black-box regression against the canonical
+disposable DDEV fixture (or pass project, base URL, and page route arguments):
+
+```bash
+./scripts/test-grav-jarvis-admin-browser.sh
+```
+
+The harness copies the current Jarvis source and a test-only deterministic
+provider into the fixture, creates a random temporary Admin2 account, drives
+Chrome/Chromium through the actual Admin and page editor, then restores prior
+plugins, account index, notifications, and cache state. It never uses a live
+provider or credential. The eleven signed-in checks cover login, both Jarvis
+surfaces, provider/model selection, validation, missing/unavailable provider,
+typed rate-limit retry, API-token and provider-authority denial, all six action
+identifiers, bounded exact whole-buffer context, proposal preview, explicit
+Reject, Accept exactly once, stale/regeneration behavior, unsaved-only reload,
+keyboard/labels, narrow layout, light/dark inheritance, no page mutation
+request, browser console/page errors, and recent Jarvis fatal log entries.
 
 The canonical DDEV release check additionally uses short-lived API keys that
 are revoked by cleanup: an unrestricted key receives 200 from bootstrap,
@@ -210,10 +237,9 @@ provider validation, model discovery, current-page context, page-script,
 panel-script, and context-panel registration; a key scoped only to
 `api.access` receives 403 from both Jarvis Admin and page-context routes; an
 anonymous request receives 401. Missing provider credentials produce a safe
-`misconfigured` state without a live request. Full signed-in visual browser
-automation with a server-registered deterministic provider is the exact 0.2.1
-black-box follow-up; the deterministic component contract and authenticated
-HTTP boundary are the 0.2.0 release gates.
+`misconfigured` state without a live request. The signed-in deterministic
+browser harness is the 0.2.1 black-box gate; the isolated component and direct
+authenticated HTTP boundaries remain complementary release evidence.
 
 Live-provider smoke is a separate explicit path:
 

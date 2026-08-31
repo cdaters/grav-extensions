@@ -1,0 +1,21 @@
+name: Jarvis Browser Fixture
+slug: grav-jarvis-browser-fixture
+type: plugin
+version: 0.2.1
+description: Deterministic offline provider fixture for the Jarvis Admin2 browser regression.
+icon: flask
+author:
+  name: Grav Extensions test suite
+form:
+  validation: strict
+  fields:
+    enabled:
+      type: toggle
+      label: Enabled
+      highlight: 1
+      default: 1
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool

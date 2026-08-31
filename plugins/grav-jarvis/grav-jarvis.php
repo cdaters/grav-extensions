@@ -144,6 +144,7 @@ final class GravJarvisPlugin extends Plugin
             $group->get('/page-context', [$controller, 'pageContext']);
             $group->post('/proposals', [$controller, 'propose']);
             $group->post('/proposals/{id}/accept', [$controller, 'accept']);
+            $group->post('/proposals/{id}/discard', [$controller, 'discard']);
         });
     }
 

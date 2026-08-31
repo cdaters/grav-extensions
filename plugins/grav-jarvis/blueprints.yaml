@@ -1,7 +1,7 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.2.0
+version: 0.2.1
 description: Permission-filtered Jarvis assistance and review-first page editing for Grav 2 Admin2.
 icon: microchip
 author:

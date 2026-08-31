@@ -88,12 +88,15 @@ will not begin with the complete assistant or live provider stack.
 
 ## Implementation status
 
-Jarvis 0.2.0 now realizes the first human-facing portion of this decision. The
+Jarvis 0.2.1 now hardens the first human-facing portion of this decision. The
 frozen provider-neutral service remains the only provider seam; Admin2 calls
 fixed authenticated Jarvis routes and never receives credentials or vendor
 wire shapes. The page panel uses public Admin2 whole-buffer events, bounded and
 redacted current-page context, before/after review, and one-time hash receipts.
 Accept changes only the unsaved buffer after Jarvis/page permission and source
-rechecks; Jarvis has no save, publish, delete, Commander, job, or MCP mutation
-path. Selection-aware work remains deferred until Admin2 publishes a stable
-selection contract.
+rechecks; Reject and successful regeneration revoke their old receipts. A
+signed-in deterministic browser gate now proves all six actions, one-time and
+stale lifecycle behavior, safe provider-error presentation, keyboard/narrow/
+theme behavior, and the absence of save/publish requests. Jarvis has no save,
+publish, delete, Commander, job, or MCP mutation path. Selection-aware work
+remains deferred until Admin2 publishes a stable selection contract.

@@ -7,7 +7,6 @@ namespace Grav\Plugin\GravJarvis\Controller;
 use Grav\Common\Page\Interfaces\PageInterface;
 use Grav\Plugin\Api\Controllers\AbstractApiController;
 use Grav\Plugin\Api\Exceptions\ApiException;
-use Grav\Plugin\Api\Exceptions\ConflictException;
 use Grav\Plugin\Api\Exceptions\NotFoundException;
 use Grav\Plugin\Api\Exceptions\ValidationException;
 use Grav\Plugin\Api\Response\ApiResponse;
@@ -30,7 +29,8 @@ final class ApiController extends AbstractApiController
     public function bootstrap(ServerRequestInterface $request): ResponseInterface
     {
         $this->requirePermission($request, 'grav-jarvis.access');
-        $canApprove = $this->hasPermissionWithinScope($request, 'grav-jarvis.approve');
+        $canApprove = $this->isSuperWithinScope($request)
+            || $this->hasPermissionWithinScope($request, 'grav-jarvis.approve');
         return ApiResponse::create($this->admin()->bootstrap($canApprove));
     }
 
@@ -56,8 +56,8 @@ final class ApiController extends AbstractApiController
                 $this->optionalString($body, 'model', 256),
                 $this->requiredString($body, 'prompt', 8000)
             ));
-        } catch (ProviderFailureException) {
-            throw $this->providerUnavailable();
+        } catch (ProviderFailureException $error) {
+            throw $this->providerFailure($error);
         } catch (InvalidArgumentException $error) {
             throw new ValidationException($this->safeValidationMessage($error));
         } catch (Throwable) {
@@ -80,7 +80,7 @@ final class ApiController extends AbstractApiController
         $this->requirePermission($request, 'grav-jarvis.use');
         $body = $this->body($request, [
             'provider_id', 'model', 'action', 'custom_instruction', 'route',
-            'content', 'title', 'template', 'language',
+            'content', 'title', 'template', 'language', 'replaces_proposal_id',
         ]);
         $route = $this->routeValue($body['route'] ?? null);
         $page = $this->page($route);
@@ -95,10 +95,11 @@ final class ApiController extends AbstractApiController
                 $this->requiredString($body, 'action', 32),
                 $this->optionalString($body, 'custom_instruction', 4000),
                 $this->pageData($page, $body),
-                $content
+                $content,
+                $this->optionalProposalId($body, 'replaces_proposal_id')
             ));
-        } catch (ProviderFailureException) {
-            throw $this->providerUnavailable();
+        } catch (ProviderFailureException $error) {
+            throw $this->providerFailure($error);
         } catch (InvalidArgumentException $error) {
             throw new ValidationException($this->safeValidationMessage($error));
         } catch (Throwable) {
@@ -126,7 +127,37 @@ final class ApiController extends AbstractApiController
         } catch (InvalidArgumentException $error) {
             throw new ValidationException($this->safeValidationMessage($error));
         } catch (RuntimeException) {
-            throw new ConflictException('This Jarvis proposal is stale, expired, or already accepted. Generate a new proposal.');
+            throw new ApiException(
+                statusCode: 409,
+                errorTitle: 'Proposal Conflict',
+                detail: 'This Jarvis proposal is stale, expired, or already accepted. Generate a new proposal.',
+                errorCode: 'jarvis_proposal_conflict'
+            );
+        }
+    }
+
+    public function discard(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requirePermission($request, 'grav-jarvis.use');
+        $body = $this->body($request, ['route']);
+        $route = $this->routeValue($body['route'] ?? null);
+        $page = $this->page($route);
+        $this->authorizePageAction($request, $page, 'read', 'api.pages.read');
+
+        try {
+            $this->admin()->discard(
+                $this->actor($request),
+                (string) $this->getRouteParam($request, 'id'),
+                $route
+            );
+            return ApiResponse::create(['discarded' => true]);
+        } catch (RuntimeException) {
+            throw new ApiException(
+                statusCode: 409,
+                errorTitle: 'Proposal Conflict',
+                detail: 'This Jarvis proposal is stale, expired, or already closed.',
+                errorCode: 'jarvis_proposal_conflict'
+            );
         }
     }
 
@@ -183,6 +214,16 @@ final class ApiController extends AbstractApiController
             return null;
         }
         return $this->requiredString($values, $key, $bytes);
+    }
+
+    /** @param array<string, mixed> $values */
+    private function optionalProposalId(array $values, string $key): ?string
+    {
+        $value = $this->optionalString($values, $key, 32);
+        if ($value !== null && preg_match('/^[a-f0-9]{32}$/D', $value) !== 1) {
+            throw new ValidationException('The replacement proposal identifier is invalid.');
+        }
+        return $value;
     }
 
     private function routeValue(mixed $route): string
@@ -286,9 +327,25 @@ final class ApiController extends AbstractApiController
         );
     }
 
-    private function providerUnavailable(): ApiException
+    private function providerFailure(ProviderFailureException $error): ApiException
     {
-        return new ApiException(503, 'Service Unavailable', 'The selected Jarvis provider is unavailable. Try again later.');
+        [$status, $title, $detail] = match ($error->category) {
+            'credential_missing' => [503, 'Provider Configuration Required', 'The selected provider needs a credential in the server environment.'],
+            'credential_invalid' => [503, 'Provider Configuration Required', 'The selected provider credential is malformed.'],
+            'authentication_failed' => [503, 'Provider Authentication Failed', 'The selected provider rejected its configured credential.'],
+            'rate_limited' => [429, 'Provider Rate Limited', 'The selected provider is temporarily rate limited. Try again shortly.'],
+            'timeout' => [503, 'Provider Timeout', 'The selected provider timed out. Retry when the service is available.'],
+            'configuration_invalid' => [503, 'Provider Configuration Required', 'The selected provider configuration needs attention.'],
+            'unsupported_capability' => [422, 'Unsupported Provider Capability', 'The selected provider does not support this Jarvis operation.'],
+            'response_invalid' => [502, 'Invalid Provider Response', 'The selected provider returned an unsupported response.'],
+            default => [503, 'Provider Unavailable', 'The selected Jarvis provider is unavailable. Try again later.'],
+        };
+        return new ApiException(
+            statusCode: $status,
+            errorTitle: $title,
+            detail: $detail,
+            errorCode: 'jarvis_' . $error->category
+        );
     }
 
     private function safeValidationMessage(InvalidArgumentException $error): string

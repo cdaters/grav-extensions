@@ -155,7 +155,8 @@ final class JarvisAdminService
         string $action,
         ?string $customInstruction,
         array $page,
-        string $content
+        string $content,
+        ?string $replacesProposalId = null
     ): array {
         $context = $this->contexts->build($page, $content);
         $definition = $this->prompts->pagePrompt($action, $context, $customInstruction);
@@ -174,6 +175,9 @@ final class JarvisAdminService
         $acceptAllowed = $context['accept_allowed'] === true
             && $proposalBytes <= self::REVIEWABLE_PROPOSAL_BYTES;
         $receipt = ['id' => null, 'expires_at' => null];
+        if ($replacesProposalId !== null) {
+            $this->proposals->revoke($replacesProposalId, $actor, (string) $context['route']);
+        }
         if ($acceptAllowed) {
             $receipt = $this->proposals->issue(
                 $actor,
@@ -229,6 +233,11 @@ final class JarvisAdminService
             hash('sha256', $proposedContent)
         );
         return ['accepted' => true, 'content' => $proposedContent, 'source_hash' => $sourceHash];
+    }
+
+    public function discard(string $actor, string $proposalId, string $route): void
+    {
+        $this->proposals->revoke($proposalId, $actor, $route);
     }
 
     private function model(?string $model): ?string

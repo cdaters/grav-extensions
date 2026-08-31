@@ -6,8 +6,16 @@ namespace Grav\Plugin\GravJarvis\Service;
 
 use Grav\Plugin\GravJarvis\Contracts\CompletionRequest;
 use Grav\Plugin\GravJarvis\Contracts\CompletionResult;
+use Grav\Plugin\GravJarvis\Contracts\Exception\CredentialConfigurationException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\HttpTransportException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\MalformedCredentialException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\MissingCredentialException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderAuthenticationException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderCapabilityException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderConfigurationException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderFailureException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderRateLimitException;
+use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderResponseException;
 use Grav\Plugin\GravJarvis\Contracts\ModelCatalog;
 use Grav\Plugin\GravJarvis\Contracts\ModelDescriptor;
 use Grav\Plugin\GravJarvis\Contracts\ModelDiscoveryInterface;
@@ -131,6 +139,20 @@ final class JarvisService implements ProviderIntrospectionServiceInterface
         if ($safeMessage === '') {
             $safeMessage = 'The provider request failed without a safe diagnostic.';
         }
-        return new ProviderFailureException($providerId, $safeMessage);
+        [$category, $retryable] = match (true) {
+            $error instanceof MissingCredentialException => ['credential_missing', false],
+            $error instanceof MalformedCredentialException => ['credential_invalid', false],
+            $error instanceof CredentialConfigurationException,
+            $error instanceof ProviderConfigurationException => ['configuration_invalid', false],
+            $error instanceof ProviderAuthenticationException => ['authentication_failed', false],
+            $error instanceof ProviderRateLimitException => ['rate_limited', true],
+            $error instanceof ProviderCapabilityException => ['unsupported_capability', false],
+            $error instanceof ProviderResponseException => ['response_invalid', false],
+            $error instanceof HttpTransportException && str_contains(strtolower($safeMessage), 'tim')
+                => ['timeout', true],
+            $error instanceof HttpTransportException => ['provider_unavailable', true],
+            default => ['provider_unavailable', true],
+        };
+        return new ProviderFailureException($providerId, $safeMessage, $category, $retryable);
     }
 }

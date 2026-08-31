@@ -1,7 +1,7 @@
 # Jarvis
 
-**Status:** 0.2.0 first Admin2 usability slice implemented; 0.2.1 authenticated
-browser hardening next
+**Status:** 0.2.1 authenticated Admin2 hardening implemented; 0.3.0 reliability
+is the recommended next milestone
 
 **Product name:** Jarvis
 
@@ -208,6 +208,24 @@ streaming, jobs, site-wide targeting, structured frontmatter apply, or MCP
 operations. Those remain separate reviewable increments after the synchronous
 UI boundary.
 
+Version 0.2.1 keeps that product boundary and hardens it. The assistant and
+page panel expose safe provider/model/capability/usage state, categorized
+redacted errors, meaningful retry only for retryable failures, semantic status
+announcements, visible focus, native keyboard operation, responsive wrapping,
+bounded preview overflow, and inherited Admin2 light/dark variables. Failed
+generation or acceptance leaves the current buffer untouched and preserves an
+unaccepted proposal until successful regeneration or explicit Reject.
+
+A test-only provider plugin and random disposable Admin2 account drive the
+signed-in browser regression; neither is shipped in the release ZIP. All six
+actions exercise the actual Admin2 page editor. Reject revokes the receipt,
+successful regeneration revokes the receipt it replaces, and accepted,
+rejected, replaced, expired, wrong-user, wrong-page, stale, or replayed receipts
+fail closed. Optional provider/model preference storage was deliberately not
+added because it was not required for hardening and would introduce a new user-
+data lifecycle. Selection remains whole-buffer because no stable public Admin2
+selection event exists.
+
 ### Proposal, diff, and approval model
 
 Every content or configuration mutation begins as a proposal. A proposal
@@ -317,7 +335,7 @@ permission system.
 
 Provider secrets are server-only environment variables such as
 `GRAV_JARVIS_OPENAI_API_KEY` and `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-Versions 0.1.1 through 0.2.0 accept no secret source other than the process
+Versions 0.1.1 through 0.2.1 accept no secret source other than the process
 environment.
 Configuration may eventually name an environment variable but never contains
 its value. Secrets never enter Admin2 JavaScript, API payloads, prompts, logs,
@@ -489,19 +507,31 @@ deferred.
 The packaged release is `dist/grav-jarvis-0.2.0.zip`, SHA-256
 `1ef863da43c0e0038764f7564e72a77175add1a5c8bce89526c01318817455ae`.
 
-### 0.2.1 — Admin2 hardening (next)
+### 0.2.1 — Admin2 hardening (implemented)
 
-- add a repeatable full signed-in Admin2 browser regression backed by a
-  deterministic server provider, covering sidebar, page panel, all six actions,
-  retry, stale conflict, Accept once, Reject, keyboard use, and narrow/light/
+- added a repeatable full signed-in Admin2 browser regression backed by a
+  deterministic test-only server provider. It covers the sidebar, page panel,
+  all six actions, missing/unavailable/rate-limit states, retry, stale conflict,
+  Reject, Accept once, reload non-persistence, keyboard use, and narrow/light/
   dark layouts;
-- add optional non-secret per-user provider/model preference and clearer
-  provider capability/usage presentation without prompt/response persistence;
-- refine accessibility and user feedback discovered by that browser boundary;
-  and
-- re-evaluate selection-aware editing and structured metadata suggestions only
-  if current Admin2 publishes stable selection/form update events. Otherwise
-  retain whole-buffer content proposals and move to 0.3.0 reliability.
+- hardened random one-time receipts with deterministic expiry/capacity cleanup,
+  actor/route/source/proposal binding, explicit Reject, successful replacement
+  revocation, and cross-user/cross-page/stale/replay denial;
+- classified safe provider failures without exposing provider bodies, stack
+  traces, credentials, authorization headers, endpoint authority, or vendor
+  response structures to Admin2;
+- refined semantic labels/status announcements, focus behavior, disabled state,
+  non-color-only before/proposed context, responsive wrapping, and inherited
+  Admin2 theme variables;
+- retained unaccepted proposals on retryable failure and preserved the unsaved
+  buffer on every failure path. Accept still dispatches only the public replace-
+  buffer event and never saves or publishes; and
+- left optional non-secret provider/model preferences unimplemented to avoid a
+  new persistence surface. Whole-buffer proposals remain explicit because
+  Admin2 still exposes no stable public selection/form mutation contract.
+
+The packaged release is `dist/grav-jarvis-0.2.1.zip`, SHA-256
+`6c956919d47a2af029b8b37700bbfa4fc051948f4d7bfc31ab37150ad3e73de9`.
 
 ### 0.3.0 — reliability and automation
 
@@ -536,10 +566,17 @@ The packaged release is `dist/grav-jarvis-0.2.0.zip`, SHA-256
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI,
-0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0 Admin backend contracts run together with
+0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0/0.2.1 Admin backend contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
+
+`./scripts/test-grav-jarvis-admin-ui.sh` provides the deterministic isolated
+component contract. `./scripts/test-grav-jarvis-admin-browser.sh` is the 0.2.1
+black-box gate: it temporarily installs the test provider, creates a random
+Admin2 account, runs actual authenticated page and editor interactions through
+Chrome/Chromium, scans browser/backend failures, then restores the previous
+plugin, account-index, notification, and cache state.
 
 The continuing strategy is:
 
@@ -561,7 +598,7 @@ Live-provider smoke tests are opt-in, budget-capped, and never a routine release
 prerequisite. No production content mutation or production credential is
 required for regression testing.
 
-Version 0.2.0 also runs `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
+Versions 0.2.0 and 0.2.1 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
 component/event harness proves authenticated same-API browser transport,
 provider-neutral requests, response escaping, graceful absence, current
 unsaved-buffer capture, explicit replace-only Accept, non-mutating Reject, and
@@ -583,7 +620,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 through 0.2.0 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.2.1 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

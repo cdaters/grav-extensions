@@ -1,9 +1,9 @@
 # Jarvis
 
-Jarvis 0.2.0 is the first user-usable Admin2 release of the provider-neutral AI
-service for Grav 2. It adds a permission-filtered general assistant and native
-page-editor context panel to the bounded OpenAI, Anthropic, and configured
-OpenAI-compatible provider foundation.
+Jarvis 0.2.1 hardens the first user-usable Admin2 release of the provider-neutral
+AI service for Grav 2. It provides a permission-filtered general assistant and
+native page-editor context panel on the bounded OpenAI, Anthropic, and
+configured OpenAI-compatible provider foundation.
 
 Page actions are review-first. Jarvis captures the current unsaved Markdown
 buffer, produces a proposal, and shows a before/after comparison. **Accept**
@@ -73,7 +73,7 @@ API routes; the browser never calls a provider endpoint.
 The assistant shows registered providers, discovered models when available,
 safe validation state, loading/error/retry feedback, normalized output, and
 provider-reported usage. A discovery failure leaves the configured provider
-default available. Provider and model choices are not persisted in 0.2.0.
+default available. Provider and model choices are not persisted in 0.2.1.
 
 The page panel supports Rewrite, Proofread, Shorten, Expand, Summarize, and
 Custom Prompt. The internal prompt library has stable action identifiers,
@@ -88,7 +88,7 @@ last event uses `mode: replace`, which keeps the update inside Admin2's normal
 dirty/undo/editor behavior. Jarvis does not dispatch save or publish events.
 
 Selection-aware editing is intentionally deferred: Admin2 2.1.2 does not
-publish a stable selected-text contract. Version 0.2.0 operates on the whole
+publish a stable selected-text contract. Version 0.2.1 operates on the whole
 current buffer rather than reaching into editor internals.
 
 ### Permissions
@@ -126,6 +126,12 @@ proposal hashes plus expiry—never the prompt, page content, or provider output
 Accept rechecks the actor, route, current unsaved-buffer hash, proposal hash,
 page update permission, and one-time receipt. Changed, expired, mismatched, or
 replayed proposals fail closed.
+
+Reject explicitly revokes its receipt. A successful regeneration revokes the
+receipt it replaces, while a failed regeneration leaves the reviewed proposal
+available for a safe retry. Receipts are capped, cleaned deterministically, and
+remain bound to the original actor and route. Cross-user, cross-page, expired,
+rejected, replaced, accepted, and replayed receipts cannot be used.
 
 ## Public contracts
 
@@ -414,7 +420,7 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete frozen 0.1.x provider suite plus the 0.2.0 Admin backend
+Run the complete frozen 0.1.x provider suite plus the 0.2.1 Admin backend
 contract with host PHP or the repository's DDEV fixture:
 
 ```bash
@@ -427,11 +433,24 @@ Run the deterministic browser-component contract with Node.js:
 ./scripts/test-grav-jarvis-admin-ui.sh
 ```
 
+Run the authenticated Admin2 regression in the repository's disposable DDEV
+fixture. The harness installs only test fixtures, creates a random temporary
+super-admin account, restores the prior plugin/account/index/notification
+state, and clears Grav's cache on exit:
+
+```bash
+./scripts/test-grav-jarvis-admin-browser.sh
+```
+
 The Admin contracts cover all six actions, bounded context and truncation,
 frontmatter/media filtering, known-secret redaction, provider/model/status
 data, one-time acceptance and replay/stale failure, absence handling, official
 unsaved-buffer events, Reject non-mutation, and absence of save/publish or
-browser-to-provider traffic. No live credential or network provider is needed.
+browser-to-provider traffic. The authenticated regression also covers all six
+actions end to end, explicit Reject revocation, one-time Accept, stale and
+replacement behavior, typed retryable failures, accessible keyboard/focus
+semantics, narrow layouts, and inherited light/dark Admin2 themes. No live
+credential, provider network request, or paid API credit is needed.
 
 Repository contributors may explicitly opt into a tiny live end-to-end smoke
 through the public Jarvis service:
@@ -452,7 +471,7 @@ fixtures remain the release gate; a live account request is optional.
 - Gemini and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
-- retries, caching, cost reports, chunking, and background jobs
+- automatic provider retries, caching, cost reports, chunking, and background jobs
 - selection-aware editing until Admin2 exposes a stable selection contract
 - structured metadata/frontmatter proposal application
 - prompt/response history or conversational memory

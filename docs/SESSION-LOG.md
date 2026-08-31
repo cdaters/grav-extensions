@@ -663,3 +663,55 @@ suite inventory incremental and risk ordered.
   Selection/metadata editing is reconsidered only if stable public Admin2 events
   exist. No 0.2.1, Commander, jobs, batch, MCP, new provider, push, tag, or
   publish work was started.
+
+## 2026-08-30 — Jarvis 0.2.1 Admin2 hardening and signed-in regression
+
+- Re-read the canonical state, roadmap, architecture, Jarvis specification/ADR/
+  manual, security/testing guidance, 0.2.0 implementation, and frozen 0.1.x
+  baseline before editing. Preserved unrelated Site Workshop/Cache Hearth and
+  Spitfire-theme work.
+- Hardened the signed-in assistant and page panel with categorized redacted
+  provider failures, meaningful retry-only behavior, proposal preservation on
+  failed generation/acceptance, provider/model/capability/usage presentation,
+  semantic status/error announcements, complete labels, visible focus, native
+  keyboard actions, narrow responsive layout, bounded preview overflow, and
+  inherited Admin2 light/dark variables. Manual browser inspection found and
+  fixed a real super-user approval-state mismatch in the bootstrap response.
+- Added explicit Reject/discard and successful-regeneration receipt revocation.
+  Opaque 15-minute receipts remain hash-only and actor/route/source/proposal
+  bound; owner-only storage is capped at 128 and deterministic expiry cleanup
+  removes malformed/expired records. Accepted, rejected, replaced, expired,
+  cross-user, cross-page, stale, and replayed identifiers fail closed.
+- Added five deterministic backend hardening checks plus expanded isolated UI
+  assertions. Added a test-only provider plugin and Playwright Core harness that
+  creates a random disposable Admin2 account, exercises the real Admin page and
+  page editor in system Chrome/Chromium, inspects browser/backend failures, and
+  restores prior plugin/account-index/notification/cache state. The eleven
+  signed-in checks cover both selectors/surfaces, missing/unavailable/rate-limit
+  states and retry, API-token/provider-authority denial, all six action IDs and
+  bounded exact whole-buffer context, preview, Reject, Accept once, duplicate/
+  stale/replacement behavior, reload non-persistence, keyboard/labels, narrow/
+  theme behavior, and absence of save/publish requests or unexpected errors.
+- Preserved every frozen 0.1.x interface and the 0.2.0 unsaved-buffer-only
+  safety contract. Optional non-secret provider/model preferences were omitted
+  because hardening did not justify a new persisted user-data lifecycle.
+  Selection-aware and structured metadata work remains deferred because Admin2
+  still provides no stable public event for it.
+- Passed sixty-three deterministic PHP/component checks and eleven signed-in
+  browser checks; DDEV PHP 8.3.31 syntax/runtime/cURL; Node and shell syntax;
+  Composer, JSON, repository/Grav YAML, repository preflight, changed-Markdown
+  links, whitespace/hygiene, source/package credential scans; ZIP integrity;
+  packaged 0.2.0-to-0.2.1 upgrade; fresh packaged 0.2.1 install; Grav cache
+  clear; public/Admin/Jarvis/page health; anonymous denial; browser console/page
+  error inspection; and recent Jarvis log inspection. Host PHP remains absent,
+  so host preflight truthfully skipped PHP. No live provider call or charge was
+  made. Temporary browser and package fixtures were removed from DDEV.
+- Packaged `dist/grav-jarvis-0.2.1.zip`, SHA-256
+  `6c956919d47a2af029b8b37700bbfa4fc051948f4d7bfc31ab37150ad3e73de9`.
+  All earlier versioned Jarvis packages remain intact.
+- Recommended Jarvis 0.3.0 reliability next, beginning with a bounded additive
+  contract/design checkpoint for transient-only retry, privacy-scoped cache
+  identity/storage, provider-reported versus estimated usage and versioned
+  cost data, budgets, and Grav-aware chunk/synthesis provenance. Do not begin
+  jobs, Commander, batch, MCP, automatic apply, or new providers in that first
+  reliability checkpoint.

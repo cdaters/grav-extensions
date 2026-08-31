@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.1 — 2026-08-30
+
+- Hardened the Admin2 assistant and page panel across authenticated lifecycle,
+  keyboard, narrow-screen, inherited light/dark-theme, loading, validation,
+  retry, and safe categorized-error states without widening provider authority.
+- Added explicit Reject receipt revocation, replacement-receipt invalidation,
+  deterministic expiry/capacity handling, cross-user/cross-page denial, replay
+  protection, and a bounded private proposal store containing hashes only.
+- Kept failed generation, stale acceptance, and transient provider errors
+  recoverable in the UI: reviewed content remains visible until a successful
+  retry or explicit Reject, and Accept still changes only the unsaved buffer.
+- Added an authenticated, deterministic Playwright regression using a temporary
+  Admin2 account and test-only provider fixture. It covers all six actions,
+  provider/model states, token and authority boundaries, receipt lifecycle,
+  accessibility, responsive layout, theme inheritance, and no save/publish or
+  browser-to-provider traffic.
+- Added backend hardening tests for opaque receipts, expiry, capacity, replay,
+  replacement, failure classification, safe API codes, and fixed provider
+  authority. No live provider, network request, or paid API credit is required.
+- Preserved the frozen 0.1.x public interfaces and the 0.2.0 whole-buffer review
+  and approval contract. Per-user preference persistence and selection-aware
+  editing remain deliberately deferred.
+
 ## 0.2.0 — 2026-08-30
 
 - Added a permission-filtered Admin2 Jarvis page with provider/model selection,

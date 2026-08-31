@@ -12,6 +12,7 @@ contract_files=(
     "$contract_dir/compatible-provider.php"
     "$contract_dir/anthropic-provider.php"
     "$contract_dir/admin-backend.php"
+    "$contract_dir/admin-hardening.php"
 )
 
 if command -v php >/dev/null 2>&1; then

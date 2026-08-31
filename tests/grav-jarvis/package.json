@@ -1,0 +1,8 @@
+{
+  "name": "grav-jarvis-browser-regression",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "playwright-core": "1.62.1"
+  }
+}

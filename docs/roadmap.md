@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.2.0 development release; permission-filtered Admin2 assistant and review-first page proposals available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.2.1 development release; hardened permission-filtered Admin2 assistant, receipt lifecycle, and authenticated browser regression available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -73,13 +73,15 @@ The version sequence is:
    actions; response/diff preview; explicit Accept/Reject into the unsaved
    editor buffer; source/permission rechecks; and graceful absence/failure
    states with no automatic save.
-7. **0.2.1 — Admin2 hardening (next):** add a full authenticated browser
-   regression with a deterministic server provider, non-secret per-user
-   provider/model preference, clearer capability/usage presentation, and
-   accessibility/responsive refinements. Selection-aware editing and
+7. **0.2.1 — Admin2 hardening (implemented):** full authenticated browser
+   regression with a deterministic server provider; all-six-action and receipt-
+   lifecycle coverage; categorized retryable failures; clearer capability/
+   usage presentation; and accessibility, keyboard, responsive, and inherited-
+   theme refinements. Optional provider/model preferences were not persisted:
+   hardening required no new user-data store. Selection-aware editing and
    structured metadata proposals remain conditional on stable public Admin2
-   editor/form events; do not reach into editor internals.
-8. **0.3.0 — reliability:** retries, privacy-safe caching, usage/cost reporting,
+   editor/form events; Jarvis does not reach into editor internals.
+8. **0.3.0 — reliability (next):** retries, privacy-safe caching, usage/cost reporting,
    Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
    checkpoints, and a stable consumer contract.
 9. **0.4.0 — agents and site-wide work:** permission-checked API/MCP

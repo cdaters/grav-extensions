@@ -20,11 +20,11 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Jarvis 0.2.0 (`grav-jarvis`) is the first genuinely user-usable Admin2 release
-under Decision 0004. The 0.1.0 `JarvisServiceInterface`, `ProviderInterface`,
-and `ProviderRegistryInterface` files and every additive 0.1.1 validation,
-discovery, credential, HTTP, and DTO interface remain byte-identical to the
-compatibility baseline.
+Jarvis 0.2.1 (`grav-jarvis`) hardens the first genuinely user-usable Admin2
+release under Decision 0004. The 0.1.0 `JarvisServiceInterface`,
+`ProviderInterface`, and `ProviderRegistryInterface` files and every additive
+0.1.1 validation, discovery, credential, HTTP, and DTO interface remain byte-
+identical to the compatibility baseline.
 
 Admin2 now receives a permission-filtered Jarvis sidebar page and a native
 `onApiContextPanels` page-editor panel. The main page provides provider/model
@@ -46,17 +46,25 @@ Every edit is a proposal with before/after review. A reviewable proposal gets a
 private 15-minute one-time receipt containing only actor/route/source/proposal
 hashes and expiry. Accept requires `grav-jarvis.approve`, effective page update
 authority, matching current unsaved-buffer/proposal hashes, and unused receipt;
-it dispatches only Admin2's replace-buffer event. Reject changes nothing.
-Content-truncated or over-65,536-byte output is preview-only. No Jarvis route or
-component saves, publishes, deletes, executes, or persists prompt/page/output
-content.
+it dispatches only Admin2's replace-buffer event. Reject changes no content and
+explicitly revokes the receipt. Successful regeneration revokes the replaced
+receipt; failed generation preserves the reviewed proposal. Active receipts
+are capped at 128 and deterministic expiry cleanup keeps storage bounded.
+Actor, route, source, proposal, expiry, rejection, replacement, and one-time
+consumption all fail closed. Content-truncated or over-65,536-byte output is
+preview-only. No Jarvis route or component saves, publishes, deletes, executes,
+or persists prompt/page/output content.
 
 Permissions are `grav-jarvis.access`, `grav-jarvis.use`, and
 `grav-jarvis.approve`; page context/accept also use API plugin page read/write,
 frontmatter ACL, API-key scope, demo, and super-user rules. Authenticated Grav
 API requests use fixed routes and Admin2's API token with browser credentials
 omitted. Missing Jarvis/provider/credential/model paths disable or fail only
-Jarvis controls with concise redacted errors.
+Jarvis controls with categorized redacted errors. Retry is offered only for
+transient failure categories, and an existing unaccepted proposal survives a
+failed retry. The UI uses semantic status/error announcements, labels and
+visible focus, native keyboard actions, bounded responsive preview areas, and
+Admin2's inherited light/dark variables.
 
 `BoundedHttpTransport` provides the production network path behind the existing
 `HttpTransportInterface`. Exact HTTPS origin/base paths are allowlisted; every
@@ -101,10 +109,23 @@ public service/registry, environment resolver, bounded production transport,
 adapter, and neutral result. Both shell and PHP entry points require explicit
 `GRAV_JARVIS_LIVE_SMOKE=1`; absence of the selected credential is a clean skip.
 Output is capped and request/response content is not printed. No credential was
-available for the 0.2.0 release validation, so no live request was attempted.
+available for the 0.2.1 release validation, so no live request was attempted.
+
+The 0.2.1 black-box gate temporarily installs a deterministic test-only
+provider in the canonical DDEV fixture, creates a random disposable signed-in
+Admin2 account, and drives both real Admin2 Jarvis surfaces through system
+Chrome/Chromium. It covers both selectors, safe provider states and retry, all
+six actions, Reject, Accept exactly once, stale/regeneration behavior, unsaved-
+only reload, keyboard/labels, narrow layout, inherited light/dark theme, API-
+token and provider-authority denial, no save/publish request, browser errors,
+and recent Jarvis fatal logs. Cleanup restores the previous plugins, account
+index, notifications, and Grav cache. The fixture plugin/account never enter
+the release ZIP.
 
 Selection-aware editing is deferred because Admin2 2.1.2 publishes no stable
-selected-text contract. Jarvis still has no CLI command, Gemini/OpenRouter
+selected-text contract. Optional provider/model preference persistence was
+also omitted because hardening did not justify a new user-data lifecycle.
+Jarvis still has no CLI command, Gemini/OpenRouter
 adapter, Commander integration, background job, streaming/tool call, durable
 conversation/proposal history, structured frontmatter apply, automatic page
 mutation, or MCP workflow.
@@ -178,7 +199,7 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- Jarvis's full suite passes fifty-eight checks: seven
+- Jarvis's deterministic source suite passes sixty-three checks: seven
   frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
   provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
   Those checks cover destination policy/DNS pinning, generic service routing,
@@ -199,18 +220,25 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   only truncation. Seven Node browser-component checks add same-API/no-store
   transport, graceful absence, output escaping, official unsaved-buffer events,
   replace-only Accept, non-mutating Reject, and no save/publish/provider path.
+  Five 0.2.1 backend hardening checks add opaque/capped/expiring receipts,
+  cross-user/cross-page/rejected/replaced/stale/replay denial, safe failure
+  categories, fresh regeneration, coded errors, and fixed provider authority.
+  The separate signed-in browser gate passes eleven end-to-end checks covering
+  both Admin2 surfaces and all six actions through actual editor interactions.
 - Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
   structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
-  YAML parsing, Composer validation, JavaScript syntax/component contracts,
-  ZIP integrity, 0.1.4-to-0.2.0 packaged upgrade, fresh 0.2.0 package install,
-  Grav cache clearing, cURL availability, public/Admin HTTP 200, anonymous 401,
-  scoped 403, authenticated Jarvis/API/Admin2-asset 200, and clean relevant log
-  checks pass. Host PHP remains unavailable, so root preflight truthfully skips
-  host PHP; DDEV PHP 8.3.31 supplied lint/runtime evidence. No live credential
-  existed, so no live provider request or charge occurred.
-- The verified Jarvis package is `dist/grav-jarvis-0.2.0.zip`, SHA-256
-  `1ef863da43c0e0038764f7564e72a77175add1a5c8bce89526c01318817455ae`.
-  Versioned 0.1.0 through 0.1.4 packages and hashes remain intact.
+  YAML parsing, Composer validation, JavaScript/shell syntax and component
+  contracts, changed-Markdown link validation, source/package credential
+  scans, ZIP integrity, packaged 0.2.0-to-0.2.1 upgrade, fresh 0.2.1 package
+  install, Grav cache clearing, cURL availability, public/Admin/Jarvis/page
+  HTTP health, anonymous 401, authenticated signed-in Admin2 flows, browser
+  console/page errors, and clean relevant log checks pass. Host PHP remains
+  unavailable, so root preflight truthfully skips host PHP; DDEV PHP 8.3.31
+  supplied lint/runtime evidence. No live credential existed, so no live
+  provider request or charge occurred.
+- The verified Jarvis package is `dist/grav-jarvis-0.2.1.zip`, SHA-256
+  `6c956919d47a2af029b8b37700bbfa4fc051948f4d7bfc31ab37150ad3e73de9`.
+  Versioned 0.1.0 through 0.2.0 packages and hashes remain intact.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -260,20 +288,18 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.2.1 Admin2 hardening is next. Jarvis 0.2.0 is complete; do not extend
-it after the focused release commit.
+Jarvis 0.2.1 Admin2 hardening is complete. Jarvis 0.3.0 reliability is the
+recommended next milestone, but no 0.3.0 implementation has started.
 
 ## Exact next action
 
-Build a repeatable full signed-in Admin2 browser regression using a deterministic
-server provider. Cover sidebar and page panel discovery, all six actions,
-missing/failing provider states, retry, visible truncation, before/after review,
-Reject, Accept once, stale source, keyboard use, and narrow/light/dark layouts.
-Then add optional non-secret per-user provider/model preference and accessibility
-refinements justified by that evidence. Re-evaluate selection/metadata actions
-only if Admin2 publishes stable public editor/form events; never reach into
-private Editor Pro state. Do not begin 0.3.0 reliability or Commander work in
-the 0.2.1 checkpoint.
+Before writing 0.3.0 code, specify the additive provider-neutral reliability
+contracts and freeze their release boundary: bounded transient-only retry,
+privacy-scoped cache identity/storage, provider-reported versus estimated usage
+and versioned cost data, request/site budgets, and Grav-aware chunk/synthesis
+provenance. Decide which pieces belong in the stable plugin-facing service
+without changing frozen 0.1.x interfaces. Keep automatic apply, jobs, Commander,
+batch, MCP, and new providers outside this first reliability design checkpoint.
 
 ## Explicitly deferred
 
@@ -308,7 +334,9 @@ the 0.2.1 checkpoint.
    `docs/decisions/0004-grav-jarvis-agent-framework.md` completely.
 5. Read `plugins/grav-jarvis/README.md`, then run
    `./scripts/test-grav-jarvis-contract.sh` and
-   `./scripts/test-grav-jarvis-admin-ui.sh`.
+   `./scripts/test-grav-jarvis-admin-ui.sh`. For Admin2 work also run
+   `./scripts/test-grav-jarvis-admin-browser.sh` against the disposable DDEV
+   fixture; it restores its temporary account/plugin state on exit.
 6. Rebuild with `./scripts/package-extension.sh plugin grav-jarvis` after any
    package change; checksums are expected to change.
 7. Run `git status` and `git log --oneline --decorate -10`.
