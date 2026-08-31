@@ -294,6 +294,14 @@ namespace GravCaxtonContract {
     $plugin->onApiBlueprintResolved($deniedBlueprint);
     expectSame('markdown', $deniedBlueprint['fields'][0]['type'], 'Denied users must retain the normal Markdown field.');
 
+    $jarvisOnlyBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-jarvis.use', 'grav-jarvis.approve']),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $plugin->onApiBlueprintResolved($jarvisOnlyBlueprint);
+    expectSame('markdown', $jarvisOnlyBlueprint['fields'][0]['type'], 'Jarvis permission alone must not bypass Caxton/page-editor authority.');
+
     $noSourceBlueprint = new \RocketTheme\Toolbox\Event\Event([
         'context' => 'page',
         'user' => new FakeUser(['grav-caxton.use']),

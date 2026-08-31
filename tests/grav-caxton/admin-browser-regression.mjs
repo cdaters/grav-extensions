@@ -253,7 +253,8 @@ try {
     detail: {mode: 'replace', content: 'Editable sentence.\n\nUnchanged context.\n'},
   })));
   await selectVisualText('Editable sentence.');
-  await field.getByRole('button', {name: 'Jarvis'}).click();
+  await field.getByRole('button', {name: 'Jarvis'}).focus();
+  await page.keyboard.press('Enter');
   const jarvisDialog = field.locator('[data-caxton-jarvis-dialog]');
   await jarvisDialog.waitFor({state: 'visible'});
   await field.locator('[data-caxton-jarvis-provider]').selectOption('browser-fixture');
@@ -305,7 +306,7 @@ try {
   await field.getByRole('button', {name: 'Undo'}).click();
   assert.equal((await snapshot()).content, beforeProposal);
   await field.getByRole('button', {name: 'Visual'}).click();
-  console.log('PASS: deterministic Jarvis proposal preview, Reject, Accept, and one-step undo/redo stay in the unsaved buffer');
+  console.log('PASS: keyboard-opened deterministic Jarvis preview, Reject, Accept, and one-step undo/redo stay in the unsaved buffer');
 
   const responsive = await field.evaluate((element) => {
     document.documentElement.classList.add('dark');
