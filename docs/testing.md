@@ -132,7 +132,7 @@ produces the expected authenticated request body.
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
 | Jarvis | provider normalization/redaction, credential encryption/resolution, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.3 Sodium/OpenSSL credential/readiness/package boundaries, 0.3.2 provider setup, 0.3.0 reliability, 0.3.1 Commander consumer proof, and deterministic signed-in regressions implemented; transactional master-key rotation, streaming, and later batch/job boundaries remain |
-| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 PHP contract, 0.1.1 Node/Chrome engine proof, and 0.2.1 signed-in Admin2 structural/theme boundary implemented |
+| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation, visual rhythm, optional Jarvis proposals | 0.3.0 PHP/Node/Chrome/signed-in Admin2 authoring, computed-spacing, and deterministic Jarvis present/absent/failure boundary implemented |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -185,12 +185,26 @@ no-edit mode switches, localized visual editing, opaque Twig survival, public
 unsaved content, reload-before-Save non-persistence, ordinary Save persistence,
 safe link/title handling, strikethrough, paragraph split/undo/join, quote/list
 structure, ordered toolbar settings, explicit visual/source dark contrast,
-narrow layout, and no relevant browser/page/log error.
+narrow layout, and no relevant browser/page/log error. Version 0.3.0 extends
+that signed-in gate with computed light/dark spacing for paragraph→paragraph,
+heading→paragraph, paragraph/list adjacency, quote adjacency, code adjacency,
+and protected-card adjacency while Admin2 reset styles are active. It asserts
+visible gaps and list markers, no styling `change` event, unchanged source,
+unchanged dirty state, and no page mutation.
 
-Caxton 0.2.2 must add computed-style regression coverage for visible separation
-between adjacent paragraphs and around headings, lists, blockquotes, and code
-blocks in both themes. The assertion must also prove mounting and theme changes
-emit no content change and preserve the exact source value.
+The same runner temporarily registers Jarvis's deterministic offline browser
+fixture without changing the installed Jarvis package. It proves the optional
+control, provider/model discovery, text-only Original/Proposed review, Reject,
+Accept into the unsaved Visual and Source buffers, one-step undo/redo, no page
+write, and clean browser/log state. `tests/grav-caxton/jarvis.php` exercises all
+seven actions, provider validation/model discovery, missing/absent/no-provider
+states, rate-limit/authentication/timeout/budget categories, UTF-8 byte offsets,
+hash-only receipts, read-only code/Explain behavior, protected-target refusal,
+custom-prompt separation, stale source, cross-user/page, one-time Accept, and
+usage/cost/reliability metadata entirely offline. Controller and blueprint
+contracts retain separate Caxton/Jarvis/page permissions; direct expanded
+permission-denial/receipt-expiry browser matrices remain the 0.3.1 hardening
+target.
 
 ### Jarvis AI boundary contract
 

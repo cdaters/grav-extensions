@@ -17,7 +17,7 @@ can never be mistaken for an installable Grav package.
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
 | 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.3 encrypted credential-usability/readiness release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
-| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.2.1 structural-authoring and theme hardening implemented; 0.2.2 media/insertion hardening next |
+| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.3.0 visual-rhythm/authoring and optional Jarvis proposals implemented; 0.3.1 accessibility/proposal hardening next |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -168,22 +168,31 @@ Editor Pro behavior reference.
    GFM-strikethrough flows; localized paragraph split/join transactions;
    active/disabled state; selection/focus restoration; read-only and keyboard
    regressions; and no broader persistence authority.
-5. **0.2.2 — media and insertion hardening (exact next milestone):** integrate
-   the current page-media inventory through public Admin2 data/events; add safe
+5. **0.3.0 — visual rhythm, authoring, and optional Jarvis proposals
+   (implemented):** this coherent additive release absorbs the committed 0.2.2
+   authoring requirements and the first optional Jarvis boundary. It integrates
+   the current page-media inventory through public Admin2 data/events; adds safe
    media insertion/editing, horizontal rules, code-fence language selection,
-   and multi-item list operations; add explicit paragraph/heading/list/quote/
+   and multi-item list operations; adds explicit paragraph/heading/list/quote/
    code-block vertical rhythm that is independent of Admin2's CSS reset and
    cannot dirty or rewrite source; preserve exact unresolved media and prove
    upload/selection permissions without introducing a Caxton upload or save
-   route.
-6. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
+   route. It also uses only public Jarvis services for seven selection/block
+   actions, provider/model discovery, text-only preview, one-time hash-bound
+   Accept into the unsaved buffer, stale/replay protection, usage/cost feedback,
+   and deterministic present/absent/failure tests. Caxton has no Jarvis package
+   dependency, credentials, provider HTTP, autosave, publish, job, batch, or MCP
+   authority.
+6. **0.4.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
    links, lists, quotes, tables, fenced code, HTML/Twig/shortcode inert views,
    extension client modules, insertion palette, and page-form integration.
-7. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
-   modes, safe reorder, large-document profiling, and evidence-driven adapters.
-8. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
-   preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
-   reporting exclusively through public Jarvis contracts.
+7. **0.3.1 — accessibility and proposal hardening (exact next milestone):**
+   dialog focus trap/return and announcements; keyboard-only Jarvis control;
+   high contrast/reduced motion, RTL, IME, touch, zoom, and narrow-layout proof;
+   direct API permission/expiry/protected-boundary coverage; and large-document
+   proposal mapping without expanding authority.
+8. **0.3.x — further polished authoring:** focus/split modes, safe reorder,
+   large-document profiling, and evidence-driven adapters.
 9. **1.0.0 — supported editor platform:** public-extension compatibility and
    deprecation policy, complete fallback/migration guidance, and release-quality
    accessibility/security/browser/large-document evidence.

@@ -45,7 +45,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
 | Jarvis | Plugin | 0.3.3 encrypted credential-usability and host-readiness release; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
-| Caxton | Plugin | 0.2.1 Admin2 structural-authoring and theme hardening release | `user/plugins/grav-caxton` |
+| Caxton | Plugin | 0.3.0 visual-rhythm, authoring, and optional Jarvis proposal release | `user/plugins/grav-caxton` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -90,15 +90,17 @@ localized-patch service as `$grav['gravCaxton']`, preserves unsafe or unknown
 constructs as inert opaque blocks, and accepts trusted plugin extensions through
 `onCaxtonExtensionRegister`. A no-edit parse/serialize is byte-identical; the
 public PHP edits currently allowed are plain headings and plain single-line
-paragraphs guarded by a source SHA-256. Version 0.2.1 preserves every 0.1.0
-public contract and hardens the private, pinned ProseMirror/CodeMirror Admin2
-field with explicit light/dark palettes, ordered safe toolbar configuration,
-links, quotes, lists, code blocks, GFM strikethrough, and localized paragraph
-split/join keyboard transactions. Visual mode hides Markdown punctuation;
+paragraphs guarded by a source SHA-256. Version 0.3.0 preserves every 0.1.0
+public contract and completes the planned media/insertion work: scoped visual
+rhythm independent of Admin2 resets, explicit light/dark palettes, configurable
+structural tools, page-media and reference-link editing, horizontal rules, code
+languages, and improved list behavior. Visual mode hides Markdown punctuation;
 Source mode exposes the exact Markdown; ambiguous constructs remain inert
-protected cards. Only ordinary Admin2 Save/Publish can persist the current
-value.
-Jarvis is an optional future proposal service and is not a dependency. Read the
+protected cards. Optional Jarvis actions now use only public Jarvis contracts
+for bounded selection/block proposals, text-only Original/Proposed review,
+one-time Accept into the unsaved buffer, and usage/cost feedback. Caxton works
+unchanged without Jarvis, and only ordinary Admin2 Save/Publish can persist the
+current value. Read the
 [Caxton manual](plugins/grav-caxton/README.md),
 [Caxton editor-engine proof](docs/caxton-editor-engine.md),
 [Caxton specification](docs/planned/grav-caxton.md), and

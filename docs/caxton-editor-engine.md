@@ -1,7 +1,7 @@
-# Caxton editor-engine and 0.2.1 Admin2 field
+# Caxton editor-engine and 0.3.0 Admin2 field
 
 This is the dependency, architecture, guarantee, and limitation record for the
-Caxton ProseMirror/CodeMirror adapters and the 0.2.1 Admin2 field. The adapters
+Caxton ProseMirror/CodeMirror adapters and the 0.3.0 Admin2 field. The adapters
 remain private and are not a stable JavaScript extension API.
 
 ## Boundary and source authority
@@ -94,8 +94,9 @@ proof but the package is not a persistence or public-contract dependency.
 The bundle also contains the pinned transitive CodeMirror/Lezer language
 packages, ProseMirror helpers, `markdown-it` 14.3.1, and their small parsing/DOM
 utilities enumerated in the packaged notices. No framework, sanitizer, hosted
-service, network client, collaboration layer, Jarvis code, or reference-plugin
-asset is present.
+service, collaboration layer, Jarvis provider/credential code, or reference-
+plugin asset is present. The 0.3.0 field calls only Caxton's authenticated
+proposal routes; provider networking remains inside Jarvis.
 
 No diff, source-map, DOM-sanitizer, UI-framework, or AST-utility dependency was
 added. Localized source patches make a diff package unnecessary; source maps
@@ -103,8 +104,8 @@ are intentionally disabled; opaque rendering uses DOM text nodes rather than
 sanitizing executable markup; and Lezer plus the bounded one-block Markdown
 bridge provide the required syntax understanding.
 
-The final minified 0.2.1 field bundle is 897,644 bytes (306,410 bytes with
-gzip -9), and the retained proof bundle is 878,032 bytes. Their SHA-256 values
+The final minified 0.3.0 field bundle is 921,750 bytes (312,395 bytes with
+gzip -9), and the retained proof bundle is 879,152 bytes. Their SHA-256 values
 are recorded in `CURRENT-STATE.md`; their dependency and source graph is
 reproducibly built from the exact lock. Admin2 requests the field
 bundle only when it resolves a `caxton` field; further code splitting remains a
@@ -152,7 +153,7 @@ One representative Node 26.7.0 run on the development host observed:
 
 These timings are diagnostic rather than a support promise and naturally vary
 by host/run. The suite enforces only a generous ten-second pathological ceiling.
-The signed-in 0.2.1 gate proves authenticated field loading, hidden Markdown
+The signed-in 0.3.0 gate proves authenticated field loading, hidden Markdown
 punctuation in Visual mode, exact no-edit switches, one localized visual edit,
 opaque Twig survival, reload-before-Save non-persistence, ordinary Save, safe
 links, strikethrough, split/undo/join keyboard behavior, quotes/lists, settings,
@@ -160,11 +161,34 @@ real dark visual/source contrast, narrow layout, and clean Caxton browser/log
 state. IME,
 screen-reader, RTL, and the broader accessibility matrix remain later work.
 
-## Explicit 0.2.1 limitations
+## 0.3.0 authoring, rhythm, and Jarvis boundary
 
-- The toolbar covers only proven symmetric source operations. Media browsing,
-  tables, horizontal-rule insertion, live preview, extension client loading,
-  and rich Grav construct dialogs remain later.
+Version 0.3.0 preserves the same authoritative source string and frozen public
+PHP contracts while adding page-media/reference editing, horizontal rules,
+code-language selection, multi-item list handling, and explicit visual rhythm.
+All document spacing is scoped below `.cx-visual .ProseMirror`: paragraphs use
+1rem trailing space; headings 1.65em above/.55em below; lists, quotes, pre/code,
+rules, media, and opaque cards own their surrounding rhythm; list items stay
+compact; and first/last blocks shed only outer margins. Explicit light/dark
+variables survive Admin2 reset styles without touching source, selection, dirty
+state, or change events. Signed-in Chrome verifies the computed mixed-block
+gaps in both themes.
+
+The optional Jarvis control imports only public Jarvis contracts. Visual and
+Source selections map through the frozen source identity to UTF-8 byte offsets;
+proposals bind a bounded safe target/context to user, route, source, range, and
+hash-only one-time receipt. Original/Proposed output is text-only. Reject does
+not change content; Accept returns a patch only for the unsaved buffer and is
+one-step undoable while the buffer matches. Opaque constructs are excluded,
+code replacement is denied except for an explicit Custom Prompt, and normal
+Admin2 Save/Publish remains the only persistence path. A deterministic offline
+provider proves the actual signed-in route/UI lifecycle without network spend.
+
+## Explicit 0.3.0 limitations
+
+- The toolbar covers only proven symmetric source operations. Tables, live
+  preview, extension client loading, media upload, and rich Grav construct
+  dialogs remain later.
 - Paragraph split and join can localize only contiguous safe paragraph/heading
   ranges. Empty visual paragraphs, operations crossing an opaque block, and
   ambiguous multi-block restructuring are rejected or remain a Source-mode
@@ -179,11 +203,13 @@ screen-reader, RTL, and the broader accessibility matrix remain later work.
   virtualization. Accessibility evidence is limited to semantic labels,
   textbox roles, focusable opaque notes, read-only behavior, and actual browser
   focus in the isolated proof.
-- There is no page-write route, autosave, hidden page copy, Jarvis, Commander,
-  Revision Ledger, collaboration, network, background-job, batch, MCP, or
-  autonomous-write integration.
+- There is no Caxton page-write route, autosave, hidden page copy, provider
+  client, credential path, Commander/Revision Ledger coupling, collaboration,
+  background job, batch, MCP, or autonomous-write integration. Optional Jarvis
+  HTTP routes can only propose/review an unsaved-buffer patch through Jarvis's
+  public service.
 
-## Admin2 0.2.1 boundary
+## Admin2 0.3.0 boundary
 
 The field implements Admin2's injected custom-element tag plus `field`, `value`,
 and bubbling `change` contract. `onApiBlueprintResolved` replaces only page
@@ -199,4 +225,6 @@ formatted text, mode switch, explicit theme palettes, in-page link dialog, and
 distinct protected cards are independent clean-room UI decisions informed by
 the public Editor Pro documentation and user-provided screenshots only. No
 reference source, asset, label set, markup, private API, or persisted editor
-document entered Caxton.
+document entered Caxton. Version 0.3.0's scoped rhythm, media bridge, and
+optional proposal dialogs extend that field contract without changing page
+persistence authority.

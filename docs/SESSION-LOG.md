@@ -1269,3 +1269,56 @@ suite inventory incremental and risk ordered.
 - Required computed-style coverage in light and dark signed-in Admin2. No code,
   package, installed DDEV plugin, version, or release artifact changed in this
   documentation-only checkpoint.
+
+## 2026-08-31 — Caxton 0.3.0 visual rhythm, authoring, and optional Jarvis
+
+- Selected 0.3.0 after reconciling the committed 0.2.2 authoring requirements
+  with the materially larger optional Jarvis boundary. The release preserves
+  all frozen 0.1.0 public PHP contracts and changes no Jarvis source or version;
+  Jarvis 0.3.3 already exposes the required public provider, introspection, and
+  reliability contracts.
+- Completed the authoring slice: page-media browsing/insertion and image edits
+  through Admin2's public current-page bridge, reference-link definitions,
+  horizontal-rule insertion, code-fence language selection, and improved multi-
+  item list behavior. Caxton adds no media upload or page-write endpoint.
+- Added scoped Visual-mode rhythm independent of Admin2 resets: 1rem paragraph
+  separation; 1.65em/.55em heading margins; explicit list, quote, pre/code,
+  rule, media, and protected-card spacing; compact list items; and first/last
+  edge cleanup. Explicit light/dark variables preserve contrast, markers,
+  selection, focus, and toolbar/dialog states without serializing or dirtying
+  content.
+- Added optional public-contract-only Jarvis actions: Rewrite, Proofread,
+  Shorten, Expand, Explain, Summarize, and Custom Prompt. Selection takes
+  priority over the safe containing block in Visual or Source mode; context is
+  bounded, opaque spans are excluded, and code allows read-only actions or an
+  explicit Custom Prompt only.
+- Added text-only Original/Proposed review, explicit Reject, and one-time Accept
+  into the unsaved buffer. Hash-only 15-minute receipts bind actor, route,
+  source, byte range, target, proposal, action, and mutability; stale, replay,
+  cross-user/page, expired, protected, malformed, and provider-failure paths
+  fail closed. Accept remains one-step undoable/redoable and never saves or
+  publishes. Backend checks Caxton/Jarvis/page permissions independently.
+- Deterministic validation passes: frozen PHP contracts, additive Jarvis PHP
+  integration suite, nineteen Node checks, reproducible bundles, actual Chrome,
+  and signed-in DDEV. The signed-in gate measures every required mixed-block
+  gap in light and dark under Admin2 resets with no change/dirty/source/page
+  mutation, then uses the offline Jarvis fixture for Visual/Source proposal,
+  Reject, Accept, undo/redo, responsive UI, clean console, and clean logs.
+- Package upgrade from 0.2.1 to exact 0.3.0 passes PHP 8.3 syntax, cache clear,
+  public/Admin/asset HTTP 200, anonymous proposal API 401, installed-file match,
+  ZIP CRC/one-root inspection, and Jarvis 0.3.3 preservation. Host PHP remains
+  unavailable; all PHP runtime/lint evidence ran honestly in DDEV.
+- Reproducible proof bundle: 879,152 bytes, SHA-256
+  `1ed1a7b03e467a013d0e1f447805419c3cdc83173fa411a69966e0ecc816350f`.
+  Admin2 field: 921,750 bytes (312,395 gzip -9), SHA-256
+  `44e9d7f34fd14d5b4559aa0a6aeeaf6960e20df9dc34a60dce8e5e3bf932df87`.
+  Package `dist/grav-caxton-0.3.0.zip`: 653,091 bytes, SHA-256
+  `d07e493ea286c0487395d194f0bbfc86113b9c7e6c8e428a8f0ef1efa2bc4c4b`.
+  Exact package releases remain installed/enabled as Caxton 0.3.0 and Jarvis
+  0.3.3 in the canonical DDEV site for owner review.
+- Exact next milestone: Caxton 0.3.1 accessibility and proposal hardening—focus
+  trap/return and announcements; keyboard-only, reduced-motion/high-contrast,
+  RTL, IME, touch, zoom, and narrow proof; direct permission/expiry/protected-
+  boundary browser cases; and large-document proposal mapping. Do not start it
+  automatically or add provider code, credentials, upload/save, HTML/Twig/
+  shortcode editing, collaboration, batch, jobs, or MCP authority.

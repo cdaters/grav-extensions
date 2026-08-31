@@ -86,6 +86,38 @@ split/join may patch only contiguous safe paragraph/heading ranges; a range
 crossing opaque source fails closed. Explicit dark styling changes presentation
 only and never evaluates page content.
 
+Caxton 0.3.0 keeps presentation and AI authority separately bounded. Editor-
+scoped light/dark rhythm resets only margins, markers, colors, and focus/
+selection presentation; theme and viewport changes do not serialize source,
+emit `change`, or alter dirty state. Page media is read from Admin2's public
+current-page bridge and becomes Markdown only after an explicit unsaved-buffer
+action; Caxton adds no upload or page-write route.
+
+Optional Jarvis routes require `grav-caxton.use` plus `grav-jarvis.use`; Accept
+also requires `grav-jarvis.approve` and page update authority, while proposal/
+discard require page read authority. Caxton imports only public Jarvis contracts
+and accepts only registered provider identifiers/capabilities. It owns no
+credential, provider endpoint, transport, retry, cache, price, or budget path.
+Selected source and bounded context are sent only after a deliberate action;
+opaque/Twig/shortcode/HTML/reference-definition spans cannot be replacement
+targets. Provider output is bounded plain text in the review UI, never
+`innerHTML`, Twig, shortcode, or executable preview. Before receipt issuance,
+prose results containing raw HTML, Twig, shortcode syntax, reference
+definitions, frontmatter boundaries, or unsafe link/media schemes are rejected;
+explicit custom code replacement must preserve its fenced-block boundary.
+
+Every result receives a random 128-bit one-time receipt lasting 15 minutes.
+Only hashes of actor, page route, source, original target, and proposal are
+stored alongside byte offsets/action/mutability; page source, prompts, output,
+identity, route, credentials, and provider errors are not persisted. Accept
+rechecks actor, route, source SHA-256, byte range, target hash, proposal hash,
+page update authority, and Jarvis approval, then returns only a patch for the
+current unsaved editor value. Reject consumes the receipt; cross-user/page,
+stale, replayed, expired, malformed, oversized, protected-crossing, unknown-
+provider, and unreliable-provider paths fail closed. Normal Admin2 Save/Publish
+remains the only persistence authority. Missing/disabled/failing Jarvis hides
+or fails only the optional control and leaves Caxton fully usable.
+
 The complete trust and preservation contract is in
 [`docs/planned/grav-caxton.md`](planned/grav-caxton.md) and Decision 0005.
 

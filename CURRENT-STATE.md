@@ -106,74 +106,63 @@ subscription credentials. The traveling README also covers Anthropic, billing,
 rotation/removal, production PHP, DDEV, validation, model choice, and categorized
 troubleshooting.
 
-Caxton 0.2.1 is complete as the structural-authoring and theme-hardening release
-for the suite's modern Grav 2 editor. The previous **Page Studio** working name remains
-reconciled into Caxton (`grav-caxton`) and is not a separate product. Decision
-0005 still makes ordinary page source authoritative. All fourteen public 0.1.0
-PHP contract files remain byte-identical and protected by the checked-in
-SHA-256 baseline.
+Caxton 0.3.0 is complete as the visual-rhythm, authoring, and optional Jarvis
+proposal release for the suite's modern Grav 2 editor. The previous **Page
+Studio** name remains a superseded recovery link only. Decision 0005 still makes
+ordinary page source authoritative; all fourteen public 0.1.0 PHP contract
+files remain byte-identical and protected by the checked-in SHA-256 baseline.
+The unchanged foundation registers `$grav['gravCaxton']`, the public source/
+edit/extension contracts, exact bounded parser/serializer, namespaced registry,
+and `onCaxtonExtensionRegister`.
 
-The unchanged runnable PHP foundation registers `$grav['gravCaxton']`, public
-source document/block/diagnostic/edit/service/extension contracts, a bounded
-exact parser/serializer, localized plain-heading/plain-paragraph edits, a
-namespaced registry, and `onCaxtonExtensionRegister`. Version 0.2.0 added the
-self-contained `admin-next/fields/caxton.js` Web Component; 0.2.1 changes only
-private field/adapter behavior and configuration. A permission-
-filtered, idempotent `onApiBlueprintResolved` transformation replaces only page
-`markdown` fields; explicit `editor` fields remain unchanged. `grav-caxton.use`
-controls field use and `grav-caxton.source` separately controls Source mode.
+Version 0.3.0 absorbs every committed 0.2.2 authoring requirement because the
+new optional intelligence boundary is materially larger than a patch release.
+The Admin2 field now reads the current page-media inventory through Admin2's
+public bridge, inserts/edits safe image references, edits inline/reference
+links, inserts horizontal rules, chooses code-fence languages, and supports
+multi-item list Enter behavior. It adds no upload or page-write route. Unknown,
+unsafe, HTML, Twig, shortcode, table, malformed, and ambiguous source remains
+an exact inert text card.
 
-The independent clean-room UI uses a compact configurable toolbar above a
-generous document canvas. The bounded ordered setting accepts only undo/redo,
-heading, bold, italic, GFM strikethrough, inline code, clear formatting, links,
-blockquotes, bullet/numbered lists, code blocks, Source, and separators; unknown
-items fail closed. Visual mode renders those constructs without exposing their
-Markdown punctuation, while Source mode exposes the exact Markdown. Raw HTML,
-Twig, shortcodes, tables, malformed source, unsafe
-URLs, and unknown constructs appear as distinct inert, text-only protected
-cards and are never executed merely by opening the editor.
+Visual mode owns scoped presentation beneath its ProseMirror surface rather
+than inheriting Admin2 resets: paragraphs use 1rem trailing space; headings use
+1.65em above/.55em below; lists, blockquotes, code blocks, horizontal rules,
+media, and protected cards have deliberate surrounding rhythm; list items stay
+compact at .25rem; and only outer first/last margins are removed. Explicit
+light/dark variables preserve contrast, markers, selection, focus, quote/code/
+card boundaries, and toolbar/dialog state. Mounting, theme changes, and resize
+produce no source mutation, serialization, `change`, selection remapping, or
+false dirty state. Signed-in Chrome measures all required mixed-block gaps in
+both themes under Admin2 reset styles.
 
-Links use an accessible in-page dialog—not a nested form or native prompt—with
-optional titles, removal, `Ctrl`/`Command`+`K`, and safe URL validation. Quotes,
-one-block list wrapping/conversion, code-block conversion, strikethrough, and
-format clearing stay localized to the selected safe source. Enter can split a
-non-empty safe paragraph and Backspace can join/delete contiguous safe
-paragraphs; undo, selection, focus, active state, disabled state, and read-only
-behavior are regression-covered. Empty visual paragraphs and operations that
-cross protected source still fail safely or remain Source-mode work.
+Caxton now offers optional Jarvis actions without changing Jarvis 0.3.3 or
+declaring a dependency. The server resolves `$grav['gravJarvis']` only after its
+public contracts exist; Caxton contains no provider adapter, credential,
+endpoint, retry, cache, pricing, budget, background-job, batch, or MCP logic.
+Rewrite, Proofread, Shorten, Expand, Explain, Summarize, and Custom Prompt use
+the current selection first, otherwise its safe semantic block, plus bounded
+context. The same authoritative source/SHA-256 and UTF-16↔UTF-8 byte map support
+Visual and Source mode. Protected/opaque spans are never targets; code permits
+read-only Explain/Summarize or an explicit Custom Prompt only.
 
-The toolbar, visual canvas, protected cards, link dialog, and CodeMirror source
-surface now use explicit light/dark palettes. They no longer rely on the
-browser's generic `Canvas` color, which caused a white editor with nearly white
-text in dark Admin2. Underline remains excluded because ordinary Markdown has
-no portable underline syntax; existing `<u>` HTML remains exact and inert.
+The proposal dialog renders Original and Proposed as text, reports provider,
+model, usage, and estimated cost, and requires Reject or Accept. Reject consumes
+the receipt and leaves content unchanged. Accept rechecks Caxton/Jarvis/page
+permissions and a hash-only 15-minute one-time receipt bound to actor, route,
+source, byte range, target, proposal, action, and mutability, then changes only
+the current unsaved buffer. Cross-user/page, stale, expired, replayed, malformed,
+oversized, unknown-provider, authentication, rate-limit, timeout, budget, and
+unavailable paths fail closed with redacted categories. Accepted content is one-
+step undoable/redoable while the buffer matches. Only ordinary Admin2 Save/
+Publish persists a page.
 
-The browser session retains canonical Markdown plus baseline/current SHA-256.
-No-edit construction, mount, focus, selection, and source/visual switching are
-exact and do not dirty content. Safe headings, paragraphs, marks/links, lists/
-tasks, blockquotes, horizontal rules, fenced code, and inert media receive
-semantic nodes. An intentional edit serializes only its selected safe top-level
-span or one contiguous safe paragraph/heading range for split/join. Frontmatter,
-HTML/script/on-handler source, Twig, shortcodes, tables,
-unsafe URLs, mixed/malformed/unknown syntax, and excessive nesting become
-focusable text-only opaque cards and retain their exact spans. Media does not
-fetch. Unsafe schemes, prototype keys, control characters, NUL, 2-MiB source,
-20,000-span, 128-depth, and replacement limits fail closed or degrade opaque.
-
-Selection mapping returns a result only where exact JavaScript UTF-16 source-
-unit boundaries are provable; opaque content, escapes, entities, and unsafe
-boundaries fail safely. The frozen PHP contracts use byte offsets, so 0.2.0
-adds an explicit same-source/SHA-256 UTF-16-to-UTF-8-byte coordinate map. Split
-surrogate pairs and split UTF-8 code points return no mapping. Engine adapters
-and their lifecycle remain private and replaceable; persisted pages contain no
-editor-engine JSON.
-
-The field owns only Admin2's current unsaved string and emits its documented
-bubbling `change` value. Mode switches produce no change event. Direct visual
-typing is accepted only when it can serialize and patch a safe localized span;
-ambiguous or protected-crossing structural transactions are rejected. There is no Caxton
-HTTP route, autosave, hidden copy, preview renderer, network client, or parallel
-page store. Normal Admin2 Save/Publish remains the only persistence action.
+`grav-caxton.use` controls the field, `grav-caxton.source` Source mode,
+`grav-jarvis.use` optional proposals, and `grav-jarvis.approve` Accept. Proposal
+routes additionally enforce page read/update authority. Missing, disabled,
+misconfigured, credential-less, provider-less, or failed Jarvis hides or fails
+only the compact optional control; all ordinary Caxton editing remains intact.
+The package includes no Jarvis source. Underline remains excluded because
+portable Markdown has no underline syntax; existing `<u>` stays exact/inert.
 
 The clean-room Editor Pro 2.0.10 behavior reference remains only at
 `~/Downloads/editor-pro.zip`, SHA-256
@@ -426,6 +415,28 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Caxton 0.3.0's deterministic DDEV PHP 8.3 contract and integration suites pass.
+  The frozen fourteen-file 0.1.0 hash baseline remains intact; additive checks
+  cover Jarvis-permission/config exposure, all seven actions, provider model/
+  validation contracts, absent/no-provider/failure categories, hash-only one-
+  time receipts, cross-user/page/stale refusal, code/protected restrictions,
+  custom-prompt separation, and usage/cost/reliability data.
+- Nineteen Node component/security/performance tests and the actual-Chrome field
+  proof pass. They additionally cover page-media insertion/image editing,
+  reference-link definitions, horizontal rules, code languages, multi-item
+  lists, Jarvis undo/redo, scoped visual rhythm, light/dark palettes, and exact
+  source preservation. The signed-in DDEV browser gate measures every required
+  mixed-block gap in light and dark under reset styles and proves no styling
+  change/dirty/source/page mutation. It then uses Jarvis's deterministic offline
+  fixture for Visual and Source selection preview, Reject, Accept, undo/redo,
+  no Save, responsive layout, clean console, and clean recent logs.
+- Reproducible 0.3.0 bundles are 879,152 bytes for the proof asset, SHA-256
+  `1ed1a7b03e467a013d0e1f447805419c3cdc83173fa411a69966e0ecc816350f`,
+  and 921,750 bytes (312,395 bytes gzip -9) for the Admin2 field, SHA-256
+  `44e9d7f34fd14d5b4559aa0a6aeeaf6960e20df9dc34a60dce8e5e3bf932df87`.
+  The installable `dist/grav-caxton-0.3.0.zip` is 653,091 bytes, SHA-256
+  `d07e493ea286c0487395d194f0bbfc86113b9c7e6c8e428a8f0ef1efa2bc4c4b`;
+  ZIP CRC and one-root checks pass.
 - Caxton's deterministic PHP contract passes in DDEV PHP 8.3.31 and all
   fourteen 0.1.0 public contract hashes remain byte-identical. It additionally
   proves permission-filtered, nested, idempotent page Markdown-field replacement,
@@ -470,13 +481,11 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   was not modified or included and its own session cleared the error before the
   final audit. Host PHP remains absent, so host preflight truthfully skipped
   PHP; DDEV PHP 8.3.31 supplied PHP syntax/runtime evidence.
-- Exact packaged 0.2.0-to-0.2.1 installation passes in DDEV, including PHP
+- Historical exact packaged 0.2.0-to-0.2.1 installation passed in DDEV, including PHP
   syntax, cache clear, public/Admin/field-asset HTTP 200, version inspection,
-  installed bundle hashes, and recent-log inspection.
-  Caxton 0.2.1 is intentionally left installed at
-  `user/plugins/grav-caxton` for owner review; Commander and Jarvis remain
-  installed and unchanged.
-- The verified package is `dist/grav-caxton-0.2.1.zip` (633,791 bytes), SHA-256
+  installed bundle hashes, and recent-log inspection. It is superseded by the
+  0.3.0 installed state recorded above; Commander and Jarvis remained unchanged.
+- The historical 0.2.1 package is `dist/grav-caxton-0.2.1.zip` (633,791 bytes), SHA-256
   `e4cbc6704eab77e3160c029196ec8c510ece748189b8ee4183a2b2b62e96c5b7`.
   The 0.2.0 archive remains intact at SHA-256
   `8b5b97e13caf527dd68333556ccab417759b6e87b56774f3099677d09a70bd83`.
@@ -621,24 +630,23 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 Jarvis 0.3.3 is complete and packaged as the encrypted credential-usability and
 host-readiness checkpoint.
-Caxton 0.2.1 is complete, packaged, installed in the canonical DDEV site, and
-left there for owner review. Page Studio is a superseded recovery link only.
+Caxton 0.3.0 is complete and is the active packaged/installed review release.
+It reconciles the committed 0.2.2 authoring work with optional Jarvis proposals;
+Page Studio is a superseded recovery link only. Jarvis required no code or
+release change because its existing public 0.3.x contracts were sufficient.
 The previously recommended Commander 0.3.13 work remains paused—not cancelled—
 because the owner explicitly selected Caxton.
 
 ## Exact next action
 
-Implement Caxton 0.2.2 as media and insertion hardening. Read only the current
-page-media inventory through public Admin2 data/events; add safe media reference
-insertion/editing, horizontal-rule insertion, code-fence language selection,
-and bounded multi-item list operations. Correct Visual mode's missing block
-rhythm with Caxton-owned paragraph, heading, list, quote, and code-block spacing
-that survives Admin2's CSS reset without changing Markdown or dirtying the
-field. Preserve unresolved or unsafe media as exact inert source and prove
-media/read/write permission, computed visual spacing, plus ordinary Save-only
-behavior in signed-in DDEV. Do not add a Caxton upload/save route, table/HTML/
-Twig/shortcode visual editing, Jarvis, collaboration, batch, MCP, background
-jobs, autosave, or a parallel page store.
+Implement Caxton 0.3.1 as accessibility and proposal hardening. Add complete
+dialog focus trapping/return and screen-reader announcements; prove keyboard-
+only Jarvis operation, reduced-motion/high-contrast, RTL, IME, touch, zoom, and
+narrow behavior; extend direct API permission-denial, receipt-expiry, Source-
+mode protected-boundary, and large-document proposal-mapping coverage. Keep the
+0.1.0 PHP contracts frozen and do not add provider code, credentials, media
+upload, autosave/publish, HTML/Twig/shortcode editing, collaboration, batch,
+jobs, MCP, or a parallel page store.
 
 ## Explicitly deferred
 
@@ -653,10 +661,11 @@ jobs, autosave, or a parallel page store.
   MCP-facing endpoints remain later work. Rewrite/proofread chunk execution is
   deferred until deterministic structure-preserving reconstruction exists.
 - Caxton's live preview, table/HTML/Twig/shortcode editing, client extension
-  loading, split view, automatic typography replacement, collaboration, and
-  Jarvis proposals remain beyond 0.2.2 media/insertion hardening. Underline
-  remains excluded until a portable source policy exists. Page-
-  field replacement now ships behind configuration and Caxton permissions.
+  loading, media upload, split view, automatic typography replacement,
+  collaboration, autonomous AI, batch/jobs/MCP, and richer inline diff remain
+  deferred. Underline remains excluded until a portable source policy exists.
+  Page-field replacement and optional Jarvis proposals ship behind separate
+  configuration and permissions.
 - Commander 0.3.13 ordinary-Save optimistic-concurrency hardening remains the
   exact next Commander milestone after the explicitly selected Caxton work.
 - The previous File Vault black-box milestone remains required under Decision

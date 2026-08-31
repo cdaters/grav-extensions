@@ -1,9 +1,9 @@
 # Caxton
 
 **Status:** architecture accepted; Page Studio reconciled into Caxton; 0.1.0
-source-fidelity contracts, 0.1.1 editor-engine proof, 0.2.0 first Admin2 field,
-and 0.2.1 structural-authoring/theme hardening implemented; 0.2.2 media and
-insertion hardening next
+source-fidelity contracts through 0.2.1 Admin2 hardening retained; 0.3.0
+completes the committed 0.2.2 authoring work and adds optional public-contract
+Jarvis proposals; 0.3.1 accessibility/proposal hardening next
 
 - **Product name:** Caxton
 - **Plugin slug:** `grav-caxton`
@@ -451,7 +451,11 @@ portable underline syntax; existing `<u>` source remains an exact inert card.
 Automatic typography replacement is also deferred because invisible source
 mutation needs its own explicit policy and fixtures.
 
-### 0.2.2 — media and insertion hardening (exact next milestone)
+### 0.3.0 — visual rhythm, authoring, and optional Jarvis proposals (implemented)
+
+The optional Jarvis boundary materially expands the committed 0.2.2 authoring
+slice, so the coherent additive release is 0.3.0 rather than relabeling the
+scope as 0.2.2 or skipping directly to the previously speculative 0.4.x line.
 
 - read only the current page-media inventory through public Admin2 data/events;
 - insert/edit safe media references without a Caxton upload or persistence API;
@@ -464,9 +468,20 @@ mutation needs its own explicit policy and fixtures.
 - preserve unresolved/unsafe media as exact inert source; and
 - prove media/read/write permission, keyboard, responsive, light/dark, computed
   inter-block spacing, no false change event, and ordinary Save-only behavior
-  in the signed-in DDEV boundary.
+  in the signed-in DDEV boundary;
+- dynamically resolve `$grav['gravJarvis']` and public Jarvis contracts only;
+- expose Rewrite, Proofread, Shorten, Expand, Explain, Summarize, and Custom
+  Prompt on a selection first or its safe containing block in Visual/Source;
+- preserve protected/opaque spans, make code Explain/Summarize read-only, and
+  refuse replacements across unsafe source boundaries;
+- show text-only Original/Proposed review with Reject or one-time Accept into
+  the unsaved buffer, hash-only 15-minute actor/page/source/range receipts,
+  stale/replay refusal, and one-step proposal undo/redo; and
+- reuse Jarvis provider/model validation, reliability, usage, cost, budgets,
+  retries, and environment-only credentials without adding provider code or a
+  Jarvis dependency to the Caxton package.
 
-### 0.2.x — richer Grav constructs
+### 0.4.x — richer Grav constructs
 
 - proven symmetric list/table/media/shortcode adapters;
 - safe insertion registry/palette;
@@ -474,23 +489,23 @@ mutation needs its own explicit policy and fixtures.
 - configuration-aware Markdown capabilities and diagnostics; and
 - optional Revision Ledger visibility without a hard dependency.
 
-### 0.3.x — polished authoring
+### 0.3.1 — accessibility and proposal hardening (exact next milestone)
+
+- complete dialog focus trapping/return and screen-reader announcements;
+- prove keyboard-only Jarvis menus, reduced motion/high contrast, RTL, IME,
+  touch, zoom, and narrow-layout behavior;
+- extend direct API permission-denial/expiry and Source-mode protected-boundary
+  browser cases; and
+- profile proposal mapping on large documents without widening save, provider,
+  batch, job, MCP, or collaboration authority.
+
+### 0.3.x — further polished authoring
 
 - keyboard-first block controls, safe drag/reorder alternative, slash insertion;
 - focus/full-screen mode and possibly split view;
-- responsive, touch, RTL, IME, screen-reader and theme hardening;
 - large-document profiling/virtualization; and
 - collaboration evaluation only after source-patch and ownership semantics are
   proven.
-
-### 0.4.x — optional Jarvis intelligence
-
-- selection/block-aware actions through public Jarvis contracts;
-- bounded context, provider/model status, preview/diff, explicit Accept/Reject,
-  stale selection/source protection, and usage/cost reporting;
-- deterministic Jarvis-present/failure/absence browser coverage; and
-- no provider code, credential path, autosave, publish, jobs, batch, or MCP in
-  Caxton.
 
 ### 1.0.0 — supported editor platform
 
