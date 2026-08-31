@@ -88,7 +88,7 @@ will not begin with the complete assistant or live provider stack.
 
 ## Implementation status
 
-Jarvis 0.2.1 now hardens the first human-facing portion of this decision. The
+Jarvis 0.3.0 completes the first reliability portion of this decision. The
 frozen provider-neutral service remains the only provider seam; Admin2 calls
 fixed authenticated Jarvis routes and never receives credentials or vendor
 wire shapes. The page panel uses public Admin2 whole-buffer events, bounded and
@@ -100,3 +100,22 @@ stale lifecycle behavior, safe provider-error presentation, keyboard/narrow/
 theme behavior, and the absence of save/publish requests. Jarvis has no save,
 publish, delete, Commander, job, or MCP mutation path. Selection-aware work
 remains deferred until Admin2 publishes a stable selection contract.
+
+An additive `ReliabilityServiceInterface` now composes bounded transient-only
+retry, disabled-by-default privacy-scoped response caching, nullable normalized
+usage, operator-versioned fixed-point cost estimates, opt-in operation budgets,
+and deterministic Grav/Markdown chunk provenance around that frozen seam.
+Known budget excesses stop before provider calls; unknown price/usage remains
+explicitly unknown. Cache keys are hashes scoped by installation, actor, page,
+action, provider, and model; bounded owner-only values contain redacted success
+results, never requests or failures. Large-context execution is summarize-only
+with bounded ordered partials and one final synthesis. There is no external
+telemetry, durable AI history/accounting store, job queue, retrieval/RAG layer,
+recursive expansion, automatic mutation, or new provider family.
+
+The next decision checkpoint is a narrow optional Grav Commander consumer in
+0.3.1. It is authorized only if Commander resolves the public/additive service,
+keeps a non-AI fallback, previews before any existing Commander action, and
+retains all of its own permission/containment authority. Jarvis absence,
+misconfiguration, budget denial, or provider failure must never disable
+Commander itself.

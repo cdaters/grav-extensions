@@ -7,6 +7,11 @@ namespace Grav\Plugin\GravJarvis\Admin;
 use Grav\Plugin\GravJarvis\Contracts\CompletionRequest;
 use Grav\Plugin\GravJarvis\Contracts\JarvisServiceInterface;
 use Grav\Plugin\GravJarvis\Contracts\ProviderIntrospectionServiceInterface;
+use Grav\Plugin\GravJarvis\Contracts\ReliabilityContext;
+use Grav\Plugin\GravJarvis\Contracts\ReliabilityServiceInterface;
+use Grav\Plugin\GravJarvis\Contracts\ReliableCompletionResult;
+use Grav\Plugin\GravJarvis\Contracts\UsageReport;
+use Grav\Plugin\GravJarvis\Contracts\CostEstimate;
 use Grav\Plugin\GravJarvis\Contracts\ValidationIssue;
 use InvalidArgumentException;
 use Throwable;
@@ -19,7 +24,8 @@ final class JarvisAdminService
         private readonly JarvisServiceInterface $jarvis,
         private readonly BoundedContextBuilder $contexts,
         private readonly ActionPromptLibrary $prompts,
-        private readonly TransientProposalStore $proposals
+        private readonly TransientProposalStore $proposals,
+        private readonly string $siteScope = 'grav-site'
     ) {
     }
 
@@ -117,21 +123,23 @@ final class JarvisAdminService
     }
 
     /** @return array<string, mixed> */
-    public function complete(string $providerId, ?string $model, string $prompt): array
+    public function complete(string $providerId, ?string $model, string $prompt, string $actor = 'authenticated-admin'): array
     {
         $definition = $this->prompts->generalPrompt($prompt);
-        $result = $this->jarvis->complete(new CompletionRequest(
+        $result = $this->reliable(new CompletionRequest(
             providerId: $providerId,
             input: $definition['input'],
             model: $this->model($model),
             instructions: $definition['instructions'],
             metadata: ['prompt_version' => ActionPromptLibrary::VERSION, 'surface' => 'admin']
-        ));
+        ), new ReliabilityContext($this->siteScope, $actor, 'admin-assistant', $this->operationId(), 'general'));
         return [
-            'provider_id' => $result->providerId,
-            'model' => $result->model,
-            'response' => $result->output,
+            'provider_id' => $result->completion->providerId,
+            'model' => $result->completion->model,
+            'response' => $result->completion->output,
             'usage' => $result->usage->toArray(),
+            'cost' => $result->cost->toArray(),
+            'reliability' => $result->diagnostics,
         ];
     }
 
@@ -160,7 +168,7 @@ final class JarvisAdminService
     ): array {
         $context = $this->contexts->build($page, $content);
         $definition = $this->prompts->pagePrompt($action, $context, $customInstruction);
-        $result = $this->jarvis->complete(new CompletionRequest(
+        $result = $this->reliable(new CompletionRequest(
             providerId: $providerId,
             input: $definition['input'],
             model: $this->model($model),
@@ -170,8 +178,14 @@ final class JarvisAdminService
                 'prompt_version' => ActionPromptLibrary::VERSION,
                 'surface' => 'page-editor',
             ]
+        ), new ReliabilityContext(
+            $this->siteScope,
+            $actor,
+            (string) $context['route'],
+            $this->operationId(),
+            $action
         ));
-        $proposalBytes = strlen($result->output);
+        $proposalBytes = strlen($result->completion->output);
         $acceptAllowed = $context['accept_allowed'] === true
             && $proposalBytes <= self::REVIEWABLE_PROPOSAL_BYTES;
         $receipt = ['id' => null, 'expires_at' => null];
@@ -183,7 +197,7 @@ final class JarvisAdminService
                 $actor,
                 (string) $context['route'],
                 (string) $context['source_hash'],
-                hash('sha256', $result->output)
+                hash('sha256', $result->completion->output)
             );
         }
 
@@ -191,11 +205,13 @@ final class JarvisAdminService
             'proposal_id' => $receipt['id'],
             'expires_at' => $receipt['expires_at'],
             'action' => $action,
-            'provider_id' => $result->providerId,
-            'model' => $result->model,
-            'proposed_content' => $result->output,
+            'provider_id' => $result->completion->providerId,
+            'model' => $result->completion->model,
+            'proposed_content' => $result->completion->output,
             'source_hash' => $context['source_hash'],
             'usage' => $result->usage->toArray(),
+            'cost' => $result->cost->toArray(),
+            'reliability' => $result->diagnostics,
             'context' => [
                 'route' => $context['route'],
                 'title' => $context['title'],
@@ -253,6 +269,30 @@ final class JarvisAdminService
             throw new InvalidArgumentException('The selected model identifier is invalid.');
         }
         return $model;
+    }
+
+    private function reliable(CompletionRequest $request, ReliabilityContext $context): ReliableCompletionResult
+    {
+        if ($this->jarvis instanceof ReliabilityServiceInterface) {
+            return $this->jarvis->completeReliable($request, $context);
+        }
+        $completion = $this->jarvis->complete($request);
+        $usage = UsageReport::fromResult($completion);
+        return new ReliableCompletionResult(
+            $completion,
+            $usage,
+            new CostEstimate('USD', null, null, null, null, false, 'reliability_service_unavailable'),
+            ['attempts' => 1, 'retry_count' => 0, 'cache_hit' => false]
+        );
+    }
+
+    private function operationId(): string
+    {
+        try {
+            return bin2hex(random_bytes(16));
+        } catch (Throwable) {
+            return hash('sha256', uniqid('jarvis-', true));
+        }
     }
 
     /** @param list<array<string, mixed>> $issues */

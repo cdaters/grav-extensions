@@ -20,11 +20,45 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Jarvis 0.2.1 (`grav-jarvis`) hardens the first genuinely user-usable Admin2
-release under Decision 0004. The 0.1.0 `JarvisServiceInterface`,
+Jarvis 0.3.0 (`grav-jarvis`) adds reliability, cost control, and safe large-
+context infrastructure to the user-usable Admin2 release under Decision 0004.
+The 0.1.0 `JarvisServiceInterface`,
 `ProviderInterface`, and `ProviderRegistryInterface` files and every additive
 0.1.1 validation, discovery, credential, HTTP, and DTO interface remain byte-
 identical to the compatibility baseline.
+
+`ReliableJarvisService` decorates the unchanged provider/introspection service
+and is exposed through the additive `ReliabilityServiceInterface`. It provides
+bounded retry only for normalized retryable failures (three attempts/five
+seconds by default), exponential backoff with bounded deterministic jitter,
+normalized retry-after, and safe count/timing diagnostics. Authentication,
+credential, and configuration failures are never retried. One logical Admin
+completion still creates at most one proposal/receipt, so internal attempts do
+not duplicate review or Accept state.
+
+The optional response cache is disabled by default. Eligible named actions use
+SHA-256 canonical keys scoped to hashed installation/actor/page context plus
+action/provider/model. General/custom prompts and failures bypass it. The
+owner-only transient file cache holds only redacted successful results, scope
+hash, issue/expiry, has a five-minute/128-entry default bound, and fails open to
+the provider path. No request or raw prompt is stored as a key/value field.
+
+`UsageReport` adds truthful nullable provider/model/unit/input/output/total/
+cache usage plus request/retry/cache-hit state. `CostEstimator` reads only
+operator-supplied versioned pricing, uses fixed-point nanocurrency arithmetic,
+keeps input/output/cache rates separate, and distinguishes estimates from the
+still-null authoritative billed amount. Unknown/stale pricing or usage remains
+unknown. Disabled-by-default operation budgets can stop known request/retry,
+input-byte, output-unit, per-request cost, or cumulative logical-operation cost
+before the next provider call; unknown cost is disclosed, not falsely enforced.
+
+`GravMarkdownChunker` preserves deterministic source SHA-256 and byte
+provenance across YAML frontmatter, headings/paragraph/list blocks, and fenced
+code. Size, total bytes, chunk count, and synthesis are bounded and fail
+clearly. Version 0.3.0 executes chunks only for summarization: ordered partial
+summaries feed one bounded synthesis. Rewrite/proofread reconstruction is
+deferred rather than risking content integrity. Chunking sees only explicit
+supplied content and has no crawl, retrieval, RAG/vector, or recursive path.
 
 Admin2 now receives a permission-filtered Jarvis sidebar page and a native
 `onApiContextPanels` page-editor panel. The main page provides provider/model
@@ -199,7 +233,7 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
-- Jarvis's deterministic source suite passes sixty-three checks: seven
+- Jarvis's deterministic source suite passes seventy-two checks: seven
   frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
   provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
   Those checks cover destination policy/DNS pinning, generic service routing,
@@ -223,22 +257,30 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   Five 0.2.1 backend hardening checks add opaque/capped/expiring receipts,
   cross-user/cross-page/rejected/replaced/stale/replay denial, safe failure
   categories, fresh regeneration, coded errors, and fixed provider authority.
-  The separate signed-in browser gate passes eleven end-to-end checks covering
+  Five 0.3.0 reliability checks cover bounded timeout/rate-limit retry and
+  exhaustion, retry-after/jitter/non-retryable/budget behavior; cache miss/hit/
+  expiry/capacity and site/user/page/provider/model isolation; hashed keys and
+  request-free private values; nullable usage; known/unknown/versioned decimal-
+  safe costs and retry amplification; and known-versus-unknown budgets. Three
+  chunk checks cover Markdown/frontmatter/fence/list ordering and provenance,
+  oversize/count/truncation bounds, summarize-only partials and bounded final
+  synthesis. Eight Node checks add budget-error and concise usage/cost/retry/
+  cache rendering. The separate signed-in browser gate passes eleven end-to-end checks covering
   both Admin2 surfaces and all six actions through actual editor interactions.
 - Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
   structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
   YAML parsing, Composer validation, JavaScript/shell syntax and component
   contracts, changed-Markdown link validation, source/package credential
-  scans, ZIP integrity, packaged 0.2.0-to-0.2.1 upgrade, fresh 0.2.1 package
+  scans, ZIP integrity, packaged 0.2.1-to-0.3.0 upgrade, fresh 0.3.0 package
   install, Grav cache clearing, cURL availability, public/Admin/Jarvis/page
   HTTP health, anonymous 401, authenticated signed-in Admin2 flows, browser
   console/page errors, and clean relevant log checks pass. Host PHP remains
   unavailable, so root preflight truthfully skips host PHP; DDEV PHP 8.3.31
   supplied lint/runtime evidence. No live credential existed, so no live
   provider request or charge occurred.
-- The verified Jarvis package is `dist/grav-jarvis-0.2.1.zip`, SHA-256
-  `6c956919d47a2af029b8b37700bbfa4fc051948f4d7bfc31ab37150ad3e73de9`.
-  Versioned 0.1.0 through 0.2.0 packages and hashes remain intact.
+- The verified Jarvis package is `dist/grav-jarvis-0.3.0.zip`, SHA-256
+  `5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
+  Versioned 0.1.0 through 0.2.1 packages and hashes remain intact.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -288,18 +330,20 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.2.1 Admin2 hardening is complete. Jarvis 0.3.0 reliability is the
-recommended next milestone, but no 0.3.0 implementation has started.
+Jarvis 0.3.0 reliability is complete. Jarvis 0.3.1 optional Grav Commander
+consumer integration is the recommended next milestone; no Commander code has
+been changed.
 
 ## Exact next action
 
-Before writing 0.3.0 code, specify the additive provider-neutral reliability
-contracts and freeze their release boundary: bounded transient-only retry,
-privacy-scoped cache identity/storage, provider-reported versus estimated usage
-and versioned cost data, request/site budgets, and Grav-aware chunk/synthesis
-provenance. Decide which pieces belong in the stable plugin-facing service
-without changing frozen 0.1.x interfaces. Keep automatic apply, jobs, Commander,
-batch, MCP, and new providers outside this first reliability design checkpoint.
+For Jarvis 0.3.1, first re-audit Grav Commander's existing optional-service and
+preview patterns. Add one bounded assistance path only through
+`JarvisServiceInterface`/`ReliabilityServiceInterface` type checks. Commander
+must work unchanged when Jarvis is absent, disabled, misconfigured, budget-
+blocked, or unavailable; keep Commander permissions, path containment, and
+apply authority inside Commander. Add consumer absence/failure/budget tests
+before any UI integration. Do not add jobs, MCP, batch, tools, new providers,
+or automatic apply.
 
 ## Explicitly deferred
 
@@ -307,8 +351,9 @@ batch, MCP, and new providers outside this first reliability design checkpoint.
   deferred until stable public Admin2 events exist.
 - Gemini and OpenRouter, private/local compatible endpoints, broader compatible
   profiles, live streaming, prompt/response persistence,
-  caching/retries, cost accounting, chunking, background jobs, batch/site-wide
-  workflows, and MCP-facing endpoints remain later work.
+  durable accounting/history, background jobs, batch/site-wide workflows, and
+  MCP-facing endpoints remain later work. Rewrite/proofread chunk execution is
+  deferred until deterministic structure-preserving reconstruction exists.
 - The previous File Vault black-box milestone remains required under Decision
   0003 and is paused, not cancelled: prove anonymous denial, authorized
   delivery, ACL/password/download-limit enforcement, range/resume behavior,
@@ -337,6 +382,8 @@ batch, MCP, and new providers outside this first reliability design checkpoint.
    `./scripts/test-grav-jarvis-admin-ui.sh`. For Admin2 work also run
    `./scripts/test-grav-jarvis-admin-browser.sh` against the disposable DDEV
    fixture; it restores its temporary account/plugin state on exit.
+   The 0.3.0 suite includes `tests/grav-jarvis/reliability.php` and
+   `tests/grav-jarvis/chunking.php` through the contract runner.
 6. Rebuild with `./scripts/package-extension.sh plugin grav-jarvis` after any
    package change; checksums are expected to change.
 7. Run `git status` and `git log --oneline --decorate -10`.

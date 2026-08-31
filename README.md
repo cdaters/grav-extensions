@@ -44,7 +44,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
-| Jarvis | Plugin | 0.2.1 hardened Admin2 assistant and review-first page proposals | `user/plugins/grav-jarvis` |
+| Jarvis | Plugin | 0.3.0 bounded reliability, cost/budget controls, safe chunking, and review-first Admin2 proposals | `user/plugins/grav-jarvis` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension

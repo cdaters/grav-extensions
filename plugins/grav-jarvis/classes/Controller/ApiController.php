@@ -15,6 +15,7 @@ use Grav\Plugin\GravJarvis\Admin\BoundedContextBuilder;
 use Grav\Plugin\GravJarvis\Admin\JarvisAdminService;
 use Grav\Plugin\GravJarvis\Admin\TransientProposalStore;
 use Grav\Plugin\GravJarvis\Contracts\JarvisServiceInterface;
+use Grav\Plugin\GravJarvis\Contracts\Exception\BudgetExceededException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderFailureException;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -54,8 +55,11 @@ final class ApiController extends AbstractApiController
             return ApiResponse::create($this->admin()->complete(
                 $this->providerFromBody($body),
                 $this->optionalString($body, 'model', 256),
-                $this->requiredString($body, 'prompt', 8000)
+                $this->requiredString($body, 'prompt', 8000),
+                $this->actor($request)
             ));
+        } catch (BudgetExceededException $error) {
+            throw $this->budgetFailure($error);
         } catch (ProviderFailureException $error) {
             throw $this->providerFailure($error);
         } catch (InvalidArgumentException $error) {
@@ -98,6 +102,8 @@ final class ApiController extends AbstractApiController
                 $content,
                 $this->optionalProposalId($body, 'replaces_proposal_id')
             ));
+        } catch (BudgetExceededException $error) {
+            throw $this->budgetFailure($error);
         } catch (ProviderFailureException $error) {
             throw $this->providerFailure($error);
         } catch (InvalidArgumentException $error) {
@@ -323,8 +329,18 @@ final class ApiController extends AbstractApiController
             $this->service(),
             new BoundedContextBuilder(),
             new ActionPromptLibrary(),
-            new TransientProposalStore(rtrim($cache, '/\\') . '/grav-jarvis/proposals')
+            new TransientProposalStore(rtrim($cache, '/\\') . '/grav-jarvis/proposals'),
+            $this->siteScope()
         );
+    }
+
+    private function siteScope(): string
+    {
+        $locator = $this->grav['locator'] ?? null;
+        $userPath = is_object($locator) && method_exists($locator, 'findResource')
+            ? (string) $locator->findResource('user://')
+            : '';
+        return 'site:' . hash('sha256', $userPath !== '' ? $userPath : 'grav-default-site');
     }
 
     private function providerFailure(ProviderFailureException $error): ApiException
@@ -345,6 +361,16 @@ final class ApiController extends AbstractApiController
             errorTitle: $title,
             detail: $detail,
             errorCode: 'jarvis_' . $error->category
+        );
+    }
+
+    private function budgetFailure(BudgetExceededException $error): ApiException
+    {
+        return new ApiException(
+            statusCode: 422,
+            errorTitle: 'Jarvis Budget Reached',
+            detail: $error->getMessage(),
+            errorCode: 'jarvis_budget_exceeded'
         );
     }
 

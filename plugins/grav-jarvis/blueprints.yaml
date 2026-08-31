@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.2.1
-description: Permission-filtered Jarvis assistance and review-first page editing for Grav 2 Admin2.
+version: 0.3.0
+description: Reliable, cost-aware Jarvis assistance and review-first page editing for Grav 2 Admin2.
 icon: microchip
 author:
   name: Craig Daters
@@ -31,8 +31,8 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.2 Admin2 assistant
-      text: Jarvis provides a permission-filtered assistant and review-first page proposals in Admin2. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer. Provider credentials remain server-environment-only.
+      title: Jarvis 0.3 reliable Admin2 assistant
+      text: Jarvis adds bounded retries, optional private response caching, usage and estimated-cost reporting, opt-in budgets, and safe Markdown chunking. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer. Provider credentials remain server-environment-only.
       underline: true
 
     admin.show_sidebar:
@@ -87,3 +87,98 @@ form:
       validate:
         required: true
         type: text
+
+    reliability_section:
+      type: section
+      title: Reliability and cost controls
+      text: Retry behavior is bounded. Response caching and budgets are opt-in. Cost figures are estimates based only on operator-supplied versioned pricing; Jarvis never fetches pricing at runtime.
+      underline: true
+
+    reliability.retry.enabled:
+      type: toggle
+      label: Bounded transient retries
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    reliability.retry.max_attempts:
+      type: number
+      label: Maximum attempts
+      default: 3
+      validate: { min: 1, max: 8 }
+
+    reliability.cache.enabled:
+      type: toggle
+      label: Private response cache
+      help: Disabled by default. Custom prompts are never cache-eligible.
+      highlight: 0
+      default: 0
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    reliability.cache.ttl_seconds:
+      type: number
+      label: Cache lifetime in seconds
+      default: 300
+      validate: { min: 1, max: 86400 }
+
+    reliability.cache.max_entries:
+      type: number
+      label: Maximum cache entries
+      default: 128
+      validate: { min: 1, max: 1024 }
+
+    reliability.budgets.enabled:
+      type: toggle
+      label: Enforce configured budgets
+      help: Unknown usage or pricing is reported as unknown and is never falsely treated as a known limit breach.
+      highlight: 0
+      default: 0
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    reliability.budgets.max_request_count:
+      type: number
+      label: Maximum provider requests per operation
+      validate: { min: 1, max: 1024 }
+
+    reliability.budgets.max_input_bytes:
+      type: number
+      label: Maximum input bytes per request
+      validate: { min: 1, max: 16777216 }
+
+    reliability.budgets.max_estimated_output_units:
+      type: number
+      label: Maximum known output units per request
+      help: Enforced only when the operation or provider-neutral request supplies a known output-unit bound.
+      validate: { min: 1, max: 1000000000 }
+
+    reliability.budgets.max_estimated_cost_per_request:
+      type: text
+      label: Maximum estimated cost per request
+      help: Non-negative decimal amount in the configured pricing currency. Unknown pricing is reported, not falsely enforced.
+      validate: { type: text }
+
+    reliability.budgets.max_estimated_cost_per_operation:
+      type: text
+      label: Maximum estimated cost per operation
+      help: Cumulative non-negative decimal bound for retries and chunk synthesis within one in-memory logical operation.
+      validate: { type: text }
+
+    reliability.budgets.max_retry_count:
+      type: number
+      label: Maximum retries per operation
+      validate: { min: 0, max: 7 }
+
+    reliability.chunking.max_chunk_bytes:
+      type: number
+      label: Maximum Markdown chunk bytes
+      default: 12288
+      validate: { min: 1024, max: 65536 }
+
+    reliability.chunking.max_chunks:
+      type: number
+      label: Maximum chunks
+      default: 16
+      validate: { min: 1, max: 64 }

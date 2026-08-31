@@ -153,6 +153,12 @@ final class JarvisService implements ProviderIntrospectionServiceInterface
             $error instanceof HttpTransportException => ['provider_unavailable', true],
             default => ['provider_unavailable', true],
         };
-        return new ProviderFailureException($providerId, $safeMessage, $category, $retryable);
+        return new ProviderFailureException(
+            $providerId,
+            $safeMessage,
+            $category,
+            $retryable,
+            $error instanceof ProviderRateLimitException ? $error->retryAfterSeconds : null
+        );
     }
 }

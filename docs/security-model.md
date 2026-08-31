@@ -166,4 +166,38 @@ transient. The deterministic signed-in browser regression deliberately tries
 anonymous token omission and browser-supplied endpoint/environment authority;
 both are denied without a provider request.
 
+Jarvis 0.3.0 composes reliability outside the frozen provider adapters. Retry
+accepts only normalized failures explicitly marked retryable, has attempt and
+elapsed-time ceilings, caps jitter/retry-after delay, and reports only counts
+and timing. Credential, configuration, and authentication failures are not
+retried. An Admin proposal is created only after one logical completion
+succeeds, so internal attempts cannot duplicate a proposal receipt or Accept.
+
+Response caching is disabled by default. When enabled, eligibility is limited
+to configured named actions; general and custom prompts bypass it. The key is a
+SHA-256 digest of canonical request data plus hashed installation, actor, page/
+context, action, provider, and model scope, so filenames reveal no raw prompt,
+page, username, or route. Owner-only transient records hold only a redacted
+successful `CompletionResult`, scope hash, issue time, and expiry. Failures are
+never cached. TTL, capacity, deterministic cleanup, and fail-open cache errors
+bound availability and retention; cache data is separate from environment-only
+credentials. Operators enabling caching must still treat generated output as
+private site data and protect the Grav cache directory accordingly.
+
+Usage and cost accounting is in-memory for the logical operation. Unknown
+provider usage or pricing remains null/unknown rather than zero. Pricing is
+operator-supplied versioned metadata, never fetched from the network, and cost
+is labeled estimated rather than authoritative. Opt-in budgets stop known
+request/input/output/retry/cost excesses before the next provider call. Unknown
+cost is disclosed and cannot be claimed as enforced. Admin2 receives only
+normalized counts, estimate metadata, hashed diagnostics, and safe budget codes.
+
+The Markdown chunker reads only explicitly supplied content. It treats YAML
+frontmatter and fenced code as indivisible, preserves source SHA-256 and byte
+offsets, and fails clearly when size/count/synthesis bounds cannot preserve the
+source. Chunked execution is summarize-only in 0.3.0; there is no retrieval,
+site crawl, RAG/vector index, recursive expansion, autonomous rewrite, job
+queue, durable request/history store, behavioral telemetry, or external
+telemetry.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

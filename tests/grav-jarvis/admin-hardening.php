@@ -174,12 +174,14 @@ namespace GravJarvisAdminHardeningContract {
         expect($error instanceof ProviderFailureException, "{$id} was not normalized.");
         same($category, $error->category, "{$id} category mismatch.");
         same($retryable, $error->retryable, "{$id} retryability mismatch.");
+        if ($id === 'rate-fixture') same(1, $error->retryAfterSeconds, 'Normalized retry-after was lost.');
     }
     echo "PASS: provider failures retain safe Admin-facing categories and retryability\n";
 
     $controller = (string) file_get_contents($pluginDirectory . '/classes/Controller/ApiController.php');
     expect(str_contains($controller, "'jarvis_' . \$error->category"), 'Safe provider error-code mapping is missing.');
     expect(str_contains($controller, 'jarvis_proposal_conflict'), 'Proposal conflict error code is missing.');
+    expect(str_contains($controller, 'jarvis_budget_exceeded'), 'Budget failure error code is missing.');
     foreach (['endpoint_url', 'environment_variable', 'authorization_header'] as $forbidden) {
         expect(!str_contains($controller, $forbidden), "Controller unexpectedly accepts {$forbidden}.");
     }

@@ -74,10 +74,24 @@ console.log('PASS: assistant API client and output escaping');
 let completionBody;
 page.state.provider = 'fixture'; page.state.model = 'fixture-a'; page.state.prompt = 'Help me';
 page.state.validation = { usable: true, issues: [] };
-page.api = async (_path, options) => { completionBody = options.body; return { response: 'Safe response', usage: { total: 3, unit: 'characters' } }; };
+page.api = async (_path, options) => { completionBody = options.body; return {
+  response: 'Safe response',
+  usage: { total: 3, unit: 'characters', request_count: 2, retry_count: 1, cache_hit: false },
+  cost: { currency: 'USD', estimated_amount: '0.001' },
+  reliability: { attempts: 2, retry_count: 1, cache_hit: false },
+}; };
 await page.ask();
 assert.equal(JSON.stringify(completionBody), JSON.stringify({ provider_id: 'fixture', model: 'fixture-a', prompt: 'Help me' }));
 assert.equal(page.state.response, 'Safe response');
+assert.match(page.usage(), /est\. USD 0\.001/);
+assert.match(page.usage(), /1 retry/);
+page.api = async () => { throw new Error('The configured Jarvis request-count budget has been reached.'); };
+page.state.prompt = 'Budgeted request';
+await page.ask();
+page.render();
+assert.match(page.shadowRoot.innerHTML, /request-count budget has been reached/);
+assert.equal(page.state.retryAction, null);
+console.log('PASS: budget-blocked message renders without an automatic retry action');
 page.api = async () => { throw new Error('Jarvis is disabled or unavailable.'); };
 await page.load();
 assert.match(page.state.error.message, /disabled or unavailable/);
@@ -140,6 +154,11 @@ assert.match(panelSource, /aria-live/);
 assert.match(panelSource, /focus-visible/);
 assert.match(panelSource, /replaces_proposal_id/);
 assert.match(panelSource, /\/discard/);
+assert.match(pageSource, /cache hit/);
+assert.match(pageSource, /cost unknown/);
+assert.match(panelSource, /Usage and cost/);
+assert.match(panelSource, /retry_count/);
+assert.match(panelSource, /bounded summarization/);
 console.log('PASS: accessible six-action review UI, fail-closed acceptance, discard, and selection deferral');
 
-console.log('Jarvis Admin2 UI contract passed (7 checks).');
+console.log('Jarvis Admin2 UI contract passed (8 checks).');

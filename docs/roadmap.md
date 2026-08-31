@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.2.1 development release; hardened permission-filtered Admin2 assistant, receipt lifecycle, and authenticated browser regression available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 development release; bounded reliability, cost/budget controls, safe chunking, and hardened Admin2 proposals available |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -81,13 +81,22 @@ The version sequence is:
    hardening required no new user-data store. Selection-aware editing and
    structured metadata proposals remain conditional on stable public Admin2
    editor/form events; Jarvis does not reach into editor internals.
-8. **0.3.0 — reliability (next):** retries, privacy-safe caching, usage/cost reporting,
-   Grav-aware chunking, background jobs, budgets, conflicts, Revision Ledger
-   checkpoints, and a stable consumer contract.
-9. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
+8. **0.3.0 — reliability (implemented):** bounded transient retries, disabled-
+   by-default privacy-scoped caching, nullable normalized usage, versioned
+   fixed-point cost estimates, opt-in operation budgets, deterministic Grav/
+   Markdown chunk provenance, and summarize-only bounded synthesis. Admin2
+   shows compact reliability data without weakening review receipts or unsaved-
+   buffer acceptance. No job/history/accounting database or telemetry was added.
+9. **0.3.1 — first optional consumer integration (next):** let Grav Commander
+   discover and consume only public/additive Jarvis contracts for one bounded,
+   preview-first assistance path. Commander must retain normal operation when
+   Jarvis, a provider, a credential, a capability, or a budget is unavailable;
+   no private classes/configuration, write-authority transfer, automatic apply,
+   job queue, or MCP workflow is permitted.
+10. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-10. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+11. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

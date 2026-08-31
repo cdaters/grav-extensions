@@ -1,7 +1,8 @@
 # Jarvis
 
-**Status:** 0.2.1 authenticated Admin2 hardening implemented; 0.3.0 reliability
-is the recommended next milestone
+**Status:** 0.3.0 reliability, cost control, and large-context infrastructure
+implemented; optional Grav Commander consumer integration is the recommended
+next milestone
 
 **Product name:** Jarvis
 
@@ -533,15 +534,55 @@ The packaged release is `dist/grav-jarvis-0.2.0.zip`, SHA-256
 The packaged release is `dist/grav-jarvis-0.2.1.zip`, SHA-256
 `6c956919d47a2af029b8b37700bbfa4fc051948f4d7bfc31ab37150ad3e73de9`.
 
-### 0.3.0 — reliability and automation
+### 0.3.0 — reliability and large context (implemented)
 
-- bounded retries, privacy-safe response caching, token/cost reporting, rate
-  and budget controls;
-- Grav-aware chunking and synthesis;
-- durable background jobs, cancellation, Scheduler/CLI worker, and progress;
-- proposal persistence, Revision Ledger checkpoints, conflict handling, and
-  structured frontmatter/media-metadata proposals; and
-- stable plugin-facing PHP API with compatibility tests.
+- added `ReliabilityServiceInterface` as an optional additive extension of the
+  frozen provider/introspection service. `ReliableJarvisService` decorates the
+  existing provider boundary; original `complete()` behavior and every frozen
+  0.1.x interface file remain unchanged;
+- added transient-only retry for normalized retryable failures, with three/five-
+  second default attempt/time bounds, exponential backoff, bounded jitter,
+  normalized retry-after, deterministic runtime fixtures, and retry diagnostics.
+  Credential, configuration, authentication, and other non-retryable failures
+  receive one attempt;
+- added a disabled-by-default response-cache contract, deterministic in-memory
+  fake, and owner-only transient file implementation. SHA-256 keys cover the
+  canonical request and hashed site/actor/page context plus action/provider/
+  model. Named transformation actions are eligible; custom/general prompts and
+  every failure are not. Entries carry only redacted successful results, scope
+  hash, issue/expiry, and are TTL/capacity bounded;
+- added `UsageReport` with truthful nullable provider-reported input/output/
+  total/cache usage, provider/model/unit, provider request count, retry count,
+  and cache-hit state. Unknown values remain `null`;
+- added versioned operator-supplied pricing catalogs and fixed-point
+  nanocurrency arithmetic. Input/output/cache rates remain separate, pricing is
+  never fetched at runtime, authoritative provider cost remains separate/null,
+  and unknown/stale data produces an explicit unknown estimate. Retry cost is
+  shown as a conservative amplified upper estimate;
+- added disabled-by-default operation-scoped budgets for request/retry count,
+  input bytes, known output units, and known request/operation estimated cost.
+  Known excesses raise `BudgetExceededException` before the next provider call;
+  unknown pricing/usage is disclosed and never falsely enforced;
+- added deterministic Grav/Markdown chunking at atomic frontmatter, paragraph/
+  list, and fenced-code blocks, with source SHA-256/byte provenance, ordered
+  chunks, and explicit size/total/count/synthesis bounds. 0.3.0 implements only
+  chunk-summary plus one bounded final synthesis. Truncated sources and unsafe
+  rewrite/proofread reconstruction fail or remain deferred;
+- added concise Admin2 usage, estimated-cost, request/retry, cache-hit, and
+  budget-blocked presentation without changing receipt, page authorization, or
+  unsaved-buffer-only Accept behavior; and
+- added deterministic reliability/chunking suites and updated the signed-in
+  browser fixture to prove automatic recovery from one transient rate limit.
+
+Version 0.3.0 intentionally adds no background job, durable request/history or
+accounting store, proposal persistence change, Revision Ledger coupling,
+Commander integration, MCP workflow, retrieval/vector layer, recursive
+expansion, site crawl, provider family, tool call, streaming, or automatic
+content mutation. Cache retention is bounded by configured TTL/capacity;
+operation accounting is in-memory only; no external telemetry exists.
+
+The packaged release is `dist/grav-jarvis-0.3.0.zip`, SHA-256
+`5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
 
 ### 0.4.0 — agent and site-wide workflows
 
@@ -566,7 +607,8 @@ The packaged release is `dist/grav-jarvis-0.2.1.zip`, SHA-256
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI,
-0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0/0.2.1 Admin backend contracts run together with
+0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin, and 0.3.0
+reliability/chunking contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
@@ -598,7 +640,7 @@ Live-provider smoke tests are opt-in, budget-capped, and never a routine release
 prerequisite. No production content mutation or production credential is
 required for regression testing.
 
-Versions 0.2.0 and 0.2.1 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
+Versions 0.2.0 through 0.3.0 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
 component/event harness proves authenticated same-API browser transport,
 provider-neutral requests, response escaping, graceful absence, current
 unsaved-buffer capture, explicit replace-only Accept, non-mutating Reject, and
@@ -620,7 +662,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 through 0.2.1 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.3.0 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

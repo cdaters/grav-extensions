@@ -266,20 +266,28 @@ class GravJarvisPanel extends HTMLElement {
         ${proposal ? `<section class="proposal" aria-labelledby="proposal-heading">
           <div class="proposal-head"><div><span class="eyebrow">REVIEW REQUIRED</span><h3 id="proposal-heading">${this.escape(this.actionLabel(proposal.action))} proposal</h3></div><small>${this.escape(proposal.provider_id)} · ${this.escape(proposal.model)}</small></div>
           ${(truncated.any || cannotAccept) ? `<div class="notice warn" role="status">${this.escape(cannotAccept || 'Some page context was bounded. Review the proposal carefully.')}</div>` : ''}
-          ${context ? `<dl class="context-summary"><div><dt>Whole buffer</dt><dd>${Number(context.included_content_bytes || 0).toLocaleString()} of ${Number(context.content_bytes || 0).toLocaleString()} bytes</dd></div><div><dt>Media metadata</dt><dd>${Number(context.media_items || 0).toLocaleString()} items</dd></div><div><dt>Usage</dt><dd>${this.escape(this.usage(proposal.usage))}</dd></div></dl>` : ''}
+          ${context ? `<dl class="context-summary"><div><dt>Whole buffer</dt><dd>${Number(context.included_content_bytes || 0).toLocaleString()} of ${Number(context.content_bytes || 0).toLocaleString()} bytes</dd></div><div><dt>Media metadata</dt><dd>${Number(context.media_items || 0).toLocaleString()} items</dd></div><div><dt>Usage and cost</dt><dd>${this.escape(this.usage(proposal.usage, proposal.cost, proposal.reliability))}</dd></div></dl>` : ''}
           <div class="compare"><article aria-labelledby="before-label"><b id="before-label">Before — current unsaved buffer</b><pre tabindex="0">${this.escape(this.state.original)}</pre></article><article aria-labelledby="proposed-label"><b id="proposed-label">Proposed — not yet applied</b><pre tabindex="0">${this.escape(proposal.proposed_content)}</pre></article></div>
           <div class="review-actions"><button id="reject" class="secondary" ${this.state.busy ? 'disabled' : ''}>Reject and close</button><button id="accept" class="primary" ${this.state.busy || !acceptAllowed ? 'disabled' : ''}>Accept into editor</button></div>
           <p class="unsaved">Accept replaces only the current unsaved editor buffer. It never saves or publishes the page.</p>
         </section>` : ''}
-        <aside>Whole-buffer editing is used in 0.2.1. Selection-aware editing remains deferred until Admin2 exposes a stable selection contract.</aside>
+        <aside>Whole-buffer editing remains review-first. Large-context execution is limited to safe, bounded summarization. Selection-aware editing remains deferred until Admin2 exposes a stable selection contract.</aside>
       </main>`;
     this.bind();
   }
 
-  usage(usage) {
+  usage(usage, cost = null, reliability = null) {
     if (!usage) return 'Unavailable';
     const total = usage.total ?? null;
-    return total === null ? 'Unavailable' : `${Number(total).toLocaleString()} ${usage.unit || 'units'}`;
+    const count = total === null ? 'usage unknown' : `${Number(total).toLocaleString()} ${usage.unit || 'units'}`;
+    const amount = cost?.estimated_amount;
+    const estimate = amount == null ? 'cost unknown' : `est. ${cost.currency || 'USD'} ${amount}`;
+    const attempts = Number(usage.request_count ?? reliability?.attempts ?? 1);
+    const retries = Number(usage.retry_count ?? reliability?.retry_count ?? 0);
+    const request = (usage.cache_hit ?? reliability?.cache_hit)
+      ? 'cache hit'
+      : `${attempts} request${attempts === 1 ? '' : 's'}${retries ? `, ${retries} retr${retries === 1 ? 'y' : 'ies'}` : ''}`;
+    return `${count} · ${estimate} · ${request}`;
   }
 
   actionLabel(action) {

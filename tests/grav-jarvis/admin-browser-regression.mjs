@@ -145,10 +145,10 @@ try {
   await assistant.locator('.status.ready').waitFor();
   await assistant.getByRole('textbox', { name: 'What can Jarvis help with?' }).fill('Run the deterministic retry check.');
   await assistant.getByRole('button', { name: 'Ask Jarvis' }).click();
-  await assistant.getByText(/rate limited/i).waitFor();
-  await assistant.getByRole('button', { name: 'Retry request' }).click();
   await assistant.getByText(/JARVIS_BROWSER_FIXTURE_RESPONSE:/).waitFor();
-  console.log('PASS: typed rate-limit error and fresh retry request');
+  await assistant.getByText(/2 requests, 1 retry/i).waitFor();
+  assert.equal(await assistant.getByRole('button', { name: 'Retry request' }).count(), 0);
+  console.log('PASS: bounded automatic recovery from one typed rate-limit failure');
 
   await page.goto(`${baseUrl}/admin/pages/edit/${pageRoute.slice(1)}`, { waitUntil: 'networkidle' });
   const launcher = page.getByRole('button', { name: 'Jarvis', exact: true }).last();

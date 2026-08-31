@@ -12,6 +12,17 @@ use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\OpenAICompatibleProvider;
 use Grav\Plugin\GravJarvis\Provider\ProviderRegistry;
 use Grav\Plugin\GravJarvis\Security\SecretRedactor;
 use Grav\Plugin\GravJarvis\Service\JarvisService;
+use Grav\Plugin\GravJarvis\Service\ReliableJarvisService;
+use Grav\Plugin\GravJarvis\Reliability\BudgetGuard;
+use Grav\Plugin\GravJarvis\Reliability\CacheKeyFactory;
+use Grav\Plugin\GravJarvis\Reliability\CostEstimator;
+use Grav\Plugin\GravJarvis\Reliability\GravMarkdownChunker;
+use Grav\Plugin\GravJarvis\Reliability\NullResponseCache;
+use Grav\Plugin\GravJarvis\Reliability\PricingCatalog;
+use Grav\Plugin\GravJarvis\Reliability\ReliabilityPolicyFactory;
+use Grav\Plugin\GravJarvis\Reliability\RetryExecutor;
+use Grav\Plugin\GravJarvis\Reliability\SystemReliabilityRuntime;
+use Grav\Plugin\GravJarvis\Reliability\TransientResponseCache;
 use RocketTheme\Toolbox\Event\Event;
 use Throwable;
 
@@ -124,8 +135,42 @@ final class GravJarvisPlugin extends Plugin
         }
 
         if (!isset($this->grav[self::SERVICE_KEY])) {
-            $service = new JarvisService($registry, $redactor);
-            $this->grav[self::SERVICE_KEY] = static fn (): JarvisService => $service;
+            $base = new JarvisService($registry, $redactor);
+            $configuration = $this->config->get('plugins.' . self::SLUG . '.reliability', []);
+            $configuration = is_array($configuration) ? $configuration : [];
+            try {
+                $policy = ReliabilityPolicyFactory::fromArray($configuration);
+                $pricingConfiguration = $this->config->get('plugins.' . self::SLUG . '.pricing', []);
+                try {
+                    $pricing = PricingCatalog::fromArray(is_array($pricingConfiguration) ? $pricingConfiguration : []);
+                } catch (Throwable $error) {
+                    $this->logRegistrationFailure('Pricing configuration failed; costs will remain unknown', $error, $redactor);
+                    $pricing = new PricingCatalog();
+                }
+                $costs = new CostEstimator($pricing);
+                $cachePath = '';
+                $locator = $this->grav['locator'] ?? null;
+                if (is_object($locator) && method_exists($locator, 'findResource')) {
+                    $cachePath = (string) $locator->findResource('cache://');
+                }
+                $cache = $cachePath === ''
+                    ? new NullResponseCache()
+                    : new TransientResponseCache(rtrim($cachePath, '/\\') . '/grav-jarvis/responses');
+                $service = new ReliableJarvisService(
+                    $base,
+                    new RetryExecutor(new SystemReliabilityRuntime()),
+                    $cache,
+                    new CacheKeyFactory(),
+                    $costs,
+                    new BudgetGuard($costs),
+                    new GravMarkdownChunker(),
+                    $policy
+                );
+            } catch (Throwable $error) {
+                $this->logRegistrationFailure('Reliability configuration failed', $error, $redactor);
+                $service = $base;
+            }
+            $this->grav[self::SERVICE_KEY] = static fn () => $service;
         }
     }
 

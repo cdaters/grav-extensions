@@ -1,9 +1,9 @@
 # Jarvis
 
-Jarvis 0.2.1 hardens the first user-usable Admin2 release of the provider-neutral
-AI service for Grav 2. It provides a permission-filtered general assistant and
-native page-editor context panel on the bounded OpenAI, Anthropic, and
-configured OpenAI-compatible provider foundation.
+Jarvis 0.3.0 is the reliable, provider-neutral AI service for Grav 2. It adds
+bounded transient retries, optional privacy-scoped caching, normalized usage,
+versioned estimated costs, opt-in budgets, and Grav-aware Markdown chunking to
+the permission-filtered Admin2 and provider foundation.
 
 Page actions are review-first. Jarvis captures the current unsaved Markdown
 buffer, produces a proposal, and shows a before/after comparison. **Accept**
@@ -71,8 +71,8 @@ launcher in the Admin2 page editor. Both call Jarvis through authenticated Grav
 API routes; the browser never calls a provider endpoint.
 
 The assistant shows registered providers, discovered models when available,
-safe validation state, loading/error/retry feedback, normalized output, and
-provider-reported usage. A discovery failure leaves the configured provider
+safe validation state, loading/error/retry feedback, normalized output, usage,
+estimated cost, request/retry count, and cache state. A discovery failure leaves the configured provider
 default available. Provider and model choices are not persisted in 0.2.1.
 
 The page panel supports Rewrite, Proofread, Shorten, Expand, Summarize, and
@@ -90,6 +90,72 @@ dirty/undo/editor behavior. Jarvis does not dispatch save or publish events.
 Selection-aware editing is intentionally deferred: Admin2 2.1.2 does not
 publish a stable selected-text contract. Version 0.2.1 operates on the whole
 current buffer rather than reaching into editor internals.
+
+## Reliability, cost, and large context
+
+`ReliabilityServiceInterface` is an additive subinterface. The original
+`complete()` path remains unchanged; `completeReliable()` composes policy around
+it. Consumers must type-check the additive interface before using it.
+
+- Retry is enabled by default for normalized failures explicitly marked
+  retryable. It is capped at three attempts and five elapsed seconds by default,
+  uses exponential backoff with bounded jitter, and respects a normalized
+  retry-after value within the delay cap. Credential, configuration, and
+  authentication failures are never retried.
+- Response caching is disabled by default. When enabled, only configured named
+  actions such as rewrite, proofread, shorten, expand, and summarize qualify;
+  general/custom prompts do not. Keys are SHA-256 digests of canonical request
+  and site/actor/page/action/provider/model scope. Private owner-only records
+  contain the redacted successful result, scope hash, and bounded expiry—not
+  the request or raw prompt. Default TTL is five minutes and capacity is 128.
+- `UsageReport` preserves unknown input/output/total values as `null` and adds
+  provider/model, neutral unit, optional cache-use fields, request count, retry
+  count, and cache-hit state. Admin2 presents these fields concisely.
+- Cost reporting uses only operator-supplied, versioned model metadata in
+  `pricing.models`. Input/output/cache rates are decimal strings per million
+  neutral units and are calculated with fixed-point nanocurrency arithmetic.
+  Pricing is not fetched at runtime. Missing/stale pricing or usage remains
+  visibly unknown; an estimate is never represented as a provider bill.
+- Budgets are disabled by default. Optional limits cover provider request and
+  retry count, input bytes, known output units, and known estimated request or
+  logical-operation cost. Known excesses fail before the next provider call.
+  Unknown pricing/usage is disclosed and is not falsely claimed as enforced.
+- The Markdown chunker preserves source hashes and byte ranges, ordering, YAML
+  frontmatter, paragraphs/lists, and fenced code as atomic blocks. Chunk size,
+  total bytes, count, and synthesis input are bounded. Normal operation fails
+  clearly rather than truncating. The only chunked execution in 0.3.0 is
+  summarization: ordered chunk summaries feed one bounded final synthesis.
+  Rewrite/proofread reconstruction is deferred because preserving untouched
+  structure cannot yet be guaranteed.
+
+Reliability accounting exists only for the current in-memory operation. Cache
+entries expire and are capacity bounded. Jarvis adds no external telemetry,
+request-history database, durable accounting, user behavior profile, crawler,
+RAG/vector store, recursive expansion, or background queue.
+
+Example non-secret configuration:
+
+```yaml
+reliability:
+  cache:
+    enabled: false
+  budgets:
+    enabled: true
+    max_request_count: 4
+    max_retry_count: 1
+    max_input_bytes: 196608
+    max_estimated_cost_per_operation: '0.05'
+pricing:
+  version: operator-2026-08
+  as_of: '2026-08-30'
+  currency: USD
+  models:
+    - provider: example
+      model: example-model
+      unit: tokens
+      input_per_million: '1.50'
+      output_per_million: '6.00'
+```
 
 ### Permissions
 
@@ -170,6 +236,12 @@ Jarvis 0.1.1 adds optional contracts rather than changing those interfaces:
 Providers opt into validation and discovery independently. Jarvis's concrete
 service implements `ProviderIntrospectionServiceInterface`, while consumers
 compiled against `JarvisServiceInterface` retain the exact 0.1.0 methods.
+
+Jarvis 0.3.0 follows the same additive rule with
+`ReliabilityServiceInterface`, reliability/cache/budget/chunk policy DTOs,
+usage/cost/result DTOs, provider-neutral cache/chunk contracts, and typed budget
+and chunking failures. No frozen 0.1.x interface contains retry, cache, pricing,
+budget, chunk, OpenAI, or Anthropic vocabulary.
 
 ## Validation and model discovery
 
@@ -420,8 +492,8 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete frozen 0.1.x provider suite plus the 0.2.1 Admin backend
-contract with host PHP or the repository's DDEV fixture:
+Run the complete frozen 0.1.x provider suite plus the 0.2.x Admin and 0.3.0
+reliability/chunking contracts with host PHP or the repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -471,7 +543,8 @@ fixtures remain the release gate; a live account request is optional.
 - Gemini and OpenRouter adapters
 - validation/model-discovery CLI commands
 - streaming and CLI chat
-- automatic provider retries, caching, cost reports, chunking, and background jobs
+- durable background jobs and request/accounting history
+- rewrite/proofread chunk reconstruction
 - selection-aware editing until Admin2 exposes a stable selection contract
 - structured metadata/frontmatter proposal application
 - prompt/response history or conversational memory

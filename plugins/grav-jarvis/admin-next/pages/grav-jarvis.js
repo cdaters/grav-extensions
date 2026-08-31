@@ -21,7 +21,7 @@ class GravJarvisPage extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.state = {
       bootstrap: null, provider: '', model: '', models: [], modelMessage: '', validation: null,
-      prompt: '', response: '', usage: null, busy: false, checking: false, error: null,
+      prompt: '', response: '', usage: null, cost: null, reliability: null, busy: false, checking: false, error: null,
       retryAction: null,
     };
   }
@@ -120,6 +120,8 @@ class GravJarvisPage extends HTMLElement {
       });
       this.state.response = result.response || '';
       this.state.usage = result.usage || null;
+      this.state.cost = result.cost || null;
+      this.state.reliability = result.reliability || null;
     } catch (error) {
       this.setError(error, error?.retryable ? 'ask' : null);
     } finally {
@@ -189,7 +191,13 @@ class GravJarvisPage extends HTMLElement {
     if (!this.state.usage) return '';
     const count = this.state.usage.total ?? null;
     const unit = this.state.usage.unit || 'units';
-    return `<small>${count === null ? 'Usage unavailable' : `${Number(count).toLocaleString()} ${this.escape(unit)}`}</small>`;
+    const attempts = Number(this.state.usage.request_count ?? this.state.reliability?.attempts ?? 1);
+    const retries = Number(this.state.usage.retry_count ?? this.state.reliability?.retry_count ?? 0);
+    const cache = Boolean(this.state.usage.cache_hit ?? this.state.reliability?.cache_hit);
+    const amount = this.state.cost?.estimated_amount;
+    const cost = amount == null ? 'cost unknown' : `est. ${this.state.cost.currency || 'USD'} ${amount}`;
+    const request = cache ? 'cache hit' : `${attempts} request${attempts === 1 ? '' : 's'}${retries ? `, ${retries} retr${retries === 1 ? 'y' : 'ies'}` : ''}`;
+    return `<small>${count === null ? 'Usage unavailable' : `${Number(count).toLocaleString()} ${this.escape(unit)}`} · ${this.escape(cost)} · ${this.escape(request)}</small>`;
   }
 
   bind() {

@@ -12,3 +12,35 @@ providers:
   openai_compatible:
     enabled: false
     instances: []
+reliability:
+  retry:
+    enabled: true
+    max_attempts: 3
+    max_elapsed_ms: 5000
+    base_delay_ms: 100
+    max_delay_ms: 1000
+    max_jitter_ms: 50
+  cache:
+    enabled: false
+    ttl_seconds: 300
+    max_entries: 128
+    eligible_actions: [rewrite, proofread, shorten, expand, summarize]
+  budgets:
+    enabled: false
+    max_request_count: null
+    max_input_bytes: null
+    max_estimated_output_units: null
+    max_estimated_cost_per_request: null
+    max_estimated_cost_per_operation: null
+    max_retry_count: null
+  chunking:
+    max_chunk_bytes: 12288
+    max_chunks: 16
+    max_total_bytes: 196608
+    max_synthesis_bytes: 49152
+    overflow_strategy: fail
+pricing:
+  version: unconfigured
+  as_of: null
+  currency: USD
+  models: []

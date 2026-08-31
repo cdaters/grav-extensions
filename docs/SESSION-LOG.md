@@ -715,3 +715,55 @@ suite inventory incremental and risk ordered.
   cost data, budgets, and Grav-aware chunk/synthesis provenance. Do not begin
   jobs, Commander, batch, MCP, automatic apply, or new providers in that first
   reliability checkpoint.
+
+## 2026-08-30 — Jarvis 0.3.0 reliability, cost control, and large context
+
+- Preserved all six frozen 0.1.x interface files byte-for-byte and the 0.2.x
+  review-first, permission-checked, unsaved-buffer-only acceptance model. Local
+  Site Workshop/Cache Hearth and Spitfire-theme edits were inspected and left
+  outside the Jarvis work and commit.
+- Added an optional provider-neutral reliability service decorator with bounded
+  transient-only retry, normalized retry-after, exponential bounded jitter,
+  deterministic runtime fixtures, and safe request/retry/timing diagnostics.
+  Credential, configuration, and authentication failures are never retried.
+- Added disabled-by-default response caching with canonical SHA-256 keys scoped
+  by installation, actor, page/context, action, provider, and model. Custom and
+  general prompts and all failures bypass it. The owner-only transient store is
+  TTL/capacity bounded and contains only redacted success results and hashed
+  scope—not request/prompt or credential fields. Added deterministic memory and
+  file-cache fixtures.
+- Added nullable normalized usage/request/retry/cache reports, operator-supplied
+  versioned model pricing with fixed-point nanocurrency math, explicit unknown/
+  estimated/authoritative distinctions, and disabled-by-default pre-call
+  budgets for request/retry/input/output/request-cost/operation-cost bounds.
+- Added deterministic Grav/Markdown chunking that preserves YAML frontmatter,
+  paragraph/list/fenced-code atomicity, source SHA-256 and byte provenance,
+  order, and size/count/total/synthesis bounds. Implemented only ordered chunk
+  summarization plus one bounded final synthesis; unsafe rewrite/proofread
+  reconstruction, truncating summary, crawling, RAG/vector work, and recursion
+  remain deferred.
+- Added concise Admin2 usage, estimated-cost, request/retry, cache, and budget-
+  blocked presentation. One automatic transient retry creates no duplicate
+  proposal/receipt, and Accept still updates only the current unsaved buffer.
+- Passed sixty-four deterministic PHP checks in DDEV PHP 8.3.31, eight isolated
+  Node component checks, and eleven signed-in Chrome/Chromium Admin2 checks.
+  The browser gate covers both surfaces, all six actions, one bounded automatic
+  rate-limit recovery, receipt lifecycle, unsaved-only behavior, accessibility,
+  responsive/theme behavior, authority denial, console inspection, and logs.
+- Passed DDEV PHP lint/runtime and Composer validation; Node and shell syntax;
+  repository YAML/JSON/preflight/whitespace/hygiene; changed-Markdown links;
+  source/package credential-value scans; ZIP integrity; exact packaged
+  0.2.1-to-0.3.0 upgrade; fresh package install; Grav cache clear; public/Admin/
+  archive HTTP 200; anonymous Jarvis 401; authenticated browser paths; and no
+  recent Jarvis fatal/uncaught logs. Host PHP remains unavailable, so host
+  preflight truthfully skipped PHP. No live provider request, credential, or
+  charge was used. DDEV test plugin/account state was restored/removed.
+- Packaged `dist/grav-jarvis-0.3.0.zip`, SHA-256
+  `5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
+  All prior versioned Jarvis archives and verified hashes remain intact.
+- Set the exact next milestone to Jarvis 0.3.1: one optional, bounded, preview-
+  first Grav Commander consumer path using only public/additive Jarvis
+  contracts. Commander must keep its non-AI behavior, permissions, containment,
+  and apply authority when Jarvis/provider/credential/capability/budget paths
+  are absent or fail. No Commander, job, MCP, batch, new-provider, automatic-
+  apply, push, tag, or publish work was started.

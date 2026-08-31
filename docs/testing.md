@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.2.1 provider/Admin2 backend/component contracts and deterministic full signed-in browser regression implemented; reliability and later batch/job boundaries remain |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts and deterministic full signed-in browser regression implemented; streaming and later batch/job boundaries remain |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -140,8 +140,8 @@ must not wait for the whole inventory before receiving its own regression.
 ### Jarvis AI boundary contract
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
-transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, and 0.2.0/0.2.1 Admin
-backend suite with host PHP or a DDEV project:
+transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin,
+and 0.3.0 reliability/chunking suite with host PHP or a DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -195,6 +195,24 @@ replaced, and replay denial; fresh regeneration; safe failure category/
 retryability mapping; coded redacted API errors; and rejection of request
 fields that could widen provider authority.
 
+The 0.3.0 reliability contract proves deterministic retry success/exhaustion,
+timeout and rate-limit retryability, normalized retry-after, bounded jitter,
+non-retryable authentication/configuration, and retry-budget stopping before an
+extra call. It proves miss/hit/expiry/capacity, hashed keys with no raw prompt,
+cross-installation-actor/page/provider/model isolation, custom-prompt bypass,
+no cached failures, and owner-only file records without request or credential
+material. It covers nullable normalized usage, OpenAI/Anthropic-shaped neutral
+provider/model examples, known/unknown/versioned pricing, separate input/output
+rates, fixed-point precision, and conservative retry amplification. Budget
+fixtures cover allowed unknown-cost requests and pre-call denial for known
+input, output, request, retry, and cost excesses.
+
+The 0.3.0 chunking contract proves byte-identical ordering and source hashes
+across Markdown headings, paragraphs, lists, fenced code, and YAML frontmatter;
+oversized indivisible blocks; maximum count; explicit infrastructure-only
+truncation; summarize-only chunk execution; bounded final synthesis; and denial
+of rewrite-style chunk execution. All fixtures are offline and deterministic.
+
 Run the isolated Admin2 browser-component contract on the host:
 
 ```bash
@@ -211,6 +229,8 @@ the visible selection-aware deferral. Its 0.2.1 assertions also cover semantic
 status/error roles, accessible labels, visible focus rules, replacement and
 discard requests, safe proposal retention, inherited theme variables, and
 responsive layout rules.
+The 0.3.0 assertions add budget-blocked rendering and concise normalized usage,
+estimated/unknown cost, request/retry, and cache-hit indicators.
 
 Run the authenticated Admin2 black-box regression against the canonical
 disposable DDEV fixture (or pass project, base URL, and page route arguments):
@@ -230,6 +250,9 @@ identifiers, bounded exact whole-buffer context, proposal preview, explicit
 Reject, Accept exactly once, stale/regeneration behavior, unsaved-only reload,
 keyboard/labels, narrow layout, light/dark inheritance, no page mutation
 request, browser console/page errors, and recent Jarvis fatal log entries.
+In 0.3.0 the flaky-provider case succeeds through one automatic bounded retry
+and must render `2 requests, 1 retry`; it no longer requires a second user-
+initiated request.
 
 The canonical DDEV release check additionally uses short-lived API keys that
 are revoked by cleanup: an unrestricted key receives 200 from bootstrap,
@@ -263,7 +286,9 @@ content, one explicit approval applies once, and a changed source rejects a
 stale proposal. Consumer tests must continue to prove safe degradation when
 Jarvis is missing, disabled, or lacks a requested capability.
 
-Later batch/job coverage must prove target and budget limits, cancellation,
+The next optional-consumer contract must prove Grav Commander uses only public
+Jarvis contracts and remains fully functional when Jarvis/provider/capability/
+credential/budget paths are absent or fail. Later batch/job coverage must prove target and budget limits, cancellation,
 idempotent resume, per-item permission/source rechecks, and truthful partial-
 failure reporting. Live-provider smoke tests remain opt-in and budget-capped;
 they do not replace deterministic release tests.

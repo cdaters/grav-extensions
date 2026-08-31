@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 — 2026-08-30
+
+- Added additive provider-neutral reliability contracts and a service decorator
+  with bounded transient retries and normalized retry-after handling.
+- Added disabled-by-default site/actor/page/action/provider/model-scoped private
+  response caching with hashed keys, bounded TTL/capacity, and no raw requests.
+- Added normalized request/retry/cache usage reports, fixed-point estimates from
+  operator-supplied versioned pricing, and opt-in request/input/output/cost/retry
+  budgets that fail before known excess calls.
+- Added deterministic Grav/Markdown frontmatter, block, list, and fenced-code
+  chunking plus summarize-only bounded final synthesis; rewrite reconstruction,
+  background jobs, crawling, RAG, MCP, and Commander integration remain deferred.
+- Added concise Admin2 usage/cost/retry/cache and budget-failure presentation,
+  while preserving one-time review receipts and unsaved-buffer-only acceptance.
+- Added deterministic offline reliability and chunking suites and updated the
+  authenticated browser regression for automatic transient recovery.
+
 ## 0.2.1 — 2026-08-30
 
 - Hardened the Admin2 assistant and page panel across authenticated lifecycle,
