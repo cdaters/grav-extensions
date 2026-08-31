@@ -130,8 +130,8 @@ produces the expected authenticated request body.
 | Lantern Search | index visibility, ACL filtering, stale-index repair, malformed queries | required |
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
-| Grav Commander | file-operation containment and permissions across its standalone and suite installs | required; coordinate with standalone tests |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts and deterministic full signed-in browser regression implemented; streaming and later batch/job boundaries remain |
+| Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts plus 0.3.1 public-only Commander consumer proof and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -264,6 +264,45 @@ anonymous request receives 401. Missing provider credentials produce a safe
 browser harness is the 0.2.1 black-box gate; the isolated component and direct
 authenticated HTTP boundaries remain complementary release evidence.
 
+### Grav Commander optional Jarvis consumer contract
+
+Run the deterministic public-contract and component suite:
+
+```bash
+./scripts/test-grav-commander-jarvis.sh
+```
+
+It uses host Node plus PHP 8.3 in the canonical DDEV fixture when host PHP is
+unavailable. The PHP checks prove that Commander imports only public Jarvis
+contracts, discovers and validates providers/models, runs all five bounded
+actions, delegates safe large-Markdown summarization, reports neutral usage/
+cost/retry/cache data, redacts sensitive context, and rejects absent/invalid
+services plus credential, configuration, authentication, rate, timeout,
+malformed-response, budget, and capability failures without weakening normal
+Commander behavior. Proposal checks cover actor/file/disk-version/source/
+proposal binding, expiry/rejection/replay denial, and no filesystem write. The
+isolated browser checks prove same-origin token/no-store requests, preservation
+of the current unsaved buffer, safe rendering, visible proposal/error states,
+responsive/accessibility rules, and no call to Commander's write route.
+
+Run the signed-in black-box browser gate against the disposable DDEV fixture:
+
+```bash
+./scripts/test-grav-commander-jarvis-browser.sh
+```
+
+The harness installs the current Commander/Jarvis sources plus a deterministic
+test-only provider, creates a random temporary Admin2 account, and drives the
+actual Commander file editor through Chrome/Chromium. It proves eligible-file
+editing, validation/model discovery, Review with usage/cost, Reject, one-time
+Apply into the unsaved textarea, reload non-persistence, safe provider failure,
+and continued signed-in Commander use with Jarvis completely absent. Cleanup
+restores previous plugins, account index, notifications, and cache. The
+canonical DDEV site currently emits an unrelated external
+`spitfirebbs.com/user/data/grav-security-probe.dat` CORS failure; the runner
+filters only that exact baseline and its deliberately induced provider-
+unavailable response, and rejects other integration console/page errors.
+
 Live-provider smoke is a separate explicit path:
 
 ```bash
@@ -286,7 +325,7 @@ content, one explicit approval applies once, and a changed source rejects a
 stale proposal. Consumer tests must continue to prove safe degradation when
 Jarvis is missing, disabled, or lacks a requested capability.
 
-The next optional-consumer contract must prove Grav Commander uses only public
+The first optional-consumer contract now proves Grav Commander uses only public
 Jarvis contracts and remains fully functional when Jarvis/provider/capability/
 credential/budget paths are absent or fail. Later batch/job coverage must prove target and budget limits, cancellation,
 idempotent resume, per-item permission/source rechecks, and truthful partial-

@@ -20,6 +20,34 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+Jarvis 0.3.1 is complete as an optional consuming-plugin milestone through
+Grav Commander 0.3.12. Jarvis itself remains the unchanged 0.3.0 runtime and
+package: no Jarvis source, frozen interface, metadata, or release archive was
+changed merely to label the consumer work. Commander has no Jarvis package
+dependency and resolves `$grav['gravJarvis']` only after the public contracts
+are available, so all existing Commander behavior survives a missing,
+disabled, invalid, misconfigured, unavailable, capability-limited, or budget-
+blocked Jarvis path.
+
+Commander now offers bounded Explain, Summarize, Review, Improve / Rewrite,
+and Custom Prompt actions for one eligible current text/source file. Commander
+owns path containment, sensitivity filtering, context bounds, permissions,
+and application authority; Jarvis owns provider validation/model discovery,
+completion, retry/cache/budget/cost reporting, and safe Markdown summary
+chunking. Credential locations, `.env`, account/secret/private-key paths,
+private-key bodies, unsupported/binary files, and unsafe partial rewrites fail
+closed. High-confidence credential assignments and bearer/token values are
+redacted before context leaves Commander.
+
+All actions require `grav-commander.browse` plus `grav-jarvis.use` on the
+server. Improve, Custom Prompt, and Apply additionally require
+`grav-commander.write`. A safe editable result receives a Commander-owned,
+hash-only, 15-minute, one-time receipt bound to actor, root/path, disk modified/
+size version, source, and proposal. Apply returns the proposal only to the
+current unsaved textarea and never invokes a file-write route. Reject, expiry,
+cross-user/file use, source or disk change, and replay fail closed. The normal
+Commander Save action remains the only persistence boundary.
+
 Jarvis 0.3.0 (`grav-jarvis`) adds reliability, cost control, and safe large-
 context infrastructure to the user-usable Admin2 release under Decision 0004.
 The 0.1.0 `JarvisServiceInterface`,
@@ -160,7 +188,7 @@ Selection-aware editing is deferred because Admin2 2.1.2 publishes no stable
 selected-text contract. Optional provider/model preference persistence was
 also omitted because hardening did not justify a new user-data lifecycle.
 Jarvis still has no CLI command, Gemini/OpenRouter
-adapter, Commander integration, background job, streaming/tool call, durable
+adapter, additional suite integration, background job, streaming/tool call, durable
 conversation/proposal history, structured frontmatter apply, automatic page
 mutation, or MCP workflow.
 
@@ -233,6 +261,29 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Commander 0.3.12 passes ten deterministic PHP integration checks and six
+  isolated browser-component checks. They prove public-contract-only service
+  discovery, all five actions, bounded/redacted context, safe large-Markdown
+  summarization, deterministic provider/usage/cost data, absent/invalid service
+  fallback, credential/configuration/rate-limit/timeout/malformed/budget/
+  capability failures, actor/file/version/source/replay-bound proposals,
+  unsaved-buffer-only Apply, and absence of provider/private-class coupling or
+  filesystem writes.
+- The signed-in DDEV Chrome regression passes with Jarvis present and absent.
+  It proves provider validation/model discovery, Review, usage/cost display,
+  Reject, one-time Apply, reload non-persistence, safe provider failure, and
+  continued Commander usability. The fixture has a known unrelated external
+  `spitfirebbs.com/user/data/grav-security-probe.dat` CORS failure; the runner
+  filters only that exact baseline and its deliberate provider-unavailable
+  response while rejecting unexpected integration console/page errors.
+- Commander PHP syntax passes in DDEV PHP 8.3.31; Composer, repository and
+  Grav YAML, JSON, JavaScript, shell, preflight, whitespace, and package
+  integrity checks pass. Exact 0.3.11-to-0.3.12 upgrade and fresh 0.3.12 ZIP
+  install preserve the absent site config, clear Grav cache, return public/
+  Admin/Commander HTTP 200 and anonymous API 401, and produce no relevant
+  fatal/uncaught log entry. Host PHP remains unavailable, so repository
+  preflight truthfully skips host PHP. The disposable fixture was restored to
+  Commander 0.3.11 with temporary Jarvis plugins removed.
 - Jarvis's deterministic source suite passes seventy-two checks: seven
   frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
   provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
@@ -281,6 +332,9 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 - The verified Jarvis package is `dist/grav-jarvis-0.3.0.zip`, SHA-256
   `5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
   Versioned 0.1.0 through 0.2.1 packages and hashes remain intact.
+- The verified Commander package is `dist/grav-commander-0.3.12.zip`, SHA-256
+  `b662269b2fb3749e9ab594c9674e3c8ff9d6531aed458d829aa4ee1bd3011789`.
+  Jarvis was not repackaged for the consumer-only 0.3.1 milestone.
 - Spitfire theme 1.2.1 passes repository preflight, Grav YAML linting, ZIP
   integrity, and local DDEV rendering checks. Features and Text produced 28px
   desktop edge padding for Tighter, Form produced 56px for Tight, and the Home
@@ -330,20 +384,21 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.3.0 reliability is complete. Jarvis 0.3.1 optional Grav Commander
-consumer integration is the recommended next milestone; no Commander code has
-been changed.
+Jarvis 0.3.1 optional-consumer integration is complete through Grav Commander
+0.3.12. Jarvis remains 0.3.0 and `grav-jarvis-0.3.0.zip` remains canonical.
+No Jarvis 0.4.0, job, MCP, batch, new-provider, or additional-consumer work has
+started.
 
 ## Exact next action
 
-For Jarvis 0.3.1, first re-audit Grav Commander's existing optional-service and
-preview patterns. Add one bounded assistance path only through
-`JarvisServiceInterface`/`ReliabilityServiceInterface` type checks. Commander
-must work unchanged when Jarvis is absent, disabled, misconfigured, budget-
-blocked, or unavailable; keep Commander permissions, path containment, and
-apply authority inside Commander. Add consumer absence/failure/budget tests
-before any UI integration. Do not add jobs, MCP, batch, tools, new providers,
-or automatic apply.
+Implement Commander 0.3.13 optimistic-concurrency hardening at its ordinary
+Save boundary. Return a stable expected file version/content token with the
+editable file response, require it on Save, and reject an externally changed
+source before overwrite while preserving the user's unsaved buffer. Cover
+normal Save, stale denial, backup behavior, permissions, and graceful legacy/
+missing-token handling through focused component and signed-in DDEV browser
+tests. Do not expand Jarvis into jobs, MCP, batch, new providers, autonomous
+writes, or more consumers during that milestone.
 
 ## Explicitly deferred
 
@@ -375,17 +430,22 @@ or automatic apply.
 2. Read `README.md`, `docs/roadmap.md`, and `docs/architecture.md`.
 3. Read `docs/decisions/README.md` and the latest entries in
    `docs/SESSION-LOG.md`.
-4. For the active Jarvis milestone, read `docs/planned/grav-jarvis.md` and
-   `docs/decisions/0004-grav-jarvis-agent-framework.md` completely.
-5. Read `plugins/grav-jarvis/README.md`, then run
+4. Read `docs/planned/grav-jarvis.md`,
+   `docs/decisions/0004-grav-jarvis-agent-framework.md`,
+   `plugins/grav-commander/README.md`, and
+   `plugins/grav-commander/ROADMAP.md` completely.
+5. Run `./scripts/test-grav-commander-jarvis.sh` and
+   `./scripts/test-grav-commander-jarvis-browser.sh` for the completed optional
+   consumer boundary. Read `plugins/grav-jarvis/README.md`, then run
    `./scripts/test-grav-jarvis-contract.sh` and
    `./scripts/test-grav-jarvis-admin-ui.sh`. For Admin2 work also run
    `./scripts/test-grav-jarvis-admin-browser.sh` against the disposable DDEV
    fixture; it restores its temporary account/plugin state on exit.
    The 0.3.0 suite includes `tests/grav-jarvis/reliability.php` and
    `tests/grav-jarvis/chunking.php` through the contract runner.
-6. Rebuild with `./scripts/package-extension.sh plugin grav-jarvis` after any
-   package change; checksums are expected to change.
+6. Rebuild only the package whose source changed. For this checkpoint that is
+   `./scripts/package-extension.sh plugin grav-commander`; Jarvis remains the
+   verified 0.3.0 archive and must not be repackaged as 0.3.1.
 7. Run `git status` and `git log --oneline --decorate -10`.
 8. Confirm the active milestone, exact next action, deferred work, and local
    uncommitted changes before modifying files.

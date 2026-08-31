@@ -200,4 +200,31 @@ site crawl, RAG/vector index, recursive expansion, autonomous rewrite, job
 queue, durable request/history store, behavioral telemetry, or external
 telemetry.
 
+Jarvis 0.3.1 proves the optional-consumer boundary without changing Jarvis
+code. Grav Commander 0.3.12 checks for the public service/contracts at runtime
+and retains all file authority. The server re-resolves the configured root and
+relative path through Commander's contained file service, then enforces both
+Commander operation permission and `grav-jarvis.use`. The browser cannot name
+a provider class, endpoint, header, credential, environment variable, path
+outside Commander roots, or reliability policy.
+
+Commander permits only one current eligible text/source buffer. `.env`,
+credential/account/secret/private-key locations, private-key bodies,
+unsupported extensions, and binary content fail closed. High-confidence
+credential assignments and bearer/token values are replaced with
+`[REDACTED]`; a redacted or truncated transformation cannot be applied. This is
+a bounded disclosure guardrail rather than a perfect secret scanner, so the
+visible context and provider choice still require human review.
+
+Read-only results never receive an application receipt. Safe editable Improve
+or Custom results receive a private 15-minute receipt containing only hashes
+and expiry. It binds actor, root/path, disk modified/size version, source, and
+proposal and is consumed by Apply or Reject. Apply rechecks
+`grav-commander.write` and `grav-jarvis.use`, current file editability/version,
+current buffer hash, proposal hash, actor/path, expiry, and one-time use. It
+returns text to the unsaved textarea and never invokes Commander's write route.
+The ordinary Save action remains a separate explicit persistence step. Its
+pre-existing lack of a general optimistic-concurrency token is documented for
+Commander 0.3.13 hardening rather than hidden by the AI integration.
+
 Report vulnerabilities using the root [security policy](../SECURITY.md).

@@ -43,8 +43,8 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Lantern Search | Plugin | 0.1.0 development release | `user/plugins/lantern-search` |
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
-| Grav Commander | Plugin | GPM package; standalone history retained | `user/plugins/grav-commander` |
-| Jarvis | Plugin | 0.3.0 bounded reliability, cost/budget controls, safe chunking, and review-first Admin2 proposals | `user/plugins/grav-jarvis` |
+| Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
+| Jarvis | Plugin | 0.3.0 runtime; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -54,19 +54,23 @@ has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 ## Jarvis AI services and Admin2 assistant
 
 **Jarvis** (`grav-jarvis`) is the Grav 2 AI-service and agent-integration
-framework. The runnable 0.2.1 package preserves its frozen 0.1.x contracts and
-hardens the permission-filtered Admin2 assistant plus native page-editor panel
+framework. The runnable 0.3.0 package preserves its frozen 0.1.x contracts and
+adds bounded reliability, cost/budget reporting, safe summarize-only chunking,
+the permission-filtered Admin2 assistant, and native page-editor panel
 for six review-first actions. It reads the current unsaved buffer through
 Admin2's public events, sends bounded/redacted page context through the server-
 side provider service, and requires before/after review. Accept updates only
 the unsaved buffer; it never saves or publishes. Reject/replacement explicitly
 revoke one-time receipts, and the deterministic authenticated browser gate
 covers lifecycle, keyboard, responsive, theme, and safe provider-error states.
-Bounded provider-neutral HTTP, official OpenAI and Anthropic adapters, and
-explicitly profiled compatible instances remain available. Vendor data stays
+Grav Commander 0.3.12 now proves the first real optional consumer using only
+the public Jarvis contracts. It adds bounded eligible-file actions and can
+apply a hash/version-bound result only to its unsaved editor buffer; Commander
+stays fully usable without Jarvis. Bounded provider-neutral HTTP, official
+OpenAI and Anthropic adapters, and explicitly profiled compatible instances
+remain available. Vendor data stays
 inside adapters, credentials remain environment-only, and plugin boot makes no
-network request. Broader reliability, consumer, and Grav REST/MCP work remains
-staged. Read the
+network request. Broader site-wide and Grav REST/MCP work remains staged. Read the
 [Jarvis manual](plugins/grav-jarvis/README.md),
 [Jarvis specification](docs/planned/grav-jarvis.md) and
 [Decision 0004](docs/decisions/0004-grav-jarvis-agent-framework.md).

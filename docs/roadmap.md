@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 development release; bounded reliability, cost/budget controls, safe chunking, and hardened Admin2 proposals available |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 runtime; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
 | 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -87,16 +87,24 @@ The version sequence is:
    Markdown chunk provenance, and summarize-only bounded synthesis. Admin2
    shows compact reliability data without weakening review receipts or unsaved-
    buffer acceptance. No job/history/accounting database or telemetry was added.
-9. **0.3.1 — first optional consumer integration (next):** let Grav Commander
-   discover and consume only public/additive Jarvis contracts for one bounded,
-   preview-first assistance path. Commander must retain normal operation when
-   Jarvis, a provider, a credential, a capability, or a budget is unavailable;
-   no private classes/configuration, write-authority transfer, automatic apply,
-   job queue, or MCP workflow is permitted.
-10. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
+9. **0.3.1 — first optional consumer integration (implemented without a Jarvis
+   package change):** Grav Commander 0.3.12 discovers only
+   `$grav['gravJarvis']` and public `Contracts` interfaces for bounded Explain,
+   Summarize, Review, Improve / Rewrite, and Custom Prompt actions on one
+   eligible current file. Commander owns permissions, sensitivity/context
+   filtering, hash/version-bound preview receipts, and unsaved-buffer Apply;
+   Jarvis owns validation/discovery, providers, reliability, cost/budget, and
+   Markdown chunking. Commander remains usable through absent/disabled/
+   misconfigured/provider/capability/budget failures. No Jarvis 0.3.1 ZIP was
+   manufactured because no Jarvis source or public contract changed.
+10. **Commander 0.3.13 — ordinary Save concurrency hardening (recommended
+    next):** add an expected version/content token to the existing file-write
+    boundary so all saves, not only Jarvis proposal Apply, reject an externally
+    changed source before overwrite.
+11. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-11. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+12. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

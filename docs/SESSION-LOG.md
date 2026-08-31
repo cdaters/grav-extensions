@@ -767,3 +767,61 @@ suite inventory incremental and risk ordered.
   and apply authority when Jarvis/provider/credential/capability/budget paths
   are absent or fail. No Commander, job, MCP, batch, new-provider, automatic-
   apply, push, tag, or publish work was started.
+
+## 2026-08-30 — Jarvis 0.3.1 optional Grav Commander consumer
+
+- Implemented the milestone additively in Grav Commander 0.3.12 without
+  changing Jarvis source, frozen contracts, 0.3.0 metadata, or its canonical
+  archive. Commander has no Jarvis package dependency, checks public interface
+  availability before `$grav['gravJarvis']`, and imports no Jarvis Admin,
+  provider, transport, reliability implementation, storage, security, or test
+  fixture class.
+- Added bounded Explain, Summarize, Review, Improve / Rewrite, and Custom Prompt
+  actions for one eligible current text/source file. Commander retains root/
+  path containment and rejects `.env`, credential/account/secret/private-key
+  locations, private-key bodies, unsupported/binary content, and incomplete
+  rewrite context. High-confidence credential assignments and bearer/token
+  values are redacted. Large Markdown Summarize uses Jarvis's public reliability
+  contract; Commander does not duplicate provider, retry, cache, budget, cost,
+  or chunk implementations.
+- Added provider/model selection, validation, bounded-context/provenance and
+  usage/cost/retry/cache presentation, safe proposal review, Copy, Reject, and
+  explicit Apply. Apply changes only the current unsaved textarea and never
+  invokes a file-write route. A private hash-only 15-minute one-use Commander
+  receipt binds actor, root/path, disk modified/size version, source, and
+  proposal; expiry, rejection, cross-user/file use, disk/source change, and
+  replay fail closed.
+- Enforced `grav-commander.browse` plus `grav-jarvis.use` for read-only actions,
+  validation, and discovery. Improve, Custom Prompt, and Apply also require
+  `grav-commander.write`. Absent, disabled, invalid, misconfigured, unavailable,
+  capability-limited, budget-blocked, timeout, rate-limit, authentication, and
+  malformed-provider paths affect only Jarvis controls; Commander remains
+  usable.
+- Added ten deterministic PHP integration checks, six isolated browser-
+  component checks, and a real signed-in DDEV Chrome regression for both
+  Jarvis-present and Jarvis-absent modes. The browser proves discovery/
+  validation, Review, usage/cost, Reject, Apply once, reload non-persistence,
+  safe provider failure, and continuing Commander operation. Full frozen
+  Jarvis PHP, component, and signed-in Admin2 suites also pass. No live provider
+  request, credential, or charge was used.
+- The DDEV fixture has an unrelated external
+  `spitfirebbs.com/user/data/grav-security-probe.dat` CORS failure. The new
+  browser gate filters only that exact known baseline and its deliberate 503,
+  while failing on other integration console/page errors. Host PHP remains
+  unavailable; PHP syntax/runtime evidence comes from DDEV PHP 8.3.31.
+- Passed DDEV PHP 8.3.31 syntax/runtime, Composer, repository/Grav YAML, JSON,
+  JavaScript, shell, repository preflight, whitespace, ZIP integrity, exact
+  0.3.11-to-0.3.12 upgrade, fresh packaged install, Grav cache clear, public/
+  Admin/Commander HTTP 200, anonymous API 401, and relevant log inspection.
+  Host PHP remains unavailable, so preflight truthfully skipped host PHP. The
+  DDEV fixture was restored to Commander 0.3.11 and temporary Jarvis plugins
+  were removed.
+- Packaged `dist/grav-commander-0.3.12.zip`, SHA-256
+  `b662269b2fb3749e9ab594c9674e3c8ff9d6531aed458d829aa4ee1bd3011789`. Jarvis
+  `dist/grav-jarvis-0.3.0.zip` remains canonical at SHA-256
+  `5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
+- The integration exposed one concrete consumer-side gap: Jarvis Apply checks
+  the disk version, but Commander's pre-existing ordinary Save endpoint has no
+  general optimistic-concurrency token. The exact next milestone is Commander
+  0.3.13 ordinary-Save concurrency hardening before Jarvis 0.4.0, additional
+  consumers, jobs, MCP, batch, or autonomous write work.

@@ -1,3 +1,17 @@
+# v0.3.12
+## 08/30/2026
+
+1. [](#new)
+    * Added optional Jarvis actions for eligible text files: Explain, Summarize, Review, Improve / Rewrite, and Custom Prompt.
+    * Added provider-neutral validation/model discovery, bounded context provenance, usage/cost/retry/cache reporting, and before/proposed review inside Admin2.
+    * Added hash-only one-time receipts for applying safe proposals to the current unsaved editor buffer.
+2. [](#improved)
+    * Commander now degrades cleanly when Jarvis, a provider, credential, capability, or budget is unavailable.
+    * Sensitive file locations, private-key material, binary content, unsafe partial rewrites, and secret-bearing assignments fail closed or are redacted before Jarvis receives context.
+    * Jarvis actions require both Commander operation permission and `grav-jarvis.use`; all provider reliability behavior stays behind Jarvis public contracts.
+3. [](#security)
+    * Apply is actor/file/source/proposal/version bound, expires after 15 minutes, works once, and never writes the filesystem. The existing Save file action remains the only editor persistence path.
+
 # v0.3.11
 ## 05/17/2026
 

@@ -1,8 +1,8 @@
 # Jarvis
 
-**Status:** 0.3.0 reliability, cost control, and large-context infrastructure
-implemented; optional Grav Commander consumer integration is the recommended
-next milestone
+**Status:** 0.3.0 Jarvis runtime plus the 0.3.1 optional-consumer milestone
+implemented through Grav Commander 0.3.12; Commander ordinary Save concurrency
+hardening is the recommended next milestone before broader agent/site work
 
 **Product name:** Jarvis
 
@@ -287,13 +287,14 @@ if ($ai instanceof JarvisServiceInterface) {
 The eventual public namespace, DTO fields, exceptions, events, and deprecation
 policy are frozen by contract tests before consumers are encouraged to ship.
 
-Grav Commander is the first named integration candidate. Initial Commander
-features should be read-only—summarize or explain a selected allowed text file,
-for example. Any proposed file edit remains inside Commander's existing root,
-extension, size, permission, backup, and containment checks and uses Jarvis's
-preview/approval object. Jarvis does not gain Commander write authority, and
-Commander does not gain provider credentials. Either plugin remains useful
-when the other is absent.
+Grav Commander is the first implemented integration. Version 0.3.12 provides
+bounded Explain, Summarize, Review, Improve / Rewrite, and Custom Prompt for one
+eligible current text file. Commander discovers only `$grav['gravJarvis']` and
+public contracts; Jarvis does not gain Commander write authority, and Commander
+does not gain provider credentials. Commander owns file containment,
+sensitivity filtering, permissions, hash/version-bound proposal receipts, and
+unsaved-buffer Apply. Its existing Save action remains the only persistence
+path. Either plugin remains useful when the other is absent.
 
 Other likely consumers include Meta Pilot for metadata proposals, Site Workshop
 for bounded workflows, and future Page Studio authoring tools. These are
@@ -584,6 +585,49 @@ operation accounting is in-memory only; no external telemetry exists.
 The packaged release is `dist/grav-jarvis-0.3.0.zip`, SHA-256
 `5fff5ea5f10061c3fe95675f0732d20ce7ba0b6eb3623dbf22c6fe3aa452b158`.
 
+### 0.3.1 — first optional consumer integration (implemented)
+
+- Grav Commander 0.3.12 resolves `$grav['gravJarvis']` only after public
+  interface availability checks. It imports no Jarvis Admin, provider,
+  reliability implementation, transport, security, cache, testing, or storage
+  class and has no hard package dependency;
+- bounded one-file actions cover Explain, Summarize, Review, Improve / Rewrite,
+  and Custom Prompt for Markdown, YAML, JSON, plain text, PHP, and other
+  explicitly eligible source formats. Binary/media files, credential/secret/
+  account/private-key locations, `.env`, and private-key bodies fail closed;
+  high-confidence secret assignments and bearer/token values are redacted;
+- read-only actions may visibly truncate at the direct-context limit. Improve
+  and Custom Prompt refuse partial-file rewriting. Large Markdown Summarize
+  delegates to `ReliabilityServiceInterface::summarizeLarge()` rather than
+  reproducing chunk behavior;
+- public validation/model discovery and reliable completion provide provider,
+  model, usage, estimated/unknown cost, request/retry, cache, budget, and
+  chunk-provenance information. Commander contains no provider-specific wire
+  field or browser-supplied endpoint/header/credential/environment authority;
+- every action requires `grav-commander.browse` and `grav-jarvis.use` on the
+  backend. Improve, Custom Prompt, and Apply also require
+  `grav-commander.write`;
+- Apply is explicit and changes only the current unsaved textarea. A private
+  15-minute hash-only Commander receipt binds actor, configured root/path,
+  disk modified/size version, current source, and proposal. Reject, expiry,
+  cross-user/file, source/disk change, and replay fail closed. Redacted,
+  truncated, read-only, or over-limit output is copy/preview-only; and
+- deterministic PHP/component contracts and real signed-in DDEV browser gates
+  prove success, absence, disabled/invalid service, no provider/capability,
+  credentials/configuration, provider timeout/rate/malformed response, budget,
+  redaction, chunking, preview, Reject, one-time Apply, reload non-persistence,
+  permissions, graceful provider failure, and no automatic write.
+
+No Jarvis source, frozen interface, version metadata, or release archive
+changed for this milestone; `grav-jarvis-0.3.0.zip` remains canonical. Only
+Grav Commander is packaged as `dist/grav-commander-0.3.12.zip`, SHA-256
+`b662269b2fb3749e9ab594c9674e3c8ff9d6531aed458d829aa4ee1bd3011789`.
+The concrete friction found is in
+Commander's pre-existing ordinary Save boundary: Jarvis proposal Apply detects
+an externally changed disk version, but normal Save has no general optimistic-
+concurrency token. Commander 0.3.13 should close that write-boundary gap before
+the AI surface expands.
+
 ### 0.4.0 — agent and site-wide workflows
 
 - batch selection, per-item proposals, selected apply, resumability, and
@@ -592,8 +636,8 @@ The packaged release is `dist/grav-jarvis-0.3.0.zip`, SHA-256
 - content/metadata audits and other bounded named workflows;
 - Gemini and OpenRouter adapters if provider-contract evidence supports them;
   and
-- optional Grav Commander and suite integrations implemented against the
-  stable public contract.
+- additional optional suite integrations implemented against the stable public
+  contract.
 
 ### 1.0.0 — supported public platform
 
