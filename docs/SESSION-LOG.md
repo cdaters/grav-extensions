@@ -825,3 +825,61 @@ suite inventory incremental and risk ordered.
   general optimistic-concurrency token. The exact next milestone is Commander
   0.3.13 ordinary-Save concurrency hardening before Jarvis 0.4.0, additional
   consumers, jobs, MCP, batch, or autonomous write work.
+
+## 2026-08-30 — Caxton 0.1.0 source-fidelity contract foundation
+
+- Re-read the canonical working agreement, state, roadmap, architecture,
+  security/testing/release guidance, all decisions, planned briefs, Jarvis
+  public boundaries, Commander/Revision Ledger Admin2 patterns, package tools,
+  and current dirty work before editing. Reconciled the former Page Studio plan
+  into Caxton (`grav-caxton`) rather than creating a competing editor project.
+- Inspected the owner-supplied Editor Pro 2.0.10 archive only as a clean-room
+  behavioral specimen outside the repository. Recorded SHA-256
+  `15617f2adbeb6012204507dcb8eff93d6accf2d59a4015cc7a977dd70ec6f0a8`
+  and lessons about source/visual modes, fences, Twig/shortcodes, media paths,
+  nested formatting, dirty state, keyboard/RTL/theme behavior, extension seams,
+  and explicit replacement. No reference source, asset, API, or dependency
+  entered Caxton.
+- Reviewed current official Grav 2 API/Admin2/Markdown, Admin2 source,
+  ProseMirror, CodeMirror, TipTap, Milkdown, and Lexical documentation. Accepted
+  Decision 0005: a bounded source-backed concrete document is authoritative;
+  ProseMirror core is the future visual adapter and CodeMirror 6 the future
+  source adapter. TipTap adds an unnecessary evolving wrapper, Milkdown's
+  remark serialization does not preserve source trivia, and Lexical offers less
+  direct leverage for Grav Markdown/source embedding. Editor-engine state is
+  never the persisted page format.
+- Added the runnable Caxton 0.1.0 package with metadata/defaults/permissions,
+  public source document/block/diagnostic/edit/service and extension contracts,
+  typed failures, `$grav['gravCaxton']`, `onCaxtonExtensionRegister`, a sorted
+  namespaced registry, a 2 MiB/NUL-bounded parser, integrity-checking exact
+  serializer, stale-SHA-protected localized plain-heading/plain-paragraph edits,
+  and opaque fallback for unsupported or unsafe constructs. Extension-event
+  failure logs only the failure class and cannot suppress the core service.
+- Added golden representative and malformed fixtures plus deterministic service,
+  registry, absence/failure, redaction, bounds, line-ending, Unicode, exact-
+  coverage, no-edit, localized-edit, opaque, and stale-source tests. The release
+  has no Admin2 field, JavaScript editor, endpoint, page write, renderer,
+  preview, media browser, network client, credentials, Jarvis integration,
+  executable extension module, background job, collaboration, or MCP path.
+- Updated README, architecture, roadmap, security/testing/index, planned brief
+  index, Jarvis future-consumer wording, Page Studio recovery link, ADR index,
+  and canonical handoff. Preserved the user's unrelated Site Workshop/Cache
+  Hearth and Spitfire-theme edits outside the Caxton commit. A stray ignored
+  `plugins/.DS_Store` blocked repository hygiene and was moved recoverably to
+  `/tmp/grav-extensions-plugins.DS_Store.caxton-20260830`.
+- Passed the Caxton contract and all Caxton PHP syntax under DDEV PHP 8.3.31;
+  Composer strict validation; repository and package YAML/JSON/shell checks;
+  repository structure/hygiene preflight; whitespace and forbidden-package-file
+  checks; ZIP CRC and one-top-level-directory inspection; fresh packaged install;
+  Grav cache clear; public/Admin HTTP 200; and recent Caxton/fatal/uncaught log
+  inspection. Host PHP is absent, so host preflight truthfully skipped PHP.
+  There was no earlier Caxton release to upgrade. The DDEV test install was
+  removed and its prior absent/config-free state restored.
+- Packaged `dist/grav-caxton-0.1.0.zip`, SHA-256
+  `21604885f1f551f20f482d00021d6a2bbf02c0d1654da585725794725bbf381c`.
+- Set the exact next milestone to Caxton 0.1.1: pin audited ProseMirror core and
+  CodeMirror 6 dependencies behind private adapters and prove safe visual/source
+  switching, selection mapping, headings/paragraphs/thematic breaks, and opaque
+  cards in an isolated deterministic component harness with license/bundle-size
+  inventory. Do not add the Admin2 field/persistence boundary, Jarvis, or richer
+  parser coverage in that milestone. Commander 0.3.13 is paused, not cancelled.

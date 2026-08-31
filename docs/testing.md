@@ -132,10 +132,37 @@ produces the expected authenticated request body.
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
 | Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts plus 0.3.1 public-only Commander consumer proof and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
+| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 deterministic PHP source/service/registry contract implemented; Admin2 browser boundary begins with 0.1.1 |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
 must not wait for the whole inventory before receiving its own regression.
+
+### Caxton source-fidelity contract
+
+Run the complete 0.1.0 contract and PHP syntax suite with host PHP or the
+canonical DDEV PHP 8.3 fixture:
+
+```bash
+./scripts/test-grav-caxton-contract.sh
+```
+
+The offline runner proves actual `$grav['gravCaxton']` registration,
+`onCaxtonExtensionRegister`, sorted namespaced extension lookup, duplicate and
+malformed registration denial, disabled-service absence, non-replacement of an
+existing service, and failure isolation with source/secret-free logs. Golden
+and generated source cases cover frontmatter, headings, plain paragraphs,
+lists, quotes, fences that shield Twig/shortcode-looking content, media paths
+with spaces, tables, HTML, Twig, shortcodes, Unicode, LF/CRLF/CR/mixed endings,
+no final newline, malformed fences, NUL, and maximum size.
+
+Every accepted source must have ordered contiguous block coverage and serialize
+to its exact original bytes without an edit. Safe heading edits prove localized
+replacement only; opaque blocks, stale hashes, and replacement text outside the
+0.1.0 safe subset fail deterministically. The suite is process-local because
+0.1.0 owns no HTTP, browser, persistence, renderer, or network boundary. The
+0.1.1 Admin2 field must add a signed-in browser contract before release; direct
+component tests alone will not prove the value/change/save separation.
 
 ### Jarvis AI boundary contract
 

@@ -45,6 +45,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
 | Jarvis | Plugin | 0.3.0 runtime; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
+| Caxton | Plugin | 0.1.0 source-fidelity contract foundation | `user/plugins/grav-caxton` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -75,6 +76,22 @@ network request. Broader site-wide and Grav REST/MCP work remains staged. Read t
 [Jarvis specification](docs/planned/grav-jarvis.md) and
 [Decision 0004](docs/decisions/0004-grav-jarvis-agent-framework.md).
 
+## Caxton source-faithful editing
+
+**Caxton** (`grav-caxton`) is the independent Grav 2/Admin2 editor project that
+replaces the earlier Page Studio working name. The runnable 0.1.0 foundation
+keeps original page bytes authoritative, exposes a bounded source-document and
+localized-patch service as `$grav['gravCaxton']`, preserves unsafe or unknown
+constructs as inert opaque blocks, and accepts trusted plugin extensions through
+`onCaxtonExtensionRegister`. A no-edit parse/serialize is byte-identical; the
+only visual-contract edits currently allowed are plain headings and plain
+single-line paragraphs guarded by a source SHA-256. The Admin2, ProseMirror,
+and CodeMirror adapters begin in 0.1.1, so 0.1.0 does not replace the editor UI.
+Jarvis is an optional future proposal service and is not a dependency. Read the
+[Caxton manual](plugins/grav-caxton/README.md),
+[Caxton specification](docs/planned/grav-caxton.md), and
+[Decision 0005](docs/decisions/0005-grav-caxton-source-fidelity-editor.md).
+
 Every installable package also carries its own end-user README so the guidance
 travels with release ZIPs:
 
@@ -89,6 +106,7 @@ travels with release ZIPs:
 - [Flexible Markdown Alerts manual](plugins/flexible-markdown-alerts/README.md)
 - [Grav Commander manual](plugins/grav-commander/README.md)
 - [Jarvis manual](plugins/grav-jarvis/README.md)
+- [Caxton manual](plugins/grav-caxton/README.md)
 - [Spitfire child-theme manual](themes/spitfire/README.md)
 
 ## Repository layout
@@ -149,6 +167,7 @@ Create an installable ZIP containing the required top-level extension folder:
 ./scripts/package-extension.sh plugin flexible-markdown-alerts
 ./scripts/package-extension.sh plugin grav-commander
 ./scripts/package-extension.sh plugin grav-jarvis
+./scripts/package-extension.sh plugin grav-caxton
 ./scripts/package-extension.sh theme spitfire
 ```
 

@@ -14,3 +14,4 @@ Accepted records:
 - [0002: run restore across a CLI process boundary](0002-site-safeguard-cli-restore.md)
 - [0003: verify extension boundaries as black boxes](0003-black-box-extension-boundaries.md)
 - [0004: build Jarvis as a Grav 2 AI and agent framework](0004-grav-jarvis-agent-framework.md)
+- [0005: build Caxton around a source-backed document model](0005-grav-caxton-source-fidelity-editor.md)

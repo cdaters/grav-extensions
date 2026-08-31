@@ -19,6 +19,7 @@ belong in that extension's own README.
 - [Flexible Markdown Alerts](../plugins/flexible-markdown-alerts/README.md)
 - [Grav Commander](../plugins/grav-commander/README.md)
 - [Jarvis](../plugins/grav-jarvis/README.md)
+- [Caxton](../plugins/grav-caxton/README.md)
 - [Spitfire child theme](../themes/spitfire/README.md)
 
 ## Maintain the suite
@@ -34,6 +35,7 @@ belong in that extension's own README.
 - [Roadmap](roadmap.md)
 - [Planned extension briefs](planned/README.md)
 - [Jarvis AI/agent framework specification](planned/grav-jarvis.md)
+- [Caxton source-faithful editor specification](planned/grav-caxton.md)
 - [Architecture decisions](decisions/README.md)
 
 ## Documentation boundary

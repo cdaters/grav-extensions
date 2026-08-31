@@ -37,6 +37,38 @@ validated before deep hashing, complete packages are extracted only to a unique
 directory outside the running Grav root, and extracted files are hashed again.
 Version 0.1 deliberately exposes no live-promotion operation.
 
+## Source-faithful editing
+
+Caxton treats page source, Markdown extensions, HTML, Twig, shortcodes, media
+metadata, pasted content, extension descriptors, and future AI proposals as
+untrusted. The authoritative value is the bounded source buffer, not rendered
+HTML or an editor-engine document.
+
+- No-edit parse/serialization must return exact bytes. A visual edit is allowed
+  only for a source span explicitly classified as safe and is applied against
+  the expected document SHA-256; every byte outside the edited span remains
+  unchanged.
+- Unknown, ambiguous, malformed, raw HTML, Twig, shortcode, and executable-
+  looking content is inert and opaque. The editor does not execute site Twig or
+  shortcode rendering merely to display it, and does not insert untrusted raw
+  HTML into its chrome.
+- Parsing and editing are bounded by source bytes, replacement bytes, block
+  coverage, and deterministic failure. NUL and oversized input fail without
+  including source content in exceptions or logs.
+- Normal Grav page permissions and Save/Publish remain authoritative. Caxton
+  0.1.0 has no HTTP route, page-write endpoint, autosave, hidden page copy,
+  preview renderer, network client, provider credential, or executable client
+  extension.
+- Trusted installed plugins may register namespaced public descriptors, but
+  registration grants no implicit page, filesystem, rendering, network, or
+  write authority. Missing extensions leave ordinary source intact.
+- Future Admin2, preview, media, collaboration, and Jarvis paths require their
+  own permission, sanitization, stale-source, and external black-box evidence
+  before those boundaries ship.
+
+The complete trust and preservation contract is in
+[`docs/planned/grav-caxton.md`](planned/grav-caxton.md) and Decision 0005.
+
 ## AI providers and agent workflows
 
 Jarvis treats model providers, model output, page/media context, and MCP-

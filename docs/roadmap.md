@@ -17,7 +17,7 @@ can never be mistaken for an installable Grav package.
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
 | 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 runtime; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
-| 12 | Page Studio | Grav Admin 2 authoring experience with extensible content blocks | Specification queued |
+| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.1.0 contract foundation implemented |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -110,6 +110,41 @@ The version sequence is:
 The canonical feature, security, compatibility, testing, and non-goal detail is
 the [Jarvis specification](planned/grav-jarvis.md). The runnable package and
 traveling operator/consumer guidance now live under `plugins/grav-jarvis`.
+
+## Caxton roadmap
+
+Caxton is the reconciled identity for the former Page Studio editor plan. Its
+source-backed model makes ordinary Grav Markdown authoritative while safe
+constructs receive semantic visual editing and ambiguous constructs remain
+byte-preserved. It is independent of Jarvis and of the supplied clean-room
+Editor Pro behavior reference.
+
+1. **0.1.0 — source-fidelity contract foundation (implemented):** runnable
+   `grav-caxton` package, public document/block/diagnostic/edit and service
+   contracts, bounded exact no-edit serialization, SHA-256-guarded localized
+   plain-heading/plain-paragraph edits, opaque fallback, extension registry,
+   `onCaxtonExtensionRegister`, and `$grav['gravCaxton']`. No Admin2 editor,
+   client engine, endpoint, or Jarvis integration ships in this release.
+2. **0.1.1 — editor-engine proof (exact next milestone):** pin audited
+   ProseMirror core and CodeMirror 6 dependencies behind Caxton-owned adapters;
+   prove paragraph/heading/thematic-break visual nodes, opaque cards, selection
+   mapping, and visual/source switches without dirtying or normalization in an
+   isolated deterministic component harness. Record licenses and bundle size.
+   Do not replace an Admin2 page field or add a persistence route yet.
+3. **0.2.x — Grav-aware authoring:** configuration-aware Markdown, media,
+   links, lists, quotes, tables, fenced code, HTML/Twig/shortcode inert views,
+   extension client modules, insertion palette, and page-form integration.
+4. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
+   modes, safe reorder, large-document profiling, and evidence-driven adapters.
+5. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
+   preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
+   reporting exclusively through public Jarvis contracts.
+6. **1.0.0 — supported editor platform:** public-extension compatibility and
+   deprecation policy, complete fallback/migration guidance, and release-quality
+   accessibility/security/browser/large-document evidence.
+
+The canonical guarantees, engine evaluation, security model, compatibility,
+tests, and non-goals are in the [Caxton specification](planned/grav-caxton.md).
 
 ## Site Safeguard recovery roadmap
 

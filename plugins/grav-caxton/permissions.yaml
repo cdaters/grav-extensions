@@ -1,0 +1,11 @@
+actions:
+  grav-caxton:
+    label: Caxton
+    type: access
+    actions:
+      use:
+        label: Use the Caxton editor
+      source:
+        label: Edit page source in Caxton
+      extend:
+        label: Use registered Caxton extensions

@@ -20,6 +20,35 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
+Caxton 0.1.0 is complete as the source-fidelity contract foundation for the
+suite's modern Grav 2/Admin2 editor. The previous **Page Studio** working name
+has been reconciled into Caxton (`grav-caxton`) and is not a separate product.
+Decision 0005 makes ordinary page source authoritative: no-edit serialization
+is byte-identical, an intentional safe-block edit may change only its bounded
+span against the expected source SHA-256, and unknown, ambiguous, malformed,
+HTML, Twig, shortcode, media, table, list, quote, and fenced-code constructs
+remain inert and exact until a symmetric adapter is proven.
+
+The runnable plugin registers `$grav['gravCaxton']`, public source document,
+block, diagnostic, edit, service, and extension contracts, a deterministic
+bounded parser/serializer, localized plain-heading/plain-paragraph edits, a
+namespaced extension registry, and `onCaxtonExtensionRegister`. A disabled
+plugin leaves the service absent; extension-registration failure cannot prevent
+the core service and logs only the failure class, not exception/source content.
+The default document bound is 2 MiB, replacements are bounded, NUL is rejected,
+and stale hashes, opaque blocks, malformed extension IDs, and duplicates fail
+closed. Caxton 0.1.0 has no Admin2 field, editor-engine bundle, endpoint,
+renderer, network path, page write, autosave, credential, Jarvis dependency, or
+executable extension module.
+
+The clean-room Editor Pro 2.0.10 behavior reference remains only at
+`~/Downloads/editor-pro.zip`, SHA-256
+`15617f2adbeb6012204507dcb8eff93d6accf2d59a4015cc7a977dd70ec6f0a8`.
+No code or asset from it entered this repository. ProseMirror core is selected
+for the future visual adapter and CodeMirror 6 for source mode, both behind
+Caxton-owned interfaces and neither as a persisted content format. TipTap,
+Milkdown, and Lexical were evaluated and are not the initial core.
+
 Jarvis 0.3.1 is complete as an optional consuming-plugin milestone through
 Grav Commander 0.3.12. Jarvis itself remains the unchanged 0.3.0 runtime and
 package: no Jarvis source, frozen interface, metadata, or release archive was
@@ -261,6 +290,23 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Current quality evidence
 
+- Caxton's deterministic PHP contract passes in DDEV PHP 8.3.31. It proves
+  plugin service/event registration, namespaced extension discovery, duplicate/
+  malformed denial, disabled absence, existing-service preservation, failure
+  isolation and log redaction; exact contiguous no-edit round trips for the
+  Grav-specific golden corpus, malformed fences, Unicode, LF/CRLF/CR/mixed
+  endings, and no final newline; localized heading editing; opaque/stale/unsafe
+  edit denial; and NUL/2 MiB bounds. The suite makes no network request.
+- Every Caxton PHP file passes PHP 8.3 syntax in DDEV. Composer strict
+  validation, repository YAML/JSON/shell syntax, structure/hygiene preflight,
+  whitespace checks, package forbidden-file scan, ZIP integrity, one-top-level-
+  directory inspection, fresh packaged installation, Grav cache clearing,
+  public/Admin HTTP 200, and relevant recent fatal/uncaught log inspection pass.
+  Host PHP remains absent, so host preflight truthfully skipped PHP.
+- The verified package is `dist/grav-caxton-0.1.0.zip`, SHA-256
+  `21604885f1f551f20f482d00021d6a2bbf02c0d1654da585725794725bbf381c`.
+  The DDEV fixture had no preceding Caxton release to upgrade; its fresh test
+  installation was removed and the prior absent/config-free state restored.
 - Commander 0.3.12 passes ten deterministic PHP integration checks and six
   isolated browser-component checks. They prove public-contract-only service
   discovery, all five actions, bounded/redacted context, safe large-Markdown
@@ -384,21 +430,21 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.3.1 optional-consumer integration is complete through Grav Commander
-0.3.12. Jarvis remains 0.3.0 and `grav-jarvis-0.3.0.zip` remains canonical.
-No Jarvis 0.4.0, job, MCP, batch, new-provider, or additional-consumer work has
-started.
+Caxton 0.1.0 is complete and packaged. The active editor plan is Caxton; Page
+Studio is a superseded recovery link only. Jarvis 0.3.1 remains complete through
+Grav Commander 0.3.12, and the previously recommended Commander 0.3.13 work is
+paused—not cancelled—because the owner explicitly selected Caxton next.
 
 ## Exact next action
 
-Implement Commander 0.3.13 optimistic-concurrency hardening at its ordinary
-Save boundary. Return a stable expected file version/content token with the
-editable file response, require it on Save, and reject an externally changed
-source before overwrite while preserving the user's unsaved buffer. Cover
-normal Save, stale denial, backup behavior, permissions, and graceful legacy/
-missing-token handling through focused component and signed-in DDEV browser
-tests. Do not expand Jarvis into jobs, MCP, batch, new providers, autonomous
-writes, or more consumers during that milestone.
+Implement Caxton 0.1.1 as an additive visual/source engine proof. Pin audited
+ProseMirror core and CodeMirror 6 dependencies; keep them behind private
+Caxton-owned adapters; prove paragraph, heading, thematic-break, opaque-card,
+selection-mapping, and visual/source-switch behavior against the frozen 0.1.0
+source contracts; and record licenses and bundle size. Mode switches and mounts
+must not dirty or normalize source. Use an isolated deterministic component
+harness and do not replace an Admin2 page field, add a persistence route,
+integrate Jarvis, or expand the safe parser subset in the same milestone.
 
 ## Explicitly deferred
 
@@ -409,6 +455,13 @@ writes, or more consumers during that milestone.
   durable accounting/history, background jobs, batch/site-wide workflows, and
   MCP-facing endpoints remain later work. Rewrite/proofread chunk execution is
   deferred until deterministic structure-preserving reconstruction exists.
+- Caxton's Admin2 field, page-form replacement, media browser, live preview,
+  richer Markdown/HTML/Twig/shortcode adapters, client extension loading,
+  collaboration, and Jarvis proposals remain after the isolated 0.1.1 engine
+  proof. The first real field release requires the signed-in browser boundary
+  specified in `docs/testing.md`.
+- Commander 0.3.13 ordinary-Save optimistic-concurrency hardening remains the
+  exact next Commander milestone after the explicitly selected Caxton work.
 - The previous File Vault black-box milestone remains required under Decision
   0003 and is paused, not cancelled: prove anonymous denial, authorized
   delivery, ACL/password/download-limit enforcement, range/resume behavior,
@@ -430,22 +483,17 @@ writes, or more consumers during that milestone.
 2. Read `README.md`, `docs/roadmap.md`, and `docs/architecture.md`.
 3. Read `docs/decisions/README.md` and the latest entries in
    `docs/SESSION-LOG.md`.
-4. Read `docs/planned/grav-jarvis.md`,
-   `docs/decisions/0004-grav-jarvis-agent-framework.md`,
-   `plugins/grav-commander/README.md`, and
-   `plugins/grav-commander/ROADMAP.md` completely.
-5. Run `./scripts/test-grav-commander-jarvis.sh` and
-   `./scripts/test-grav-commander-jarvis-browser.sh` for the completed optional
-   consumer boundary. Read `plugins/grav-jarvis/README.md`, then run
-   `./scripts/test-grav-jarvis-contract.sh` and
-   `./scripts/test-grav-jarvis-admin-ui.sh`. For Admin2 work also run
-   `./scripts/test-grav-jarvis-admin-browser.sh` against the disposable DDEV
-   fixture; it restores its temporary account/plugin state on exit.
-   The 0.3.0 suite includes `tests/grav-jarvis/reliability.php` and
-   `tests/grav-jarvis/chunking.php` through the contract runner.
-6. Rebuild only the package whose source changed. For this checkpoint that is
-   `./scripts/package-extension.sh plugin grav-commander`; Jarvis remains the
-   verified 0.3.0 archive and must not be repackaged as 0.3.1.
+4. Read `docs/planned/grav-caxton.md`, Decision 0005,
+   `plugins/grav-caxton/README.md`, and every file under
+   `tests/grav-caxton/` before changing the source model or engine adapters.
+   The Editor Pro ZIP is not a build/test dependency and must not be copied.
+5. Run `./scripts/test-grav-caxton-contract.sh`. For 0.1.1, add and run the
+   isolated component harness described by the specification; do not call it an
+   Admin2 integration test. The real signed-in Admin2 browser gate begins with
+   the first field release.
+6. Rebuild only the package whose source changed. For the active milestone use
+   `./scripts/package-extension.sh plugin grav-caxton`; Jarvis and Commander
+   packages remain their existing verified releases.
 7. Run `git status` and `git log --oneline --decorate -10`.
 8. Confirm the active milestone, exact next action, deferred work, and local
    uncommitted changes before modifying files.

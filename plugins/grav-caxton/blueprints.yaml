@@ -1,0 +1,36 @@
+name: Caxton
+slug: grav-caxton
+type: plugin
+version: 0.1.0
+description: Source-faithful visual editing foundations for Grav 2 and Admin2.
+icon: pen-ruler
+author:
+  name: Craig Daters
+  email: craig@daters.net
+homepage: https://github.com/cdaters/grav-extensions/tree/main/plugins/grav-caxton
+keywords: grav, plugin, admin2, editor, markdown, source, blocks
+license: MIT
+
+dependencies:
+  - { name: grav, version: '>=2.0.0' }
+
+compatibility:
+  grav: ['2.0']
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin status
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    limits.max_source_bytes:
+      type: number
+      label: Maximum source document size in bytes
+      help: Oversized documents fail safely without parsing or logging their content.
+      default: 2097152
+      validate: { type: int, min: 1024, max: 16777216 }

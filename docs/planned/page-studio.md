@@ -1,9 +1,9 @@
-# Page Studio
+# Page Studio (superseded name)
 
-A richer, extensible content-authoring experience for Grav Admin 2.
+Page Studio was the original placeholder for the suite's rich Grav Admin2
+editor. It has been reconciled into **Caxton** (`grav-caxton`) and is not a
+separate or competing product.
 
-The first milestone will support Markdown and controlled HTML modes, media
-selection, accessible editing controls, and extensible blocks without silently
-rewriting page content. This is intentionally last in the initial build order:
-an editor is an application platform and should reuse stable revision, media,
-metadata, and indexing contracts established by the earlier extensions.
+Continue with the canonical
+[Caxton specification](grav-caxton.md) and
+[Decision 0005](../decisions/0005-grav-caxton-source-fidelity-editor.md).

@@ -9,7 +9,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 | **Prism Gallery** | Accessible image, local-video, YouTube, Vimeo, and HTTPS-embed galleries | Quark2 Gallery Modular integration, shortcodes, responsive viewer, deferred embeds |
 | **Image Foundry** | Original-preserving image optimization and modern derivatives | Auditable queues, WebP/AVIF policies, quality profiles, safe cache invalidation |
 | **Meta Pilot** | Search and social metadata management | Canonicals, robots, Open Graph, social cards, JSON-LD, sitemap diagnostics |
-| **Page Studio** | A richer content-authoring experience | Admin 2 editor integration, Markdown/HTML modes, media browser, extensible blocks |
+| **Caxton** | Source-faithful visual and block authoring without block-format lock-in | Source-backed document model, Admin2 field, ProseMirror visual adapter, CodeMirror source adapter, extensible Grav constructs |
 | **Gatehouse** | Admin authentication hardening | CAPTCHA options, throttling, least-privilege recovery visibility |
 | **Edge Console** | Narrow Cloudflare operations from Grav | Scoped API tokens, zone diagnostics, cache purge, development-mode controls, audit log |
 | **Jarvis** | Shared AI services and guarded agent workflows | Provider abstraction, Admin2 assistant, prompt library, streaming, CLI, proposal/diff/approval contract |
@@ -43,7 +43,7 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 - **Image Foundry → Prism Gallery:** Prism requests ordinary Grav media URLs and never depends on Image Foundry. Themes and media plugins may opt into Image Foundry's public Twig/service interface; the ordinary original URL remains the fallback.
 - **Meta Pilot → all public plugins:** Meta Pilot reads the final page and registered structured-data fragments. It does not rewrite another plugin's markup.
 - **Lantern Search → content providers:** Plugins can expose indexable records through an event. ACL-protected and unpublished records are excluded at indexing and query time.
-- **Revision Ledger → writers:** Page Studio and the future Frontmatter Annex module in Site Workshop can ask Revision Ledger to checkpoint a page before a write. If Revision Ledger is absent, they still work.
+- **Revision Ledger → writers:** Caxton and the future Frontmatter Annex module in Site Workshop may ask Revision Ledger for an explicit checkpoint at a future write boundary. If Revision Ledger is absent, they still work; Caxton 0.1.0 owns no page-write path.
 - **Flexible Markdown Alerts → Site Workshop:** Alerts may ask the public Icon Bench service to render a configured `pack/icon` reference. Flexible Markdown Alerts keeps bundled and site-owned icon paths and degrades to a text title if the service is absent or disabled; Site Workshop has no dependency on Flexible Markdown Alerts.
 - **Site Safeguard → the whole site:** Backup providers can add manifest entries, but cannot execute restore logic. Restore remains solely owned by Site Safeguard.
 - **Edge Console → caches:** Edge purge runs only after a successful local operation and must be optional. A Cloudflare failure must not corrupt local state.
@@ -55,6 +55,16 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
   Grav's REST API and MCP server remain authoritative for site operations,
   permissions, ETag conflict handling, and API events. No model response can
   approve or directly widen its own mutation scope.
+- **Caxton → content and Admin2:** Caxton's source document is authoritative;
+  safe visual changes become bounded source patches and normal Grav Save remains
+  the persistence boundary. Unknown/unsafe syntax stays inert and byte-
+  preserved. The future field uses only Admin2's documented value/change
+  contract and cannot save or publish directly.
+- **Caxton → optional extensions/Jarvis:** trusted installed plugins register
+  only public, namespaced descriptors through `onCaxtonExtensionRegister`.
+  Missing adapters degrade to opaque source. A later Caxton milestone may use
+  public `$grav['gravJarvis']` proposal contracts, but neither plugin is a
+  dependency and Caxton retains selection, patch, review, and apply authority.
 - **Asset delivery → media plugins:** Each plugin can provide its own delivery service, but it follows the same opaque-ID, short-lived-token, same-origin, range-request, and `noindex` response contract. A future shared service can replace local implementations without changing page content.
 
 ## Build order
@@ -70,13 +80,13 @@ This suite is a clean-room implementation of useful, publicly documented Grav wo
 9. Gatehouse
 10. Edge Console
 11. Jarvis
-12. Page Studio
+12. Caxton (formerly Page Studio)
 
 The order reduces risk and establishes reusable primitives before the editor:
 safe packaging, derivative media, metadata, revisions, indexing, and guarded AI
-proposals. Jarvis follows the revision and API foundations it needs; Page
-Studio remains last because a serious editor is an application platform rather
-than a toolbar replacement and may optionally consume Jarvis later.
+proposals. Jarvis follows the revision and API foundations it needs; Caxton
+remains last because a serious editor is an application platform rather than a
+toolbar replacement and may optionally consume Jarvis later.
 
 ## Current status
 
@@ -134,5 +144,10 @@ than a toolbar replacement and may optionally consume Jarvis later.
   Grav/Markdown chunk provenance. Large-context execution is summarize-only
   with bounded partials/final synthesis. It adds no job/history database,
   external telemetry, retrieval/RAG, recursive expansion, or write authority.
-- **Other later roadmap plugins:** Gatehouse, Edge Console, and Page Studio
-  remain named and bounded, not yet represented as finished packages.
+- **Caxton 0.1.0:** runnable source-fidelity contract foundation with exact
+  no-edit serialization, ordered byte spans, safe localized heading/paragraph
+  edits, opaque executable/ambiguous/unknown constructs, stale-source hashing,
+  a public `$grav['gravCaxton']` service, and a namespaced extension registry.
+  It contains no Admin2 field or editor-engine bundle yet.
+- **Other later roadmap plugins:** Gatehouse and Edge Console remain named and
+  bounded, not yet represented as finished packages.

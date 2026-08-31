@@ -297,7 +297,9 @@ unsaved-buffer Apply. Its existing Save action remains the only persistence
 path. Either plugin remains useful when the other is absent.
 
 Other likely consumers include Meta Pilot for metadata proposals, Site Workshop
-for bounded workflows, and future Page Studio authoring tools. These are
+for bounded workflows, and future Caxton authoring tools. Caxton is independently
+usable and would consume only public Jarvis proposal contracts in its 0.4.x
+milestone while retaining source/selection/apply authority. These are
 optional integrations, not suite-wide dependencies.
 
 ## Agent and MCP integration
