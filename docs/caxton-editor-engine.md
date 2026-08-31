@@ -1,17 +1,16 @@
-# Caxton 0.1.1 editor-engine proof
+# Caxton editor-engine and 0.2.0 Admin2 field
 
 This is the dependency, architecture, guarantee, and limitation record for the
-isolated Caxton 0.1.1 ProseMirror/CodeMirror proof. It is not an Admin2 field or
-a stable JavaScript extension API.
+Caxton ProseMirror/CodeMirror adapters and the 0.2.0 Admin2 field. The adapters
+remain private and are not a stable JavaScript extension API.
 
 ## Boundary and source authority
 
-The 0.1.0 public PHP contracts are frozen byte-for-byte. Version 0.1.1 adds
-private browser adapters under `tests/grav-caxton/editor/` and a reproducibly
-built internal ES module at
-`plugins/grav-caxton/admin-next/proof/caxton-editor.js`. PHP does not register,
-enqueue, or execute that asset. It is shipped so the exact proven browser code
-is reviewable and install/package behavior can be tested before Admin2 owns it.
+The 0.1.0 public PHP contracts remain frozen byte-for-byte. Version 0.1.1 added
+private browser adapters and the reproducibly built internal proof module at
+`plugins/grav-caxton/admin-next/proof/caxton-editor.js`. Version 0.2.0 wraps the
+same private source authority in the self-contained
+`plugins/grav-caxton/admin-next/fields/caxton.js` Admin2 Web Component.
 
 The ordinary Markdown string remains authoritative. The browser session keeps
 the baseline/current source and SHA-256 identity; ProseMirror and CodeMirror
@@ -23,9 +22,9 @@ from editor state.
 
 Browser offsets are JavaScript UTF-16 source units because that is the native
 selection contract of ProseMirror, CodeMirror, and the DOM. The frozen PHP
-contract uses byte offsets. A future Admin2 boundary must convert explicitly
-against the exact current source and recheck its hash; the two units must never
-be silently mixed.
+contract uses byte offsets. Version 0.2.0 adds an explicit coordinate map that
+converts only complete Unicode boundaries against one SHA-256-identified source
+string; split surrogate pairs and split UTF-8 code points return no mapping.
 
 ## Proven safe and opaque constructs
 
@@ -94,10 +93,11 @@ are intentionally disabled; opaque rendering uses DOM text nodes rather than
 sanitizing executable markup; and Lezer plus the bounded one-block Markdown
 bridge provide the required syntax understanding.
 
-The final minified ES module is 868,783 bytes and 299,453 bytes with gzip -9.
-Its SHA-256 and packaged size are recorded in `CURRENT-STATE.md`. This is a
-proof bundle, not the final loading strategy: 0.2.0 must profile splitting and
-lazy loading before making the engine user-facing.
+The final minified 0.2.0 field bundle is 882,355 bytes and 302,914 bytes with
+gzip -9; the retained proof module is 872,079 bytes. Their SHA-256 values and
+packaged size are recorded in `CURRENT-STATE.md`. Admin2 requests the field
+bundle only when it resolves a `caxton` field; further code splitting remains a
+later performance decision.
 
 ## Accessibility and focus evidence
 
@@ -109,13 +109,13 @@ zero tab index. Actual Chrome proves focus can enter both editor surfaces and
 an opaque note, and that read-only reconfiguration does not require replacing
 the DOM with an inaccessible custom control.
 
-This does not establish production accessibility. Version 0.2.0 still needs
-Admin2-owned labels/help/error/status relationships, toolbar and mode-switch
-keyboard order, screen-reader announcements, selection feedback, skip/focus-
-return behavior, high-contrast/reduced-motion styling, IME composition, RTL UI
-with deliberate source direction, zoom, touch targets, and browser/screen-
-reader matrix evidence. Opaque notes are semantic/focusable but do not yet have
-an Admin2 action for moving focus to the matching source range.
+Version 0.2.0 adds a labelled grouped toolbar, labelled Visual/Source switch,
+live source-fidelity/dirty/protected-block status, responsive wrapping, inherited
+light/dark color tokens, and the native editor focus/keymaps. Production-level
+screen-reader announcements, selection feedback, skip/focus-return behavior,
+high contrast/reduced motion, IME, RTL, zoom, touch, and a browser/assistive-
+technology matrix remain 0.3.x work. Opaque notes do not yet have a control for
+moving focus to their exact Source-mode range.
 
 ## Deterministic evidence
 
@@ -140,18 +140,20 @@ One representative Node 26.7.0 run on the development host observed:
 
 These timings are diagnostic rather than a support promise and naturally vary
 by host/run. The suite enforces only a generous ten-second pathological ceiling.
-The first Admin2 release still requires signed-in keyboard, IME, screen-reader,
-RTL, theme, responsive, Save separation, permissions, and unsaved-buffer
-browser gates.
+The signed-in 0.2.0 gate proves authenticated field loading, hidden Markdown
+punctuation in Visual mode, exact no-edit switches, one localized visual edit,
+opaque Twig survival, reload-before-Save non-persistence, ordinary Save,
+theme inheritance, narrow layout, and clean Caxton browser/log state. IME,
+screen-reader, RTL, and the broader accessibility matrix remain later work.
 
-## Explicit 0.1.1 limitations
+## Explicit 0.2.0 limitations
 
-- There is no Admin2 field, page blueprint replacement, toolbar, media browser,
-  extension client loader, page-save route, autosave, preview, or user-facing
-  preference.
-- Direct engine transactions are proof internals. The future host must own
-  adapter callbacks, stale-source reconciliation, lifecycle remount/history,
-  and the PHP-byte/JavaScript-unit conversion boundary.
+- The initial toolbar covers undo/redo, paragraph/heading styles, bold, italic,
+  and inline code. Top-level insertion/removal/restructure, media browser,
+  tables, live preview, extension client loading, and rich dialogs remain later.
+- Direct single-top-level-block transactions are localized. Transactions that
+  add, remove, or ambiguously restructure top-level blocks are rejected with a
+  Source-mode instruction rather than risking a whole-document rewrite.
 - Safe browser grammar is deliberately conservative. Tables, HTML, Twig,
   shortcodes, unknown syntax, escapes/entities for selection mapping, and any
   construct without symmetric evidence remain opaque or fail mapping.
@@ -159,16 +161,23 @@ browser gates.
   virtualization. Accessibility evidence is limited to semantic labels,
   textbox roles, focusable opaque notes, read-only behavior, and actual browser
   focus in the isolated proof.
-- There is no Jarvis, Commander, Revision Ledger, collaboration, network,
-  background-job, batch, MCP, or autonomous-write integration.
+- There is no page-write route, autosave, hidden page copy, Jarvis, Commander,
+  Revision Ledger, collaboration, network, background-job, batch, MCP, or
+  autonomous-write integration.
 
-## Admin2 adapter preparation for 0.2.0
+## Admin2 0.2.0 boundary
 
-The private proof establishes a narrow lifecycle: canonical string in, changed
-canonical string out, intentional-content-only change notification, source or
-visual mode, owned `mount`/`focus`/`destroy`, read-only control, inherited host
-CSS without a shadow root, and conservative source-selection mapping. Version
-0.2.0 must wrap—not expose—this boundary in Admin2's documented field
-contract, wire editor change events to the current unsaved value, retain normal
-Grav Save/Publish as the only persistence action, and add the signed-in browser
-gate before any default page-field replacement.
+The field implements Admin2's injected custom-element tag plus `field`, `value`,
+and bubbling `change` contract. `onApiBlueprintResolved` replaces only page
+`markdown` fields, only when enabled, and only for a user authorized for
+`grav-caxton.use`; explicit `editor` fields remain unchanged and Source mode
+requires `grav-caxton.source`. Replacement is idempotent.
+
+The field owns only the current unsaved string. Mode switches never emit a
+change. Intentional source/visual edits emit the canonical string, and Admin2's
+ordinary Save/Publish remains the sole persistence path. The plugin adds no
+HTTP route. The compact grouped toolbar, generous visual canvas, punctuation-
+free formatted text, mode switch, inherited theme, and distinct protected cards
+are independent clean-room UI decisions informed only by high-level behavior of
+the supplied reference; no reference source, asset, label set, markup, or API
+entered Caxton.

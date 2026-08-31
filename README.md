@@ -45,7 +45,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
 | Jarvis | Plugin | 0.3.2 provider-setup and operator-experience release; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
-| Caxton | Plugin | 0.1.1 isolated editor-engine proof | `user/plugins/grav-caxton` |
+| Caxton | Plugin | 0.2.0 first source-faithful Admin2 field | `user/plugins/grav-caxton` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
@@ -90,11 +90,12 @@ localized-patch service as `$grav['gravCaxton']`, preserves unsafe or unknown
 constructs as inert opaque blocks, and accepts trusted plugin extensions through
 `onCaxtonExtensionRegister`. A no-edit parse/serialize is byte-identical; the
 public PHP edits currently allowed are plain headings and plain single-line
-paragraphs guarded by a source SHA-256. Version 0.1.1 preserves every 0.1.0
-public contract and adds private, pinned ProseMirror/CodeMirror adapters with
-deterministic and actual-browser proof. The internal module is not loaded by
-PHP and does not replace an Admin2 field; 0.2.0 is the first user-facing field
-milestone.
+paragraphs guarded by a source SHA-256. Version 0.2.0 preserves every 0.1.0
+public contract and wraps the private, pinned ProseMirror/CodeMirror adapters in
+the first permission-filtered Admin2 field. Visual mode shows formatted text
+without Markdown punctuation; Source mode exposes the exact Markdown; ambiguous
+constructs remain inert protected cards. Only ordinary Admin2 Save/Publish can
+persist the current value.
 Jarvis is an optional future proposal service and is not a dependency. Read the
 [Caxton manual](plugins/grav-caxton/README.md),
 [Caxton editor-engine proof](docs/caxton-editor-engine.md),

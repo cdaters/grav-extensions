@@ -122,8 +122,86 @@ try {
   assert.equal(result.sourceReadOnly, true);
   assert.equal(result.visualRole, 'textbox');
   assert.equal(result.sourceLabel, 'Caxton source editor proof');
+
+  const fieldResult = await page.evaluate(async () => {
+    window.__GRAV_FIELD_TAG = 'grav-test--caxton';
+    await import('/plugins/grav-caxton/admin-next/fields/caxton.js');
+    const field = document.createElement('grav-test--caxton');
+    const source = '## Visible heading\n\nPlain **bold** and *italic*.\n\n{% protected %}\n';
+    const changes = [];
+    field.field = {name: 'content', caxton: {allow_source: true}};
+    field.value = source;
+    field.addEventListener('change', (event) => changes.push(event.detail));
+    document.body.replaceChildren(field);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const visualText = field.querySelector('.ProseMirror')?.textContent || '';
+    field.querySelector('[data-mode="source"]').click();
+    const sourceAfterSwitch = field.source.value();
+    field.querySelector('[data-mode="visual"]').click();
+    window.__caxtonField = field;
+    window.__caxtonFieldChanges = changes;
+    return {
+      source,
+      visualText,
+      sourceAfterSwitch,
+      changesAfterSwitch: changes.length,
+      mode: field.mode,
+      opaqueText: field.querySelector('[data-caxton-opaque="twig"]')?.textContent || '',
+      toolbarLabel: field.querySelector('[role="toolbar"]')?.getAttribute('aria-label'),
+    };
+  });
+  assert.equal(fieldResult.visualText.includes('##'), false, 'Visual mode must hide heading Markdown punctuation.');
+  assert.equal(fieldResult.visualText.includes('**'), false, 'Visual mode must hide inline Markdown punctuation.');
+  assert.ok(fieldResult.visualText.includes('Visible heading'));
+  assert.ok(fieldResult.visualText.includes('bold'));
+  assert.equal(fieldResult.sourceAfterSwitch, fieldResult.source);
+  assert.equal(fieldResult.changesAfterSwitch, 0, 'Mode changes must not emit content changes.');
+  assert.equal(fieldResult.mode, 'visual');
+  assert.ok(fieldResult.opaqueText.includes('{% protected %}'));
+  assert.equal(fieldResult.toolbarLabel, 'Caxton editor tools');
+
+  await page.evaluate(() => {
+    const paragraph = [...document.querySelectorAll('.ProseMirror p')].find((node) => node.textContent.startsWith('Plain'));
+    const range = document.createRange();
+    range.setStart(paragraph.firstChild, 6);
+    range.collapse(true);
+    const selection = getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    paragraph.closest('.ProseMirror').focus();
+  });
+  await page.keyboard.type('changed ');
+  const edited = await page.evaluate(async () => {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const field = window.__caxtonField;
+    let snapshot = null;
+    const receive = (event) => { snapshot = event.detail; };
+    window.addEventListener('grav:editor:content-response', receive, {once: true});
+    window.dispatchEvent(new CustomEvent('grav:editor:get-content'));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    return {
+      value: field.value,
+      changes: window.__caxtonFieldChanges.slice(),
+      snapshot,
+      state: field.querySelector('[data-caxton-state]').textContent,
+    };
+  });
+  assert.ok(edited.value.includes('Plain changed **bold** and *italic*.'), edited.value);
+  assert.ok(edited.value.includes('{% protected %}'));
+  assert.equal(edited.changes.at(-1), edited.value);
+  assert.equal(edited.snapshot.content, edited.value);
+  assert.match(edited.snapshot.sourceIdentity, /^[a-f0-9]{64}$/);
+  assert.equal(edited.state, 'Unsaved changes');
+
+  const replaced = await page.evaluate(() => {
+    const replacement = '# Replacement\n\nNo persistence request.\n';
+    window.dispatchEvent(new CustomEvent('grav:editor:insert-content', {detail: {mode: 'replace', content: replacement}}));
+    return {value: window.__caxtonField.value, change: window.__caxtonFieldChanges.at(-1)};
+  });
+  assert.equal(replaced.value, '# Replacement\n\nNo persistence request.\n');
+  assert.equal(replaced.change, replaced.value);
   assert.deepEqual(failures, []);
-  process.stdout.write('Caxton real-browser ProseMirror/CodeMirror proof passed.\n');
+  process.stdout.write('Caxton real-browser engine and Admin2-field component proof passed.\n');
 } finally {
   await page.close();
   await browser.close();

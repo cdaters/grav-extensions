@@ -1,6 +1,6 @@
 {
   "name": "cdaters/grav-plugin-caxton",
-  "description": "Source-faithful visual editing foundations for Grav 2 and Admin2",
+  "description": "Source-faithful visual and source editing for Grav 2 and Admin2",
   "type": "grav-plugin",
   "license": "MIT",
   "autoload": {

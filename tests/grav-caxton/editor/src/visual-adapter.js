@@ -1,4 +1,4 @@
-import {baseKeymap, toggleMark} from 'prosemirror-commands';
+import {baseKeymap, setBlockType, toggleMark} from 'prosemirror-commands';
 import {history, redo, undo} from 'prosemirror-history';
 import {keymap} from 'prosemirror-keymap';
 import {defaultMarkdownSerializer} from 'prosemirror-markdown';
@@ -21,7 +21,7 @@ function textEntries(node, nodePosition) {
 
 function normalizedSerializedBlock(node) {
   const temporary = caxtonSchema.nodes.doc.create(null, [node]);
-  return defaultMarkdownSerializer.serialize(temporary).replace(/\n$/, '');
+  return defaultMarkdownSerializer.serialize(temporary).replace(/\u00a0/g, ' ').replace(/\n$/, '');
 }
 
 function serializeCodeBlock(node, descriptor) {
@@ -35,6 +35,8 @@ export class VisualEditorAdapter {
   constructor(sourceDocument, options = {}) {
     this.sourceDocument = sourceDocument;
     this.readOnly = options.readOnly === true;
+    this.onChange = typeof options.onChange === 'function' ? options.onChange : null;
+    this.onReject = typeof options.onReject === 'function' ? options.onReject : null;
     this.view = null;
     this.state = EditorState.create({
       schema: caxtonSchema,
@@ -69,6 +71,10 @@ export class VisualEditorAdapter {
       },
       dispatchTransaction: (transaction) => {
         if (this.readOnly && transaction.docChanged) return;
+        if (transaction.docChanged && this.onChange) {
+          this.#acceptInteractiveTransaction(transaction);
+          return;
+        }
         this.state = this.state.apply(transaction);
         this.view.updateState(this.state);
         this.#rebuildMappings();
@@ -89,6 +95,82 @@ export class VisualEditorAdapter {
   setReadOnly(value) {
     this.readOnly = Boolean(value);
     if (this.view) this.view.setProps({editable: () => !this.readOnly});
+  }
+
+  acceptSourceDocument(sourceDocument) {
+    this.sourceDocument = sourceDocument;
+    this.#rebuildMappings();
+  }
+
+  undo() {
+    return this.#runCommand(undo);
+  }
+
+  redo() {
+    return this.#runCommand(redo);
+  }
+
+  toggleSelectionMark(markName) {
+    if (!['strong', 'em', 'code'].includes(markName)) return false;
+    return this.#runCommand(toggleMark(caxtonSchema.marks[markName]));
+  }
+
+  setTextStyle(style) {
+    const parent = this.state.selection.$from.parent;
+    if (!parent.isTextblock || !parent.attrs.blockId) return false;
+    if (style === 'paragraph') {
+      return this.#runCommand(setBlockType(caxtonSchema.nodes.paragraph, {...parent.attrs}));
+    }
+    const match = /^heading-([1-6])$/.exec(style);
+    if (!match) return false;
+    return this.#runCommand(setBlockType(caxtonSchema.nodes.heading, {
+      ...parent.attrs,
+      level: Number(match[1]),
+    }));
+  }
+
+  #runCommand(command) {
+    if (this.readOnly || !this.view) return false;
+    return command(this.state, (transaction) => this.view.dispatch(transaction), this.view);
+  }
+
+  #acceptInteractiveTransaction(transaction) {
+    const before = [];
+    const after = [];
+    this.state.doc.forEach((node) => before.push(node));
+    transaction.doc.forEach((node) => after.push(node));
+    const changed = [];
+    const comparable = before.length === after.length;
+    if (comparable) {
+      for (let index = 0; index < before.length; index += 1) {
+        if (!before[index].eq(after[index])) changed.push(index);
+      }
+    }
+    const index = changed[0];
+    const blockId = comparable && changed.length === 1 ? before[index].attrs.blockId : null;
+    const descriptor = blockId ? this.sourceDocument.block(blockId) : null;
+    if (!descriptor?.safe || after[index].attrs.blockId !== blockId || after[index].type.name === 'opaque_block') {
+      this.onReject?.('Use Source mode to add, remove, or restructure top-level blocks.');
+      return;
+    }
+
+    const previousState = this.state;
+    try {
+      this.state = this.state.apply(transaction);
+      const replacement = after[index].type.name === 'code_block'
+        ? serializeCodeBlock(after[index], descriptor)
+        : normalizedSerializedBlock(after[index]);
+      const accepted = this.onChange({blockId, replacement, transaction});
+      if (!accepted || typeof accepted.block !== 'function') throw new Error('INTERACTIVE_CHANGE_REJECTED');
+      this.sourceDocument = accepted;
+      this.view.updateState(this.state);
+      this.#rebuildMappings();
+    } catch (error) {
+      this.state = previousState;
+      this.view.updateState(this.state);
+      this.#rebuildMappings();
+      this.onReject?.('That edit could not be represented safely in Markdown source.');
+    }
   }
 
   #dispatch(transaction, allowReadOnly = false) {

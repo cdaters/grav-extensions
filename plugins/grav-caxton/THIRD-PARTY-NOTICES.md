@@ -1,8 +1,8 @@
 # Caxton third-party notices
 
-Caxton 0.1.1 includes a minified internal browser proof built from the packages
-listed below. These packages are not the persisted page format and are not
-loaded by the plugin in Admin2 in this release.
+Caxton 0.2.0 includes minified internal proof and Admin2 field bundles built
+from the packages listed below. These packages are replaceable editor adapters
+and are never the persisted page format.
 
 ## MIT-licensed packages
 

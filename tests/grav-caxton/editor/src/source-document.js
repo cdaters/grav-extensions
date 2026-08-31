@@ -25,9 +25,9 @@ const OPAQUE_LABELS = {
   mixed: 'Mixed source',
 };
 
-function sourceId(index, start, end, kind) {
+function sourceId(index) {
   let hash = 2166136261;
-  const value = `${index}:${start}:${end}:${kind}`;
+  const value = `caxton:${index}`;
   for (let offset = 0; offset < value.length; offset += 1) {
     hash ^= value.charCodeAt(offset);
     hash = Math.imul(hash, 16777619);
@@ -245,7 +245,7 @@ export class SourceDocumentAdapter {
     if (end <= start) return;
     if (this.blocks.length >= MAX_BLOCKS) throw new RangeError('Caxton source exceeds the browser block limit.');
     const descriptor = {
-      id: sourceId(this.blocks.length + 1, start, end, kind),
+      id: sourceId(this.blocks.length + 1),
       start,
       end,
       kind,

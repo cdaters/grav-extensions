@@ -1,9 +1,9 @@
 {
   "name": "@grav-extensions/caxton-editor-proof",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Isolated ProseMirror and CodeMirror adapter proof for Caxton",
+  "description": "Source-faithful ProseMirror, CodeMirror, and Admin2 field adapters for Caxton",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/*.test.mjs",

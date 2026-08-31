@@ -22,6 +22,7 @@ final class GravCaxtonPlugin extends Plugin
     {
         return [
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
+            'onApiBlueprintResolved' => ['onApiBlueprintResolved', 0],
         ];
     }
 
@@ -72,5 +73,66 @@ final class GravCaxtonPlugin extends Plugin
             new SourceDocumentParser($limit),
             $registry
         );
+    }
+
+    public function onApiBlueprintResolved(Event $event): void
+    {
+        if (!$this->config->get('plugins.' . self::SLUG . '.enabled', true)
+            || !$this->config->get('plugins.' . self::SLUG . '.admin.replace_markdown_fields', true)
+            || ($event['context'] ?? null) !== 'page') {
+            return;
+        }
+
+        $user = $event['user'] ?? null;
+        if (!is_object($user) || !$this->userCan($user, 'grav-caxton.use')) {
+            return;
+        }
+
+        $fields = (array) ($event['fields'] ?? []);
+        $event['fields'] = $this->replaceMarkdownFields(
+            $fields,
+            $this->userCan($user, 'grav-caxton.source')
+        );
+    }
+
+    /**
+     * @param array<array-key, mixed> $fields
+     * @return array<array-key, mixed>
+     */
+    private function replaceMarkdownFields(array $fields, bool $allowSource): array
+    {
+        foreach ($fields as $key => $field) {
+            if (!is_array($field)) {
+                continue;
+            }
+
+            if (($field['type'] ?? null) === 'markdown') {
+                $field['type'] = 'caxton';
+                $field['caxton'] = array_replace(
+                    is_array($field['caxton'] ?? null) ? $field['caxton'] : [],
+                    ['allow_source' => $allowSource]
+                );
+            }
+
+            if (isset($field['fields']) && is_array($field['fields'])) {
+                $field['fields'] = $this->replaceMarkdownFields($field['fields'], $allowSource);
+            }
+
+            $fields[$key] = $field;
+        }
+
+        return $fields;
+    }
+
+    private function userCan(object $user, string $permission): bool
+    {
+        foreach ([$permission, 'api.super', 'admin.super'] as $candidate) {
+            if ((method_exists($user, 'authorize') && (bool) $user->authorize($candidate))
+                || (method_exists($user, 'get') && (bool) $user->get('access.' . $candidate))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

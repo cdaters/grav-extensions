@@ -10,7 +10,7 @@ function extensions(readOnlyCompartment, readOnly, onChange) {
     keymap.of([...historyKeymap, ...defaultKeymap]),
     readOnlyCompartment.of(EditorState.readOnly.of(readOnly)),
     EditorView.contentAttributes.of({
-      'aria-label': 'Caxton source editor proof',
+      'aria-label': optionsLabel(onChange),
       'aria-multiline': 'true',
       spellcheck: 'false',
     }),
@@ -18,6 +18,10 @@ function extensions(readOnlyCompartment, readOnly, onChange) {
       if (update.docChanged && onChange) onChange(update.state.doc.toString(), update.changes);
     }),
   ];
+}
+
+function optionsLabel(onChange) {
+  return onChange ? 'Caxton Markdown source' : 'Caxton source editor proof';
 }
 
 export class SourceEditorAdapter {

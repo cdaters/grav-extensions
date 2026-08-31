@@ -66,16 +66,18 @@ HTML or an editor-engine document.
   own permission, sanitization, stale-source, and external black-box evidence
   before those boundaries ship.
 
-Caxton 0.1.1 keeps its browser proof private and offline. ProseMirror and
+Caxton 0.2.0 keeps its editor adapters private and offline. ProseMirror and
 CodeMirror are views over the canonical source string, not persistence formats.
 Raw HTML, script/on-handler content, Twig, shortcodes, tables, mixed source,
 unsafe URLs, and malformed or over-nested input become inert text-only opaque
 cards; media nodes never fetch their source. Scheme allowlists, own-property
 records, NUL/source/block/nesting/replacement bounds, source identities, and
-conservative selection failure close the proof boundary. Browser selection
-offsets are UTF-16 source units while frozen PHP offsets are bytes; a future
-Admin2 wrapper must convert explicitly against the same source/hash and never
-mix those units. No Caxton asset is registered or loaded by PHP in 0.1.1.
+conservative selection failure close the field boundary. Browser selection
+offsets are UTF-16 source units while frozen PHP offsets are bytes; the field
+converts only complete Unicode boundaries against the same SHA-256-identified
+source and never mixes those units. Permission-filtered blueprint replacement
+touches only page Markdown fields. The field owns no page-write endpoint,
+autosave, hidden copy, preview renderer, network client, or credential.
 
 The complete trust and preservation contract is in
 [`docs/planned/grav-caxton.md`](planned/grav-caxton.md) and Decision 0005.

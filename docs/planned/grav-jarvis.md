@@ -2,8 +2,9 @@
 
 **Status:** 0.3.2 provider-setup/operator release plus the 0.3.1 optional-
 consumer milestone implemented through Grav Commander 0.3.12; frozen 0.1.x
-public contracts remain unchanged, and Caxton 0.2.0 is the suite's active next
-milestone before the paused Commander concurrency and broader agent/site work
+public contracts remain unchanged, and Caxton 0.2.0 is implemented with 0.2.1
+structural-authoring hardening next before the paused Commander concurrency and
+broader agent/site work
 
 **Product name:** Jarvis
 

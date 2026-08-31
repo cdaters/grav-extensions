@@ -1,3 +1,5 @@
 enabled: true
 limits:
   max_source_bytes: 2097152
+admin:
+  replace_markdown_fields: true

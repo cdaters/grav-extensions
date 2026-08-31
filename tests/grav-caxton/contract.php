@@ -180,6 +180,19 @@ namespace GravCaxtonContract {
         }
     }
 
+    final readonly class FakeUser
+    {
+        /** @param list<string> $permissions */
+        public function __construct(private array $permissions)
+        {
+        }
+
+        public function authorize(string $permission): bool
+        {
+            return in_array($permission, $this->permissions, true);
+        }
+    }
+
     function expect(bool $condition, string $message): void
     {
         if (!$condition) {
@@ -219,6 +232,46 @@ namespace GravCaxtonContract {
     $plugin->setContractContext($container, new ContractConfig());
     $plugin->autoload();
     $plugin->onPluginsInitialized();
+
+    expect(
+        isset(\Grav\Plugin\GravCaxtonPlugin::getSubscribedEvents()['onApiBlueprintResolved']),
+        'The Admin2 blueprint event must be subscribed.'
+    );
+    $pageBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-caxton.use', 'grav-caxton.source']),
+        'fields' => [[
+            'type' => 'tabs',
+            'fields' => [[
+                'type' => 'tab',
+                'fields' => [
+                    ['name' => 'content', 'type' => 'markdown', 'label' => 'Content'],
+                    ['name' => 'header.custom_code', 'type' => 'editor', 'label' => 'Code'],
+                ],
+            ]],
+        ]],
+    ]);
+    $plugin->onApiBlueprintResolved($pageBlueprint);
+    $resolved = $pageBlueprint['fields'][0]['fields'][0]['fields'];
+    expectSame('caxton', $resolved[0]['type'], 'Permitted page Markdown fields must become Caxton fields.');
+    expectSame(true, $resolved[0]['caxton']['allow_source'], 'Source permission must reach the field.');
+    expectSame('editor', $resolved[1]['type'], 'Explicit code-editor fields must remain untouched.');
+
+    $deniedBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser([]),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $plugin->onApiBlueprintResolved($deniedBlueprint);
+    expectSame('markdown', $deniedBlueprint['fields'][0]['type'], 'Denied users must retain the normal Markdown field.');
+
+    $noSourceBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-caxton.use']),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $plugin->onApiBlueprintResolved($noSourceBlueprint);
+    expectSame(false, $noSourceBlueprint['fields'][0]['caxton']['allow_source'], 'Source mode needs its separate permission.');
 
     expectSame(['onCaxtonExtensionRegister'], $container->events, 'The extension event must fire once.');
     expect(isset($container['gravCaxton']), 'The enabled plugin must register gravCaxton.');

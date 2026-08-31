@@ -1041,3 +1041,60 @@ suite inventory incremental and risk ordered.
   jobs, MCP workflow, automatic mutation, or structure-preserving chunked
   rewrite. The active suite milestone returns to Caxton 0.2.0; Commander 0.3.13
   concurrency hardening remains paused but recommended before broader agents.
+
+## 2026-08-30 — Caxton 0.2.0 first Admin2 field and clean-room editor UI
+
+- Re-read the canonical recovery, Caxton specification/ADR, roadmap,
+  architecture, security, testing, plugin, adapter, and contract sources. Kept
+  all fourteen public 0.1.0 PHP contracts byte-identical and preserved unrelated
+  Site Workshop/Cache Hearth and Spitfire-theme work.
+- Re-inspected the owner-supplied Editor Pro 2.0.10 ZIP and seven downloaded UI
+  images from `~/Downloads/editor_pro` as untrusted clean-room behavior
+  references. The ZIP SHA-256 still matches
+  `15617f2adbeb6012204507dcb8eff93d6accf2d59a4015cc7a977dd70ec6f0a8`.
+  Adopted only high-level presentation lessons: compact grouped controls, a
+  generous writing surface, inherited light/dark styling, and distinct raw-
+  construct cards. No reference source, asset, text, markup convention, private
+  API, or build artifact entered the repository or package.
+- Released the self-contained `admin-next/fields/caxton.js` Web Component and a
+  permission-filtered, idempotent page-blueprint replacement. Only page
+  `markdown` fields are replaced; explicit `editor` fields remain unchanged;
+  `grav-caxton.use` and `grav-caxton.source` are enforced separately.
+- Added the independent user interface. Visual mode displays formatted headings,
+  emphasis, links, lists, quotes, and code without Markdown punctuation. Source
+  mode displays exact Markdown. HTML, Twig, shortcodes, tables, malformed/unsafe/
+  unknown source remain inert, text-only, color-coded protected cards.
+- Connected direct visual typing plus safe heading/mark controls to one localized
+  top-level source patch. Ambiguous top-level restructure fails closed with a
+  Source-mode instruction. Mode switches do not emit changes. Added explicit
+  same-source/SHA-256 UTF-16-to-UTF-8-byte conversion with split-code-point
+  denial. No page-write route, autosave, network client, hidden copy, preview
+  renderer, or alternate persistence store was added.
+- Expanded deterministic evidence to seventeen Node checks and actual system-
+  Chrome coverage of both reproducible bundles. The proof module is 872,079
+  bytes, SHA-256
+  `26d56b21cba81314c45d7adc835a58c8ccf0f9f94990ba959c9674688c9c2f03`;
+  the Admin2 field is 882,355 bytes (302,914 bytes with gzip -9), SHA-256
+  `00e9e6246a2d37dfea471447f9228b7b19ce3bb2c4879ebf5f66ea7a27a9ec3e`.
+- Added and passed the signed-in DDEV browser gate: authenticated custom-field
+  loading, punctuation-free Visual mode, exact Source/Visual switching, one
+  localized visual edit, opaque Twig survival, current unsaved value, reload-
+  before-Save non-persistence, ordinary Admin2 Save persistence, inherited
+  theme, narrow layout, and clean relevant browser/page/log state.
+- Removed only generated `cxbrowser*` accounts/pages left by interrupted test
+  runs and discarded their recoverable Flex indexes so Grav can rebuild them;
+  no real account/page source was removed. Strengthened test cleanup to restore
+  both account and page indexes.
+- Passed the frozen PHP/DDEV contract, clean locked npm install and zero-known-
+  vulnerability audit, Node and actual-Chrome suites, signed-in Admin2 test,
+  bundle reproducibility, ZIP CRC/one-root inspection, DDEV PHP syntax, cache
+  clear, and public/Admin/field-asset HTTP 200. Packaged
+  `dist/grav-caxton-0.2.0.zip` (626,989 bytes), SHA-256
+  `8b5b97e13caf527dd68333556ccab417759b6e87b56774f3099677d09a70bd83`.
+  Caxton 0.2.0 is left installed in the canonical DDEV site for owner review.
+- Set exact next milestone to Caxton 0.2.1 structural-authoring hardening: safe
+  paragraph creation/split/delete, complete link/list/quote flows, accurate
+  toolbar state and selection/focus restoration, plus signed-in denied-user,
+  Source-permission, read-only, and keyboard regressions. Media/table editing,
+  Jarvis, collaboration, jobs, batch, MCP, autosave, and alternate writes remain
+  deferred.

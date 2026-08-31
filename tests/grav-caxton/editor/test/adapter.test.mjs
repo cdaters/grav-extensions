@@ -7,6 +7,7 @@ import {
   DualModeEditorSession,
   safeLinkUrl,
   safeMediaReference,
+  SourceCoordinateMap,
   SourceDocumentAdapter,
   SourceEditorAdapter,
   VisualEditorAdapter,
@@ -62,6 +63,27 @@ test('source to visual to source remains byte-identical and clean across fixture
     assert.equal(session.isDirty(), false);
     assert.equal(session.dirtyReason, null);
   }
+});
+
+test('UTF-16 browser selections convert to frozen PHP byte offsets against one source identity', async () => {
+  const source = 'ASCII 😀 e\u0301 Καλημέρα\n';
+  const map = await SourceCoordinateMap.create(source);
+  assert.equal(map.byteLength, Buffer.byteLength(source, 'utf8'));
+  assert.equal(map.identity, await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source)).then(
+    (digest) => Buffer.from(digest).toString('hex')
+  ));
+  for (const value of ['ASCII', '😀', 'e\u0301', 'Καλημέρα']) {
+    const from = source.indexOf(value);
+    const to = from + value.length;
+    const selection = map.selectionToBytes(from, to);
+    assert.ok(selection);
+    assert.equal(map.byteToUtf16(selection.from), from);
+    assert.equal(map.byteToUtf16(selection.to), to);
+    assert.equal(Buffer.from(source).subarray(selection.from, selection.to).toString(), value);
+  }
+  const emoji = source.indexOf('😀');
+  assert.equal(map.utf16ToByte(emoji + 1), null, 'a UTF-16 offset may not split a surrogate pair');
+  assert.equal(map.byteToUtf16(map.utf16ToByte(emoji) + 1), null, 'a byte offset may not split a UTF-8 code point');
 });
 
 test('paragraph and heading edits are localized to their source spans', async () => {

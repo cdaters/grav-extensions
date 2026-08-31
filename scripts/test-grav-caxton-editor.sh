@@ -34,16 +34,21 @@ command -v npm >/dev/null 2>&1 || {
     npm run test:browser
 )
 
-first_hash="$(checksum "$repo_root/plugins/grav-caxton/admin-next/proof/caxton-editor.js")"
+proof_bundle="$repo_root/plugins/grav-caxton/admin-next/proof/caxton-editor.js"
+field_bundle="$repo_root/plugins/grav-caxton/admin-next/fields/caxton.js"
+first_proof_hash="$(checksum "$proof_bundle")"
+first_field_hash="$(checksum "$field_bundle")"
 (
     cd "$editor_dir"
     npm run build >/dev/null
 )
-second_hash="$(checksum "$repo_root/plugins/grav-caxton/admin-next/proof/caxton-editor.js")"
+second_proof_hash="$(checksum "$proof_bundle")"
+second_field_hash="$(checksum "$field_bundle")"
 
-if [[ "$first_hash" != "$second_hash" ]]; then
-    echo "ERROR: Caxton browser bundle is not reproducible." >&2
+if [[ "$first_proof_hash" != "$second_proof_hash" || "$first_field_hash" != "$second_field_hash" ]]; then
+    echo "ERROR: Caxton browser bundles are not reproducible." >&2
     exit 1
 fi
 
-echo "Caxton editor bundle reproducibility passed: $second_hash"
+echo "Caxton proof bundle reproducibility passed: $second_proof_hash"
+echo "Caxton Admin2 field bundle reproducibility passed: $second_field_hash"

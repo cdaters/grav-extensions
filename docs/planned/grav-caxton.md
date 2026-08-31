@@ -1,8 +1,8 @@
 # Caxton
 
 **Status:** architecture accepted; Page Studio reconciled into Caxton; 0.1.0
-source-fidelity contracts and 0.1.1 isolated editor-engine proof implemented;
-0.2.0 Admin2 field next
+source-fidelity contracts, 0.1.1 editor-engine proof, and 0.2.0 first Admin2
+field implemented; 0.2.1 structural-authoring hardening next
 
 - **Product name:** Caxton
 - **Plugin slug:** `grav-caxton`
@@ -214,18 +214,20 @@ and must retain their exact bytes.
 
 ## Admin2 integration
 
-Caxton will ship a self-contained `admin-next/fields/caxton.js` bundle using
+Caxton ships a self-contained `admin-next/fields/caxton.js` bundle using
 Admin2's documented custom field contract. It receives `field` and `value`,
 emits a bubbling `change` event with the current unsaved content, uses
 `window.__GRAV_FIELD_TAG`, and follows Admin2's API token/dialog/navigation/
 i18n/theme interfaces.
 
-`onApiBlueprintResolved` may replace only page `type: markdown` content fields
+`onApiBlueprintResolved` replaces only page `type: markdown` content fields
 when Caxton is enabled and the user has the correct permissions/preference.
 Explicit code-editor fields remain untouched. Field replacement must be
 idempotent and scoped to page blueprints.
 
-The mature editor may include toolbar, insertion palette/slash command,
+Version 0.2.0 provides a compact grouped toolbar, punctuation-free formatted
+Visual mode, exact Source mode, and distinct inert protected cards. The mature
+editor may additionally include an insertion palette/slash command,
 contextual block controls, safe reorder, media insertion, source/visual toggle,
 focus/full-screen mode, responsive layout, and light/dark/RTL support. Normal
 Grav Save/Publish remains the only page persistence action. Caxton never owns a
@@ -411,15 +413,32 @@ PHP-byte offset boundary, reproducibility procedure, evidence, and limitations
 are recorded in [the engine proof](../caxton-editor-engine.md). It is not a
 public JavaScript extension contract and does not authorize Admin2 integration.
 
-### 0.2.0 — Grav-aware Admin2 field (exact next milestone)
+### 0.2.0 — Grav-aware Admin2 field (implemented)
 
 - self-contained `caxton` Admin2 field and scoped page blueprint integration;
 - page permission and current unsaved value handling;
-- media insertion/resolution, code, tables, HTML, Twig, shortcode and unknown
-  construct cards in evidence-backed increments;
+- punctuation-free formatted visual text, exact Source mode, and HTML, Twig,
+  shortcode, table, malformed, and unknown protected cards;
 - first real signed-in black-box browser gate;
 - accessible toolbar and source/visual toggle; and
 - normal Grav Save/Publish remains authoritative.
+
+The shipped field is requested only for page `markdown` fields after
+`grav-caxton.use` authorization; `grav-caxton.source` separately controls the
+Source switch. Direct typing and safe inline/heading toolbar operations apply
+one localized top-level source patch. Ambiguous top-level restructuring is
+rejected with a Source-mode instruction. The signed-in DDEV gate proves exact
+no-edit switching, hidden Markdown punctuation, localized editing, opaque-byte
+survival, reload non-persistence, ordinary Save, theme, responsive layout, and
+clean relevant browser/log state.
+
+### 0.2.1 — structural-authoring hardening (exact next milestone)
+
+- safe paragraph split/create/delete transactions with localized-source proof;
+- link, list, and quote toolbar flows without native browser prompts;
+- accurate active/disabled toolbar state and selection/focus restoration;
+- signed-in permission denial, read-only, and keyboard regressions; and
+- no new page-write, autosave, Jarvis, collaboration, job, batch, or MCP path.
 
 ### 0.2.x — richer Grav constructs
 

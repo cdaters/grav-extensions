@@ -1,12 +1,14 @@
 # Caxton
 
-Caxton is the source-faithful editor foundation for Grav 2 and Admin2. Version
-0.1.1 preserves the complete 0.1.0 public PHP contract and adds an isolated,
-private ProseMirror/CodeMirror editor-engine proof over authoritative Markdown.
+Caxton is the source-faithful visual and source editor for Grav 2 and Admin2.
+Version 0.2.0 preserves the complete 0.1.0 public PHP contract, keeps ordinary
+Markdown authoritative, and adds the first real Admin2 page field.
 
-It does **not** replace the Admin2 editor yet. The proof bundle is not loaded or
-registered by the plugin and there is no Admin2 field, network endpoint, live
-preview, persistence route, or Jarvis integration.
+Visual mode presents formatted headings, emphasis, links, lists, quotes, and
+code without showing their Markdown punctuation. Source mode deliberately
+shows the exact Markdown. HTML, Twig, shortcodes, tables, malformed source, and
+unknown constructs remain visible as inert protected cards until Caxton can
+prove a symmetric editor for them.
 
 ## Install
 
@@ -17,7 +19,28 @@ The default configuration is safe to run unchanged:
 enabled: true
 limits:
   max_source_bytes: 2097152
+admin:
+  replace_markdown_fields: true
 ```
+
+The replacement applies only to page fields declared as `type: markdown`, only
+for users with `grav-caxton.use`, and never to explicit code-editor fields.
+`grav-caxton.source` separately controls whether the Source mode is available.
+
+## Admin2 editing
+
+Caxton uses a compact grouped toolbar above a generous document canvas. The
+0.2.0 toolbar intentionally exposes only the proven safe slice: undo/redo,
+paragraph/heading levels, bold, italic, inline code, and Visual/Source modes.
+Typing and formatting in Visual mode applies one localized Markdown patch;
+adding or removing top-level document structure remains a Source-mode task in
+this release.
+
+The field owns only the current unsaved form value. It emits Admin2's normal
+bubbling `change` event and interoperates with the public editor content events,
+but it has no page-write endpoint, autosave, hidden copy, or parallel storage.
+Only the ordinary Admin2 Save/Publish action persists a change. Reloading before
+Save restores the stored page.
 
 ## Public service
 
@@ -70,11 +93,13 @@ Run the deterministic contract suite with:
 ```bash
 ./scripts/test-grav-caxton-contract.sh
 ./scripts/test-grav-caxton-editor.sh
+./scripts/test-grav-caxton-admin-browser.sh
 ```
 
 When host PHP is unavailable the contract script uses the repository's
-configured DDEV fixture. The editor proof requires Node.js and a supported
-system Chrome/Chromium. See `docs/caxton-editor-engine.md` for the exact safe
-subset, dependency/license/size inventory, offset contract, evidence, and
-limitations. See `docs/planned/grav-caxton.md` and Decision 0005 for the complete
-architecture, roadmap, compatibility policy, and recovery instructions.
+configured DDEV fixture. The editor tests require Node.js and a supported
+system Chrome/Chromium; the signed-in browser test also uses the disposable
+DDEV fixture. See `docs/caxton-editor-engine.md` for the exact safe subset,
+dependency/license/size inventory, offset contract, evidence, and limitations.
+See `docs/planned/grav-caxton.md` and Decision 0005 for the complete architecture,
+roadmap, compatibility policy, and recovery instructions.

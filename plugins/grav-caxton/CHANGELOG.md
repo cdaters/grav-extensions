@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 - 2026-08-30
+
+- Add the first real Admin2 `caxton` page field and permission-filtered,
+  idempotent replacement of page Markdown fields.
+- Add a compact theme-aware toolbar and visual document canvas that hides
+  Markdown punctuation while preserving an explicit exact Source mode.
+- Connect direct visual typing and proven formatting to localized Markdown
+  patches; keep unsupported top-level restructuring in Source mode.
+- Render HTML, Twig, shortcodes, tables, malformed source, and unknown syntax as
+  inert color-coded protected cards without executing or rewriting them.
+- Add explicit SHA-256-bound UTF-16-to-UTF-8-byte coordinate conversion.
+- Preserve Admin2's unsaved value/change contract and ordinary Save/Publish as
+  the only persistence path; add no HTTP write route, autosave, or parallel
+  storage.
+- Add deterministic component, actual-Chrome, and signed-in DDEV regressions for
+  hidden Markdown punctuation, mode fidelity, localized edits, opaque survival,
+  reload non-persistence, ordinary Save, theme, responsive layout, and logs.
+
 ## 0.1.1 - 2026-08-30
 
 - Preserve every 0.1.0 public PHP contract byte-for-byte.

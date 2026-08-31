@@ -17,7 +17,7 @@ can never be mistaken for an installable Grav package.
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
 | 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.2 provider-setup/operator release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
-| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.1.1 isolated engine proof implemented; 0.2.0 Admin2 field next |
+| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.2.0 first Admin2 field implemented; 0.2.1 structural-authoring hardening next |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -143,20 +143,27 @@ Editor Pro behavior reference.
    dirtying or normalization in deterministic Node and actual Chrome harnesses.
    The dependency/license/size inventory and reproducible internal ES module
    are recorded; no Admin2 page field or persistence route exists.
-3. **0.2.0 — first Grav-aware Admin2 field (exact next milestone):** wrap the
-   private adapter lifecycle in Admin2's documented custom-field contract,
-   connect only the current unsaved page value, retain normal Save/Publish, and
-   pass the signed-in permission/unsaved/no-persistence browser gate before any
-   default page-field replacement.
-4. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
+3. **0.2.0 — first Grav-aware Admin2 field (implemented):** self-contained,
+   permission-filtered `caxton` field over the private adapters; compact grouped
+   toolbar; formatted Visual mode without Markdown punctuation; exact Source
+   mode; inert protected cards; same-source UTF-16/byte conversion; current
+   unsaved value/change contract; normal Save/Publish only; and signed-in DDEV
+   proof for no-edit fidelity, localized edit, reload non-persistence, ordinary
+   Save, theme, responsive layout, and relevant logs.
+4. **0.2.1 — structural-authoring hardening (exact next milestone):** safely
+   represent paragraph creation/splitting and deletion, complete link/list/quote
+   toolbar flows, active/disabled toolbar state, selection/focus restoration,
+   and signed-in permission/read-only/keyboard regressions without broadening
+   persistence authority.
+5. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
    links, lists, quotes, tables, fenced code, HTML/Twig/shortcode inert views,
    extension client modules, insertion palette, and page-form integration.
-5. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
+6. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
    modes, safe reorder, large-document profiling, and evidence-driven adapters.
-6. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
+7. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
    preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
    reporting exclusively through public Jarvis contracts.
-7. **1.0.0 — supported editor platform:** public-extension compatibility and
+8. **1.0.0 — supported editor platform:** public-extension compatibility and
    deprecation policy, complete fallback/migration guidance, and release-quality
    accessibility/security/browser/large-document evidence.
 
