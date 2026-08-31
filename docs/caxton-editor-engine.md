@@ -1,16 +1,18 @@
-# Caxton editor-engine and 0.2.0 Admin2 field
+# Caxton editor-engine and 0.2.1 Admin2 field
 
 This is the dependency, architecture, guarantee, and limitation record for the
-Caxton ProseMirror/CodeMirror adapters and the 0.2.0 Admin2 field. The adapters
+Caxton ProseMirror/CodeMirror adapters and the 0.2.1 Admin2 field. The adapters
 remain private and are not a stable JavaScript extension API.
 
 ## Boundary and source authority
 
 The 0.1.0 public PHP contracts remain frozen byte-for-byte. Version 0.1.1 added
 private browser adapters and the reproducibly built internal proof module at
-`plugins/grav-caxton/admin-next/proof/caxton-editor.js`. Version 0.2.0 wraps the
-same private source authority in the self-contained
+`plugins/grav-caxton/admin-next/proof/caxton-editor.js`. Version 0.2.0 wrapped
+the same private source authority in the self-contained
 `plugins/grav-caxton/admin-next/fields/caxton.js` Admin2 Web Component.
+Version 0.2.1 adds only private field/adapter behavior and configuration; every
+public 0.1.0 PHP contract remains byte-identical.
 
 The ordinary Markdown string remains authoritative. The browser session keeps
 the baseline/current source and SHA-256 identity; ProseMirror and CodeMirror
@@ -26,12 +28,19 @@ contract uses byte offsets. Version 0.2.0 adds an explicit coordinate map that
 converts only complete Unicode boundaries against one SHA-256-identified source
 string; split surrogate pairs and split UTF-8 code points return no mapping.
 
+Version 0.2.1 can additionally replace one contiguous range containing only
+safe paragraphs/headings and their trivia for split/join keyboard transactions.
+It reparses the complete current buffer afterward. Any range containing opaque
+source fails closed; opaque source is never serialized from editor state.
+
 ## Proven safe and opaque constructs
 
 The private visual schema proves headings (ATX and Setext), paragraphs,
-strong/emphasis/inline-code/link marks, blockquotes, horizontal rules, ordered,
+strong/emphasis/GFM-strikethrough/inline-code/link marks, blockquotes,
+horizontal rules, ordered,
 unordered and task lists, fenced code, and inert local/HTTPS media references.
-Localized tests exercise text, mark, link, ordered-list, and fenced-code edits.
+Localized tests exercise text, mark, link, quote, list, paragraph-structure,
+and fenced-code edits.
 An intentional edit may normalize only that selected safe block.
 
 Frontmatter, raw HTML, Twig, Grav shortcodes, tables, unsafe URLs, mixed source,
@@ -52,7 +61,7 @@ contract, not permission to guess.
 
 All direct versions are exact in `package.json` and the full dependency graph
 is frozen by `package-lock.json`. `npm audit` reported zero known
-vulnerabilities on 2026-08-30. All bundled runtime packages are MIT except
+vulnerabilities on 2026-08-31. All bundled runtime packages are MIT except
 `entities` (BSD-2-Clause); complete packaged notices are in
 `plugins/grav-caxton/THIRD-PARTY-NOTICES.md`.
 
@@ -72,6 +81,7 @@ proof but the package is not a persistence or public-contract dependency.
 | `prosemirror-keymap` 1.2.3 | Keyboard command binding | MIT | 26 KiB | Yes | Essential proof behavior |
 | `prosemirror-schema-list` 1.5.1 | List transactions | MIT | 53 KiB | Yes | Essential for proven lists |
 | `prosemirror-markdown` 1.13.6 | Safe one-block parse/serialize bridge | MIT | 160 KiB | Yes | Replaceable; never whole-document authority |
+| `markdown-it` 14.3.1 | GFM-strikethrough safe-block bridge | MIT | 769 KiB | Yes | Direct pinned parser; bounded one-block use |
 | `@codemirror/state` 6.7.1 | Exact source state/changes/selections | MIT | 426 KiB | Yes | Essential; adapter-replaceable |
 | `@codemirror/view` 6.43.9 | Viewport source editor/focus | MIT | 1.20 MiB | Yes | Essential; adapter-replaceable |
 | `@codemirror/commands` 6.11.0 | Source history/keymaps | MIT | 241 KiB | Yes | Essential proof behavior |
@@ -93,9 +103,10 @@ are intentionally disabled; opaque rendering uses DOM text nodes rather than
 sanitizing executable markup; and Lezer plus the bounded one-block Markdown
 bridge provide the required syntax understanding.
 
-The final minified 0.2.0 field bundle is 882,355 bytes and 302,914 bytes with
-gzip -9; the retained proof module is 872,079 bytes. Their SHA-256 values and
-packaged size are recorded in `CURRENT-STATE.md`. Admin2 requests the field
+The final minified 0.2.1 field bundle is 897,644 bytes (306,410 bytes with
+gzip -9), and the retained proof bundle is 878,032 bytes. Their SHA-256 values
+are recorded in `CURRENT-STATE.md`; their dependency and source graph is
+reproducibly built from the exact lock. Admin2 requests the field
 bundle only when it resolves a `caxton` field; further code splitting remains a
 later performance decision.
 
@@ -109,9 +120,10 @@ zero tab index. Actual Chrome proves focus can enter both editor surfaces and
 an opaque note, and that read-only reconfiguration does not require replacing
 the DOM with an inaccessible custom control.
 
-Version 0.2.0 adds a labelled grouped toolbar, labelled Visual/Source switch,
-live source-fidelity/dirty/protected-block status, responsive wrapping, inherited
-light/dark color tokens, and the native editor focus/keymaps. Production-level
+Version 0.2.1 adds a labelled configurable toolbar, labelled Visual/Source
+switch, active/disabled state, an in-page link dialog, live source-fidelity/
+dirty/protected-block status, responsive wrapping, explicit light/dark palettes,
+and native editor focus/keymaps. Production-level
 screen-reader announcements, selection feedback, skip/focus-return behavior,
 high contrast/reduced motion, IME, RTL, zoom, touch, and a browser/assistive-
 technology matrix remain 0.3.x work. Opaque notes do not yet have a control for
@@ -140,20 +152,26 @@ One representative Node 26.7.0 run on the development host observed:
 
 These timings are diagnostic rather than a support promise and naturally vary
 by host/run. The suite enforces only a generous ten-second pathological ceiling.
-The signed-in 0.2.0 gate proves authenticated field loading, hidden Markdown
+The signed-in 0.2.1 gate proves authenticated field loading, hidden Markdown
 punctuation in Visual mode, exact no-edit switches, one localized visual edit,
-opaque Twig survival, reload-before-Save non-persistence, ordinary Save,
-theme inheritance, narrow layout, and clean Caxton browser/log state. IME,
+opaque Twig survival, reload-before-Save non-persistence, ordinary Save, safe
+links, strikethrough, split/undo/join keyboard behavior, quotes/lists, settings,
+real dark visual/source contrast, narrow layout, and clean Caxton browser/log
+state. IME,
 screen-reader, RTL, and the broader accessibility matrix remain later work.
 
-## Explicit 0.2.0 limitations
+## Explicit 0.2.1 limitations
 
-- The initial toolbar covers undo/redo, paragraph/heading styles, bold, italic,
-  and inline code. Top-level insertion/removal/restructure, media browser,
-  tables, live preview, extension client loading, and rich dialogs remain later.
-- Direct single-top-level-block transactions are localized. Transactions that
-  add, remove, or ambiguously restructure top-level blocks are rejected with a
-  Source-mode instruction rather than risking a whole-document rewrite.
+- The toolbar covers only proven symmetric source operations. Media browsing,
+  tables, horizontal-rule insertion, live preview, extension client loading,
+  and rich Grav construct dialogs remain later.
+- Paragraph split and join can localize only contiguous safe paragraph/heading
+  ranges. Empty visual paragraphs, operations crossing an opaque block, and
+  ambiguous multi-block restructuring are rejected or remain a Source-mode
+  task rather than risking a whole-document rewrite.
+- Underline is not offered because portable Markdown has no underline syntax;
+  automatic typography replacement is deferred because it silently changes
+  source. Existing HTML underline remains opaque and exact.
 - Safe browser grammar is deliberately conservative. Tables, HTML, Twig,
   shortcodes, unknown syntax, escapes/entities for selection mapping, and any
   construct without symmetric evidence remain opaque or fail mapping.
@@ -165,7 +183,7 @@ screen-reader, RTL, and the broader accessibility matrix remain later work.
   Revision Ledger, collaboration, network, background-job, batch, MCP, or
   autonomous-write integration.
 
-## Admin2 0.2.0 boundary
+## Admin2 0.2.1 boundary
 
 The field implements Admin2's injected custom-element tag plus `field`, `value`,
 and bubbling `change` contract. `onApiBlueprintResolved` replaces only page
@@ -176,8 +194,9 @@ requires `grav-caxton.source`. Replacement is idempotent.
 The field owns only the current unsaved string. Mode switches never emit a
 change. Intentional source/visual edits emit the canonical string, and Admin2's
 ordinary Save/Publish remains the sole persistence path. The plugin adds no
-HTTP route. The compact grouped toolbar, generous visual canvas, punctuation-
-free formatted text, mode switch, inherited theme, and distinct protected cards
-are independent clean-room UI decisions informed only by high-level behavior of
-the supplied reference; no reference source, asset, label set, markup, or API
-entered Caxton.
+HTTP route. The configurable toolbar, generous visual canvas, punctuation-free
+formatted text, mode switch, explicit theme palettes, in-page link dialog, and
+distinct protected cards are independent clean-room UI decisions informed by
+the public Editor Pro documentation and user-provided screenshots only. No
+reference source, asset, label set, markup, private API, or persisted editor
+document entered Caxton.

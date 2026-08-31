@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.1 - 2026-08-31
+
+- Replace browser `Canvas` colors with explicit light/dark Admin2-aware editor,
+  toolbar, protected-card, popover, and CodeMirror palettes with regression-
+  checked contrast.
+- Add an ordered, bounded toolbar setting with safe allowlisted items and visual
+  separators; malformed and unknown configured items fail closed.
+- Add in-page link editing with optional titles, safe URL validation, removal,
+  `Ctrl/Command+K`, and no native browser prompt.
+- Add source-localized blockquote, bullet-list, numbered-list, code-block,
+  remove-format, and GFM strikethrough tools. Underline remains excluded because
+  Grav Markdown has no source-faithful underline syntax.
+- Add paragraph split/create and join/delete keyboard transactions across only
+  contiguous safe source spans, with undo and selection/focus restoration.
+- Add active/disabled toolbar states and read-only behavior without changing
+  ordinary Admin2 Save/Publish authority.
+- Extend deterministic Chrome and signed-in DDEV coverage for configuration,
+  unsafe links, structure, keyboard actions, settings, responsive layout, and
+  real light/dark/source contrast.
+
 ## 0.2.0 - 2026-08-30
 
 - Add the first real Admin2 `caxton` page field and permission-filtered,

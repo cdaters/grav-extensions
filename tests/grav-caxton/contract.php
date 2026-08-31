@@ -255,6 +255,13 @@ namespace GravCaxtonContract {
     $resolved = $pageBlueprint['fields'][0]['fields'][0]['fields'];
     expectSame('caxton', $resolved[0]['type'], 'Permitted page Markdown fields must become Caxton fields.');
     expectSame(true, $resolved[0]['caxton']['allow_source'], 'Source permission must reach the field.');
+    expectSame(
+        ['undo', 'redo', 'separator', 'heading', 'separator', 'bold', 'italic', 'strikethrough', 'inline_code',
+            'remove_format', 'separator', 'link', 'blockquote', 'bullet_list', 'ordered_list',
+            'code_block', 'separator', 'source'],
+        $resolved[0]['caxton']['toolbar'],
+        'The bounded default toolbar must reach the field in its configured order.'
+    );
     expectSame('editor', $resolved[1]['type'], 'Explicit code-editor fields must remain untouched.');
 
     $deniedBlueprint = new \RocketTheme\Toolbox\Event\Event([
@@ -272,6 +279,29 @@ namespace GravCaxtonContract {
     ]);
     $plugin->onApiBlueprintResolved($noSourceBlueprint);
     expectSame(false, $noSourceBlueprint['fields'][0]['caxton']['allow_source'], 'Source mode needs its separate permission.');
+    expect(
+        !in_array('source', $noSourceBlueprint['fields'][0]['caxton']['toolbar'], true),
+        'Source mode must be removed from the toolbar without source permission.'
+    );
+
+    $customToolbarPlugin = new \Grav\Plugin\GravCaxtonPlugin();
+    $customToolbarPlugin->setContractContext(
+        new ContractContainer(),
+        new ContractConfig([
+            'plugins.grav-caxton.admin.toolbar' => 'link,|,blockquote,unknown,bulleList,bulletList,|',
+        ])
+    );
+    $customToolbarBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-caxton.use', 'grav-caxton.source']),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $customToolbarPlugin->onApiBlueprintResolved($customToolbarBlueprint);
+    expectSame(
+        ['link', 'separator', 'blockquote', 'bullet_list'],
+        $customToolbarBlueprint['fields'][0]['caxton']['toolbar'],
+        'Toolbar configuration must preserve safe order, aliases, and separators while dropping unknown items.'
+    );
 
     expectSame(['onCaxtonExtensionRegister'], $container->events, 'The extension event must fire once.');
     expect(isset($container['gravCaxton']), 'The enabled plugin must register gravCaxton.');

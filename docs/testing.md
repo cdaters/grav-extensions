@@ -132,7 +132,7 @@ produces the expected authenticated request body.
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
 | Jarvis | provider normalization/redaction, credential encryption/resolution, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.3 Sodium/OpenSSL credential/readiness/package boundaries, 0.3.2 provider setup, 0.3.0 reliability, 0.3.1 Commander consumer proof, and deterministic signed-in regressions implemented; transactional master-key rotation, streaming, and later batch/job boundaries remain |
-| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 PHP contract, 0.1.1 Node/Chrome engine proof, and 0.2.0 signed-in Admin2 field boundary implemented |
+| Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 PHP contract, 0.1.1 Node/Chrome engine proof, and 0.2.1 signed-in Admin2 structural/theme boundary implemented |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
 New coverage should be added in risk order. A repaired security or delivery bug
@@ -183,7 +183,9 @@ It uses a temporary account/page and restores the fixture. The regression proves
 authenticated field loading, visual text without Markdown punctuation, exact
 no-edit mode switches, localized visual editing, opaque Twig survival, public
 unsaved content, reload-before-Save non-persistence, ordinary Save persistence,
-theme inheritance, narrow layout, and no relevant browser/page/log error.
+safe link/title handling, strikethrough, paragraph split/undo/join, quote/list
+structure, ordered toolbar settings, explicit visual/source dark contrast,
+narrow layout, and no relevant browser/page/log error.
 
 ### Jarvis AI boundary contract
 

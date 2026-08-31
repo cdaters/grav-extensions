@@ -17,7 +17,7 @@ can never be mistaken for an installable Grav package.
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
 | 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.3 encrypted credential-usability/readiness release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
-| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.2.0 first Admin2 field implemented; 0.2.1 structural-authoring hardening next |
+| 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.2.1 structural-authoring and theme hardening implemented; 0.2.2 media/insertion hardening next |
 
 Existing products that are not part of that build sequence remain first-class:
 
@@ -162,17 +162,24 @@ Editor Pro behavior reference.
    unsaved value/change contract; normal Save/Publish only; and signed-in DDEV
    proof for no-edit fidelity, localized edit, reload non-persistence, ordinary
    Save, theme, responsive layout, and relevant logs.
-4. **0.2.1 — structural-authoring hardening (exact next milestone):** safely
-   represent paragraph creation/splitting and deletion, complete link/list/quote
-   toolbar flows, active/disabled toolbar state, selection/focus restoration,
-   and signed-in permission/read-only/keyboard regressions without broadening
-   persistence authority.
-5. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
+4. **0.2.1 — structural-authoring and theme hardening (implemented):** explicit
+   light/dark visual and source palettes; bounded ordered toolbar configuration;
+   safe in-page link/title/removal, list, quote, code-block, clear-format, and
+   GFM-strikethrough flows; localized paragraph split/join transactions;
+   active/disabled state; selection/focus restoration; read-only and keyboard
+   regressions; and no broader persistence authority.
+5. **0.2.2 — media and insertion hardening (exact next milestone):** integrate
+   the current page-media inventory through public Admin2 data/events; add safe
+   media insertion/editing, horizontal rules, code-fence language selection,
+   and multi-item list operations; preserve exact unresolved media and prove
+   upload/selection permissions without introducing a Caxton upload or save
+   route.
+6. **0.2.x — richer Grav-aware authoring:** configuration-aware Markdown, media,
    links, lists, quotes, tables, fenced code, HTML/Twig/shortcode inert views,
    extension client modules, insertion palette, and page-form integration.
-6. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
+7. **0.3.x — polished authoring:** accessibility, touch/RTL/IME, focus/split
    modes, safe reorder, large-document profiling, and evidence-driven adapters.
-7. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
+8. **0.4.x — optional Jarvis proposals:** bounded selection/block context,
    preview/diff, explicit Accept/Reject, source-version recheck, and usage/cost
    reporting exclusively through public Jarvis contracts.
 8. **1.0.0 — supported editor platform:** public-extension compatibility and

@@ -1194,3 +1194,62 @@ suite inventory incremental and risk ordered.
   records. Jarvis 0.3.4 should add rollback-safe local-to-external, external-A-
   to-B, and OpenSSL-to-Sodium whole-store migration/rotation with interruption
   recovery and no plaintext export. Do not start that milestone automatically.
+
+## 2026-08-31 — Caxton 0.2.1 structural authoring and theme hardening
+
+- Resumed from canonical Caxton 0.2.0 and treated the owner's Editor Pro
+  screenshots and public Grav documentation as behavioral references only. No
+  Editor Pro source, assets, private APIs, or package contents were copied.
+- Fixed the reported dark-mode failure by replacing browser-generic canvas
+  color assumptions with explicit inherited light/dark palettes for the field,
+  toolbar, visual surface, opaque blocks, dialogs, CodeMirror source mode,
+  selections, caret, and syntax tokens. Real Chromium contrast assertions cover
+  both themes, narrow layout, and runtime theme changes.
+- Added an ordered, permission-aware `admin.toolbar` setting with a bounded safe
+  allowlist, aliases for familiar configuration names, separator cleanup, and
+  source-control removal when the actor lacks `grav-caxton.source`. The default
+  toolbar now exposes undo/redo, headings, bold, italic, strikethrough, inline
+  code, remove formatting, link, blockquote, bullet/ordered lists, code block,
+  and Source mode.
+- Added source-faithful visual authoring for GFM strikethrough, links,
+  blockquotes, lists, code blocks, and remove-format. Link editing uses an
+  accessible in-page dialog with safe URL schemes, keyboard operation, removal,
+  cancellation, and focus restoration; it deliberately avoids nested forms and
+  native prompts. Underline remains excluded because it would require non-
+  portable HTML rather than Markdown.
+- Generalized safe visual transactions from mark-only edits to bounded,
+  contiguous paragraph/heading ranges. Enter can split and Backspace can join
+  safe blocks while preserving source mapping, selection, focus, and undo.
+  Opaque, stale, ambiguous, NUL-containing, oversized, protected-crossing, and
+  empty-paragraph cases continue to fail closed to Source mode rather than
+  silently rewriting Markdown.
+- Kept the trust boundary unchanged: Caxton has no upload, alternate save,
+  autosave, publish, live-preview, Jarvis, or background route. Admin2's normal
+  Save remains the only persistence path, read-only state disables mutations,
+  and ordinary Grav permissions continue to govern field/source access.
+- Upgraded the direct exact `markdown-it` development dependency to 14.3.1 to
+  clear the upstream advisory. The clean dependency audit reports zero known
+  vulnerabilities; third-party notices and the engine inventory were updated.
+- Validation passed: nineteen deterministic Node adapter tests, performance
+  ceiling, real-Chromium field proof, reproducible proof/production builds,
+  DDEV PHP 8.3.31 contract and syntax checks, signed-in Admin2 regression,
+  repository preflight, YAML/JSON/JavaScript/shell/Markdown/whitespace checks,
+  archive CRC/root/secret guards, package installation, cache clear, public and
+  Admin HTTP 200 health, exact installed-bundle hashes, and recent-log review.
+  Host PHP remains unavailable; all PHP validation ran honestly inside DDEV.
+- Reproducible bundle SHA-256 values are
+  `5693b30fc1436c15464a3827a953c8e162208f5f7e6b87d97cb2d0d0544f64a9`
+  for the proof bundle and
+  `d3223b675cd898ced21bb03fb8b5a4083329908e5a55df23ee492f81f0674382`
+  for the production field. Packaged `dist/grav-caxton-0.2.1.zip` (633,791
+  bytes), SHA-256
+  `e4cbc6704eab77e3160c029196ec8c510ece748189b8ee4183a2b2b62e96c5b7`,
+  and left that exact release installed at `user/plugins/grav-caxton` in the
+  canonical DDEV site for owner review.
+- Exact next Caxton milestone: 0.2.2 media and insertion hardening. Add bounded
+  page-media insertion/browsing and source-faithful image/reference-link flows
+  through the existing Admin2 field and normal Save path, with permission,
+  theme, keyboard, opaque-block, and signed-in DDEV coverage. Do not add an
+  upload/save route, table/HTML/Twig/shortcode visual editing, Jarvis,
+  collaboration, batch, MCP, background jobs, or autosave, and do not start the
+  milestone automatically.

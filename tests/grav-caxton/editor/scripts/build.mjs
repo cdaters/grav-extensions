@@ -13,7 +13,7 @@ const builds = [
   {
     input: resolve(workspace, 'src/admin-field.js'),
     output: resolve(workspace, '../../../plugins/grav-caxton/admin-next/fields/caxton.js'),
-    banner: '/*! Caxton 0.2.0 Admin2 field; third-party notices in THIRD-PARTY-NOTICES.md */',
+    banner: '/*! Caxton 0.2.1 Admin2 field; third-party notices in THIRD-PARTY-NOTICES.md */',
   },
 ];
 

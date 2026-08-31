@@ -1,5 +1,5 @@
 import {Schema} from 'prosemirror-model';
-import {schema as markdownSchema} from 'prosemirror-markdown';
+import {defaultMarkdownSerializer, MarkdownSerializer, schema as markdownSchema} from 'prosemirror-markdown';
 import {safeLinkUrl, safeMediaReference} from './security.js';
 
 const sourceAttrs = {
@@ -68,6 +68,12 @@ nodes = nodes.append({
 });
 
 let marks = markdownSchema.spec.marks;
+marks = marks.append({
+  strikethrough: {
+    parseDOM: [{tag: 's'}, {tag: 'del'}],
+    toDOM() { return ['s', 0]; },
+  },
+});
 const originalLink = marks.get('link');
 marks = marks.update('link', {
   ...originalLink,
@@ -81,6 +87,14 @@ marks = marks.update('link', {
 
 export const caxtonSchema = new Schema({nodes, marks});
 
+export const caxtonMarkdownSerializer = new MarkdownSerializer(
+  defaultMarkdownSerializer.nodes,
+  {
+    ...defaultMarkdownSerializer.marks,
+    strikethrough: {open: '~~', close: '~~', mixable: true, expelEnclosingWhitespace: true},
+  }
+);
+
 export const SAFE_BLOCK_TYPES = new Set([
   'paragraph',
   'heading',
@@ -91,4 +105,4 @@ export const SAFE_BLOCK_TYPES = new Set([
   'bullet_list',
 ]);
 
-export const SAFE_MARK_TYPES = new Set(['strong', 'em', 'code', 'link']);
+export const SAFE_MARK_TYPES = new Set(['strong', 'em', 'code', 'link', 'strikethrough']);

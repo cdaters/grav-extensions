@@ -1,7 +1,7 @@
 name: Caxton
 slug: grav-caxton
 type: plugin
-version: 0.2.0
+version: 0.2.1
 description: Source-faithful visual and source editing for Grav 2 and Admin2.
 icon: pen-ruler
 author:
@@ -43,3 +43,29 @@ form:
       default: 1
       options: { 1: Enabled, 0: Disabled }
       validate: { type: bool }
+
+    admin.toolbar:
+      type: array
+      label: Toolbar items
+      help: Ordered tools shown in Caxton. Add separator between groups. Unknown or unsafe items are ignored.
+      value_only: true
+      placeholder_value: undo, heading, bold, strikethrough, link, blockquote, bullet_list, ordered_list, code_block, source, or separator
+      default:
+        - undo
+        - redo
+        - separator
+        - heading
+        - separator
+        - bold
+        - italic
+        - strikethrough
+        - inline_code
+        - remove_format
+        - separator
+        - link
+        - blockquote
+        - bullet_list
+        - ordered_list
+        - code_block
+        - separator
+        - source

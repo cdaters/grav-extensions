@@ -1,8 +1,9 @@
 # Caxton
 
 Caxton is the source-faithful visual and source editor for Grav 2 and Admin2.
-Version 0.2.0 preserves the complete 0.1.0 public PHP contract, keeps ordinary
-Markdown authoritative, and adds the first real Admin2 page field.
+Version 0.2.1 preserves the complete 0.1.0 public PHP contract, keeps ordinary
+Markdown authoritative, and hardens the real Admin2 page field with a usable,
+configurable structural-authoring toolbar and explicit light/dark palettes.
 
 Visual mode presents formatted headings, emphasis, links, lists, quotes, and
 code without showing their Markdown punctuation. Source mode deliberately
@@ -21,6 +22,25 @@ limits:
   max_source_bytes: 2097152
 admin:
   replace_markdown_fields: true
+  toolbar:
+    - undo
+    - redo
+    - separator
+    - heading
+    - separator
+    - bold
+    - italic
+    - strikethrough
+    - inline_code
+    - remove_format
+    - separator
+    - link
+    - blockquote
+    - bullet_list
+    - ordered_list
+    - code_block
+    - separator
+    - source
 ```
 
 The replacement applies only to page fields declared as `type: markdown`, only
@@ -29,12 +49,24 @@ for users with `grav-caxton.use`, and never to explicit code-editor fields.
 
 ## Admin2 editing
 
-Caxton uses a compact grouped toolbar above a generous document canvas. The
-0.2.0 toolbar intentionally exposes only the proven safe slice: undo/redo,
-paragraph/heading levels, bold, italic, inline code, and Visual/Source modes.
-Typing and formatting in Visual mode applies one localized Markdown patch;
-adding or removing top-level document structure remains a Source-mode task in
-this release.
+Caxton uses a compact toolbar above a generous document canvas. Version 0.2.1
+ships undo/redo, paragraph and six heading levels, bold, italic, GFM
+strikethrough, inline code, clear formatting, links, blockquotes, bullet and
+numbered lists, fenced code blocks, and Visual/Source modes. The ordered
+`admin.toolbar` list controls which proven tools and separators appear. Unknown
+or unsupported values are ignored rather than widening editor authority.
+
+Visual links use a keyboard-accessible in-page dialog, accept optional titles,
+and reject unsafe URL schemes. Paragraph Enter/split and Backspace/join,
+wrapping one safe block as a quote/list, list-kind conversion, and formatting
+all become localized Markdown source patches. Active toolbar states follow the
+selection, read-only fields disable mutation tools, and `Ctrl`/`Command`+`K`
+opens the link dialog. Visual mode never needs a native browser prompt.
+
+The editor has explicit light and dark palettes for the toolbar, visual canvas,
+protected cards, link dialog, and Markdown source editor. It does not depend on
+the browser's generic `Canvas` color, so switching Admin2 themes preserves real
+contrast.
 
 The field owns only the current unsaved form value. It emits Admin2's normal
 bubbling `change` event and interoperates with the public editor content events,
@@ -64,13 +96,18 @@ available.
 ## Source guarantees
 
 - Parsing and serializing without an edit returns the exact input bytes.
-- A 0.1.0 visual-contract edit can replace only a recognized plain heading or
-  single-line plain paragraph and requires the expected source SHA-256.
+- The public 0.1.0 PHP edit contract can replace only a recognized plain
+  heading or single-line plain paragraph and requires the expected source
+  SHA-256. The private 0.2.1 browser adapter additionally localizes the proven
+  toolbar and contiguous safe-paragraph structure transactions above.
 - The edited block is canonicalized; every byte outside its source span remains
   unchanged.
-- Frontmatter, code fences, lists, blockquotes, media, tables, HTML, Twig,
-  shortcodes, ambiguous Markdown, malformed constructs, and unknown syntax are
-  preserved but are not visually editable in this release.
+- Frontmatter, media, tables, HTML, Twig, shortcodes, ambiguous Markdown,
+  malformed constructs, and unknown syntax remain inert and preserved.
+- Underline and automatic typography replacement are intentionally absent:
+  underline requires HTML rather than portable Markdown, and invisible text
+  substitution needs a separate explicit source policy. Existing underline
+  HTML remains an exact protected card.
 - Source is capped at 2 MiB by default and NUL input is rejected. Source text is
   never included in exception or registration-log messages.
 

@@ -200,8 +200,153 @@ try {
   });
   assert.equal(replaced.value, '# Replacement\n\nNo persistence request.\n');
   assert.equal(replaced.change, replaced.value);
+
+  const toolbar = await page.evaluate(async () => {
+    const field = document.createElement('grav-test--caxton');
+    field.field = {name: 'content', caxton: {allow_source: true, toolbar: [
+      'undo', '|', 'heading', '|', 'bold', 'italic', 'strikethrough', 'inline_code', 'removeformat', '|',
+      'link', 'blockquote', 'bulletList', 'orderedList', 'codeBlock', '|', 'source', 'unknown',
+    ]}};
+    field.value = 'Link this text.\n';
+    document.body.replaceChildren(field);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    window.__caxtonToolbarField = field;
+    return {
+      actions: [...field.querySelectorAll('[data-action]')].map((node) => node.dataset.action),
+      separators: field.querySelectorAll('[role="separator"]').length,
+      source: Boolean(field.querySelector('[data-mode="source"]')),
+    };
+  });
+  assert.deepEqual(toolbar.actions, [
+    'undo', 'style', 'bold', 'italic', 'strikethrough', 'inline_code', 'remove_format', 'link',
+    'blockquote', 'bullet_list', 'ordered_list', 'code_block',
+  ]);
+  assert.equal(toolbar.separators, 4);
+  assert.equal(toolbar.source, true);
+
+  await page.evaluate(() => {
+    const paragraph = document.querySelector('grav-test--caxton .ProseMirror p');
+    const range = document.createRange();
+    range.setStart(paragraph.firstChild, 5);
+    range.setEnd(paragraph.firstChild, 14);
+    const selection = getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    paragraph.closest('.ProseMirror').focus();
+  });
+  await page.getByRole('button', {name: 'Link', exact: true}).click();
+  await page.locator('[data-caxton-link-url]').fill('javascript:alert(1)');
+  await page.getByRole('button', {name: 'Apply link'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Link this text.\n');
+  assert.equal(await page.locator('[data-caxton-link-panel]').getAttribute('hidden'), null);
+  await page.locator('[data-caxton-link-url]').fill('https://example.com/path');
+  await page.locator('[data-caxton-link-title]').fill('Example title');
+  await page.getByRole('button', {name: 'Apply link'}).click();
+  assert.equal(
+    await page.evaluate(() => window.__caxtonToolbarField.value),
+    'Link [this text](https://example.com/path "Example title").\n'
+  );
+  assert.equal(await page.locator('[data-caxton-link-panel]').getAttribute('hidden'), '');
+
+  async function replaceToolbarValue(value) {
+    await page.evaluate((source) => window.__caxtonToolbarField.replaceContent(source), value);
+    await page.evaluate(() => {
+      const paragraph = document.querySelector('grav-test--caxton .ProseMirror p');
+      const range = document.createRange();
+      range.setStart(paragraph.firstChild, 1);
+      range.collapse(true);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      paragraph.closest('.ProseMirror').focus();
+    });
+  }
+
+  await replaceToolbarValue('Quote me.\n');
+  await page.getByRole('button', {name: 'Blockquote'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '> Quote me.\n');
+  assert.equal(await page.getByRole('button', {name: 'Blockquote'}).getAttribute('aria-pressed'), 'true');
+
+  await replaceToolbarValue('List me.\n');
+  await page.getByRole('button', {name: 'Bullet list'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '* List me.\n');
+  await page.getByRole('button', {name: 'Numbered list'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '1. List me.\n');
+
+  await replaceToolbarValue('Code me.\n');
+  await page.getByRole('button', {name: 'Code block'}).click();
+  assert.match(await page.evaluate(() => window.__caxtonToolbarField.value), /^```\nCode me\.\n```\n$/);
+
+  await page.evaluate(() => window.__caxtonToolbarField.replaceContent('Alpha beta.\n\nGamma.\n'));
+  await page.evaluate(() => {
+    window.__caxtonToolbarField.visual.setSelection(6, 6);
+    window.__caxtonToolbarField.visual.focus();
+  });
+  await page.keyboard.press('Enter');
+  assert.equal(
+    await page.evaluate(() => window.__caxtonToolbarField.value),
+    'Alpha \n\nbeta.\n\nGamma.\n',
+    await page.locator('[data-caxton-summary]').innerText()
+  );
+  await page.getByRole('button', {name: 'Undo'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Alpha beta.\n\nGamma.\n');
+
+  await page.evaluate(() => {
+    window.__caxtonToolbarField.visual.setSelection(13, 13);
+    window.__caxtonToolbarField.visual.focus();
+  });
+  await page.keyboard.press('Backspace');
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Alpha beta.Gamma.\n');
+
+  await page.evaluate(() => {
+    window.__caxtonToolbarField.visual.setSelection(0, 5);
+    window.__caxtonToolbarField.visual.focus();
+  });
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+k' : 'Control+k');
+  assert.equal(await page.locator('[data-caxton-link-panel]').getAttribute('hidden'), null);
+  await page.getByRole('button', {name: 'Cancel'}).click();
+  assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('ProseMirror')), true);
+
+  const readOnly = await page.evaluate(async () => {
+    const field = document.createElement('grav-test--caxton');
+    field.field = {name: 'content', readonly: true, caxton: {allow_source: true}};
+    field.value = 'Read only.\n';
+    document.body.append(field);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return {
+      editable: field.querySelector('.ProseMirror')?.getAttribute('contenteditable'),
+      disabled: [...field.querySelectorAll('[data-action]')].every((node) => node.disabled),
+    };
+  });
+  assert.equal(readOnly.editable, 'false');
+  assert.equal(readOnly.disabled, true);
+
+  const theme = await page.evaluate(() => {
+    const field = window.__caxtonToolbarField;
+    const shell = field.querySelector('.cx-shell');
+    const toolbarNode = field.querySelector('.cx-toolbar');
+    document.documentElement.classList.remove('dark');
+    const light = {
+      background: getComputedStyle(shell).backgroundColor,
+      foreground: getComputedStyle(shell).color,
+      toolbar: getComputedStyle(toolbarNode).backgroundColor,
+    };
+    document.documentElement.classList.add('dark');
+    const dark = {
+      background: getComputedStyle(shell).backgroundColor,
+      foreground: getComputedStyle(shell).color,
+      toolbar: getComputedStyle(toolbarNode).backgroundColor,
+    };
+    return {light, dark};
+  });
+  const rgb = (value) => value.match(/\d+(?:\.\d+)?/g).slice(0, 3).map(Number);
+  const average = (value) => rgb(value).reduce((total, channel) => total + channel, 0) / 3;
+  assert.ok(average(theme.light.background) > 240 && average(theme.light.foreground) < 60, JSON.stringify(theme));
+  assert.ok(average(theme.dark.background) < 50 && average(theme.dark.foreground) > 220, JSON.stringify(theme));
+  assert.notEqual(theme.light.toolbar, theme.dark.toolbar);
+
   assert.deepEqual(failures, []);
-  process.stdout.write('Caxton real-browser engine and Admin2-field component proof passed.\n');
+  process.stdout.write('Caxton real-browser engine, configurable toolbar, structural tools, and theme proof passed.\n');
 } finally {
   await page.close();
   await browser.close();

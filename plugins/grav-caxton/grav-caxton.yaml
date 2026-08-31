@@ -3,3 +3,22 @@ limits:
   max_source_bytes: 2097152
 admin:
   replace_markdown_fields: true
+  toolbar:
+    - undo
+    - redo
+    - separator
+    - heading
+    - separator
+    - bold
+    - italic
+    - strikethrough
+    - inline_code
+    - remove_format
+    - separator
+    - link
+    - blockquote
+    - bullet_list
+    - ordered_list
+    - code_block
+    - separator
+    - source

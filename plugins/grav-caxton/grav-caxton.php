@@ -17,6 +17,21 @@ final class GravCaxtonPlugin extends Plugin
     public const SERVICE_KEY = 'gravCaxton';
     public const EXTENSION_EVENT = 'onCaxtonExtensionRegister';
     public const DEFAULT_MAX_SOURCE_BYTES = 2_097_152;
+    private const DEFAULT_TOOLBAR = [
+        'undo', 'redo', 'separator', 'heading', 'separator', 'bold', 'italic', 'strikethrough',
+        'inline_code', 'remove_format', 'separator', 'link', 'blockquote',
+        'bullet_list', 'ordered_list', 'code_block', 'separator', 'source',
+    ];
+    private const TOOLBAR_ALIASES = [
+        '|' => 'separator',
+        'removeformat' => 'remove_format',
+        'code' => 'inline_code',
+        'strike' => 'strikethrough',
+        'inlineCode' => 'inline_code',
+        'bulletList' => 'bullet_list',
+        'orderedList' => 'ordered_list',
+        'codeBlock' => 'code_block',
+    ];
 
     public static function getSubscribedEvents(): array
     {
@@ -91,7 +106,8 @@ final class GravCaxtonPlugin extends Plugin
         $fields = (array) ($event['fields'] ?? []);
         $event['fields'] = $this->replaceMarkdownFields(
             $fields,
-            $this->userCan($user, 'grav-caxton.source')
+            $this->userCan($user, 'grav-caxton.source'),
+            $this->configuredToolbar()
         );
     }
 
@@ -99,7 +115,7 @@ final class GravCaxtonPlugin extends Plugin
      * @param array<array-key, mixed> $fields
      * @return array<array-key, mixed>
      */
-    private function replaceMarkdownFields(array $fields, bool $allowSource): array
+    private function replaceMarkdownFields(array $fields, bool $allowSource, array $toolbar): array
     {
         foreach ($fields as $key => $field) {
             if (!is_array($field)) {
@@ -108,20 +124,68 @@ final class GravCaxtonPlugin extends Plugin
 
             if (($field['type'] ?? null) === 'markdown') {
                 $field['type'] = 'caxton';
-                $field['caxton'] = array_replace(
-                    is_array($field['caxton'] ?? null) ? $field['caxton'] : [],
-                    ['allow_source' => $allowSource]
-                );
+                $caxton = is_array($field['caxton'] ?? null) ? $field['caxton'] : [];
+                $caxton['allow_source'] = $allowSource;
+                $caxton['toolbar'] = $this->normalizeToolbar($caxton['toolbar'] ?? $toolbar, $allowSource);
+                $field['caxton'] = $caxton;
             }
 
             if (isset($field['fields']) && is_array($field['fields'])) {
-                $field['fields'] = $this->replaceMarkdownFields($field['fields'], $allowSource);
+                $field['fields'] = $this->replaceMarkdownFields($field['fields'], $allowSource, $toolbar);
             }
 
             $fields[$key] = $field;
         }
 
         return $fields;
+    }
+
+    /** @return list<string> */
+    private function configuredToolbar(): array
+    {
+        return $this->normalizeToolbar(
+            $this->config->get('plugins.' . self::SLUG . '.admin.toolbar', self::DEFAULT_TOOLBAR),
+            true
+        );
+    }
+
+    /** @return list<string> */
+    private function normalizeToolbar(mixed $configured, bool $allowSource): array
+    {
+        if (is_string($configured)) {
+            $configured = explode(',', $configured);
+        }
+        if (!is_array($configured)) {
+            $configured = self::DEFAULT_TOOLBAR;
+        }
+
+        $allowed = array_fill_keys(self::DEFAULT_TOOLBAR, true);
+        $result = [];
+        foreach (array_slice($configured, 0, 48) as $entry) {
+            if (!is_string($entry)) {
+                continue;
+            }
+            $raw = trim($entry);
+            $item = self::TOOLBAR_ALIASES[$raw] ?? $raw;
+            if (!isset($allowed[$item]) || (!$allowSource && $item === 'source')) {
+                continue;
+            }
+            if ($item === 'separator' && ($result === [] || end($result) === 'separator')) {
+                continue;
+            }
+            $result[] = $item;
+        }
+        while ($result !== [] && end($result) === 'separator') {
+            array_pop($result);
+        }
+
+        if ($result === []) {
+            return array_values(array_filter(
+                self::DEFAULT_TOOLBAR,
+                static fn (string $item): bool => $allowSource || $item !== 'source'
+            ));
+        }
+        return $result;
     }
 
     private function userCan(object $user, string $permission): bool

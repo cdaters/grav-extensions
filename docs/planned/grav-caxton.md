@@ -1,8 +1,9 @@
 # Caxton
 
 **Status:** architecture accepted; Page Studio reconciled into Caxton; 0.1.0
-source-fidelity contracts, 0.1.1 editor-engine proof, and 0.2.0 first Admin2
-field implemented; 0.2.1 structural-authoring hardening next
+source-fidelity contracts, 0.1.1 editor-engine proof, 0.2.0 first Admin2 field,
+and 0.2.1 structural-authoring/theme hardening implemented; 0.2.2 media and
+insertion hardening next
 
 - **Product name:** Caxton
 - **Plugin slug:** `grav-caxton`
@@ -432,13 +433,33 @@ no-edit switching, hidden Markdown punctuation, localized editing, opaque-byte
 survival, reload non-persistence, ordinary Save, theme, responsive layout, and
 clean relevant browser/log state.
 
-### 0.2.1 — structural-authoring hardening (exact next milestone)
+### 0.2.1 — structural-authoring and theme hardening (implemented)
 
 - safe paragraph split/create/delete transactions with localized-source proof;
-- link, list, and quote toolbar flows without native browser prompts;
+- bounded ordered plugin toolbar configuration plus safe link/title/removal,
+  list, quote, code-block, clear-format, and GFM-strikethrough flows without
+  native browser prompts;
 - accurate active/disabled toolbar state and selection/focus restoration;
-- signed-in permission denial, read-only, and keyboard regressions; and
+- explicit contrast-safe light/dark palettes for the toolbar, visual surface,
+  protected blocks, link dialog, and CodeMirror source surface;
+- permission denial, read-only, keyboard, isolated real-Chrome, and signed-in
+  DDEV regressions; and
 - no new page-write, autosave, Jarvis, collaboration, job, batch, or MCP path.
+
+Underline remains intentionally unavailable because ordinary Markdown has no
+portable underline syntax; existing `<u>` source remains an exact inert card.
+Automatic typography replacement is also deferred because invisible source
+mutation needs its own explicit policy and fixtures.
+
+### 0.2.2 — media and insertion hardening (exact next milestone)
+
+- read only the current page-media inventory through public Admin2 data/events;
+- insert/edit safe media references without a Caxton upload or persistence API;
+- add horizontal-rule insertion, code-fence language choice, and bounded multi-
+  item list operations;
+- preserve unresolved/unsafe media as exact inert source; and
+- prove media/read/write permission, keyboard, responsive, light/dark, and
+  ordinary Save-only behavior in the signed-in DDEV boundary.
 
 ### 0.2.x — richer Grav constructs
 

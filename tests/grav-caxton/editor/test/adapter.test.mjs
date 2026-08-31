@@ -22,7 +22,7 @@ test('the private ProseMirror schema contains only the intended safe proof nodes
     'doc', 'paragraph', 'heading', 'text', 'ordered_list', 'bullet_list', 'list_item',
     'blockquote', 'horizontal_rule', 'code_block', 'image', 'opaque_block',
   ]) assert.ok(caxtonSchema.nodes[name], `missing node ${name}`);
-  for (const name of ['strong', 'em', 'code', 'link']) assert.ok(caxtonSchema.marks[name], `missing mark ${name}`);
+  for (const name of ['strong', 'em', 'code', 'link', 'strikethrough']) assert.ok(caxtonSchema.marks[name], `missing mark ${name}`);
   assert.equal(caxtonSchema.nodes.opaque_block.spec.draggable, false);
   assert.equal(caxtonSchema.nodes.opaque_block.spec.atom, true);
 });
@@ -105,6 +105,28 @@ test('paragraph and heading edits are localized to their source spans', async ()
   assert.ok(session.value().includes('{% opaque %}'));
 });
 
+test('multi-paragraph structure patches stay inside the selected safe source range', () => {
+  const source = 'Before exact.\n\nFirst paragraph.\n\nSecond paragraph.\n\n{% protected %}\n\nAfter exact.\n';
+  const document = new SourceDocumentAdapter(source);
+  const paragraphs = document.safeBlocks().filter((item) => item.kind === 'paragraph');
+  const updated = document.applyRangePatch(
+    paragraphs[1].id,
+    paragraphs[2].id,
+    'First paragraph.Second paragraph.',
+    source
+  );
+  assert.equal(updated, 'Before exact.\n\nFirst paragraph.Second paragraph.\n\n{% protected %}\n\nAfter exact.\n');
+  assert.throws(
+    () => document.applyRangePatch(paragraphs[0].id, paragraphs[3].id, 'unsafe', source),
+    /BLOCK_NOT_EDITABLE/,
+    'a range crossing opaque or unsupported source must fail closed'
+  );
+  assert.throws(
+    () => document.applyRangePatch(paragraphs[1].id, paragraphs[2].id, 'changed', `${source}stale`),
+    /STALE_SOURCE/
+  );
+});
+
 test('inline strong, emphasis, and link edits normalize only the intentional paragraph', async () => {
   const source = 'Before exact.\n\nFormat this and [old link](https://old.example).\n\nAfter exact.\n';
   let session = await DualModeEditorSession.create(source, {mode: 'visual'});
@@ -125,6 +147,20 @@ test('inline strong, emphasis, and link edits normalize only the intentional par
     () => session.updateLink(block(session, 'paragraph', 1).id, 0, 1, 'javascript:alert(1)'),
     /Unsafe link URL/
   );
+});
+
+test('GFM strikethrough is visual punctuation-free and serializes as source-faithful Markdown', async () => {
+  const source = 'Before exact.\n\n~~Strike this~~ and keep this.\n\nAfter exact.\n';
+  let session = await DualModeEditorSession.create(source, {mode: 'visual'});
+  let paragraph = session.document.safeBlocks().find((item) => item.source.startsWith('~~Strike'));
+  assert.equal(paragraph.node.textContent, 'Strike this and keep this.');
+  assert.equal(paragraph.node.firstChild.marks[0].type.name, 'strikethrough');
+  assert.equal(session.value(), source);
+
+  session = await DualModeEditorSession.create('Before exact.\n\nStrike this.\n\nAfter exact.\n', {mode: 'visual'});
+  paragraph = session.document.safeBlocks().find((item) => item.source === 'Strike this.');
+  await session.toggleInlineMark(paragraph.id, 0, 6, 'strikethrough');
+  assert.equal(session.value(), 'Before exact.\n\n~~Strike~~ this.\n\nAfter exact.\n');
 });
 
 test('list edits use ProseMirror transactions and localize list normalization', async () => {

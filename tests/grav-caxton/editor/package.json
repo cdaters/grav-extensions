@@ -1,6 +1,6 @@
 {
   "name": "@grav-extensions/caxton-editor-proof",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "Source-faithful ProseMirror, CodeMirror, and Admin2 field adapters for Caxton",
@@ -16,6 +16,7 @@
     "@codemirror/state": "6.7.1",
     "@codemirror/view": "6.43.9",
     "@lezer/markdown": "1.7.2",
+    "markdown-it": "14.3.1",
     "prosemirror-commands": "1.7.2",
     "prosemirror-history": "1.5.0",
     "prosemirror-keymap": "1.2.3",

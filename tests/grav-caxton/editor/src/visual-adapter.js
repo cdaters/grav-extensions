@@ -1,11 +1,10 @@
 import {baseKeymap, setBlockType, toggleMark} from 'prosemirror-commands';
 import {history, redo, undo} from 'prosemirror-history';
 import {keymap} from 'prosemirror-keymap';
-import {defaultMarkdownSerializer} from 'prosemirror-markdown';
 import {EditorState, TextSelection} from 'prosemirror-state';
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list';
 import {EditorView} from 'prosemirror-view';
-import {caxtonSchema} from './schema.js';
+import {caxtonMarkdownSerializer, caxtonSchema} from './schema.js';
 import {safeLinkUrl} from './security.js';
 
 function textEntries(node, nodePosition) {
@@ -21,7 +20,13 @@ function textEntries(node, nodePosition) {
 
 function normalizedSerializedBlock(node) {
   const temporary = caxtonSchema.nodes.doc.create(null, [node]);
-  return defaultMarkdownSerializer.serialize(temporary).replace(/\u00a0/g, ' ').replace(/\n$/, '');
+  return caxtonMarkdownSerializer.serialize(temporary).replace(/\u00a0/g, ' ').replace(/\n$/, '');
+}
+
+function normalizedSerializedBlocks(nodes) {
+  if (nodes.length === 0) return '';
+  const temporary = caxtonSchema.nodes.doc.create(null, nodes);
+  return caxtonMarkdownSerializer.serialize(temporary).replace(/\u00a0/g, ' ').replace(/\n$/, '');
 }
 
 function serializeCodeBlock(node, descriptor) {
@@ -37,6 +42,8 @@ export class VisualEditorAdapter {
     this.readOnly = options.readOnly === true;
     this.onChange = typeof options.onChange === 'function' ? options.onChange : null;
     this.onReject = typeof options.onReject === 'function' ? options.onReject : null;
+    this.onSelectionChange = typeof options.onSelectionChange === 'function' ? options.onSelectionChange : null;
+    this.onRequestLink = typeof options.onRequestLink === 'function' ? options.onRequestLink : null;
     this.view = null;
     this.state = EditorState.create({
       schema: caxtonSchema,
@@ -47,6 +54,15 @@ export class VisualEditorAdapter {
           'Mod-z': undo,
           'Shift-Mod-z': redo,
           'Mod-y': redo,
+          'Mod-k': () => {
+            if (!this.onRequestLink) return false;
+            this.onRequestLink();
+            return true;
+          },
+          'Shift-Mod-b': () => this.toggleBlockquote(),
+          'Shift-Mod-x': () => this.toggleSelectionMark('strikethrough'),
+          'Shift-Mod-8': () => this.toggleList('bullet_list'),
+          'Shift-Mod-7': () => this.toggleList('ordered_list'),
           Enter: splitListItem(caxtonSchema.nodes.list_item),
           Tab: sinkListItem(caxtonSchema.nodes.list_item),
           'Shift-Tab': liftListItem(caxtonSchema.nodes.list_item),
@@ -78,8 +94,10 @@ export class VisualEditorAdapter {
         this.state = this.state.apply(transaction);
         this.view.updateState(this.state);
         this.#rebuildMappings();
+        this.#notifySelection();
       },
     });
+    this.#notifySelection();
     return this.view;
   }
 
@@ -111,8 +129,127 @@ export class VisualEditorAdapter {
   }
 
   toggleSelectionMark(markName) {
-    if (!['strong', 'em', 'code'].includes(markName)) return false;
+    if (!['strong', 'em', 'code', 'strikethrough'].includes(markName)) return false;
     return this.#runCommand(toggleMark(caxtonSchema.marks[markName]));
+  }
+
+  removeSelectionFormatting() {
+    if (this.readOnly || !this.view || this.state.selection.empty) return false;
+    const {from, to} = this.state.selection;
+    this.view.dispatch(this.state.tr.removeMark(from, to));
+    return true;
+  }
+
+  linkState() {
+    const {from, to, empty, $from} = this.state.selection;
+    let mark = caxtonSchema.marks.link.isInSet($from.marks());
+    if (!mark && !empty) {
+      this.state.doc.nodesBetween(from, to, (node) => {
+        mark ??= caxtonSchema.marks.link.isInSet(node.marks);
+      });
+    }
+    return {selected: !empty, href: mark?.attrs.href ?? '', title: mark?.attrs.title ?? ''};
+  }
+
+  updateSelectionLink(href, title = null) {
+    if (this.readOnly || !this.view || this.state.selection.empty) return false;
+    const safe = safeLinkUrl(href);
+    if (safe === null) return false;
+    const {from, to} = this.state.selection;
+    const mark = caxtonSchema.marks.link.create({href: safe, title: title || null});
+    this.view.dispatch(this.state.tr
+      .removeMark(from, to, caxtonSchema.marks.link)
+      .addMark(from, to, mark));
+    return true;
+  }
+
+  removeSelectionLink() {
+    if (this.readOnly || !this.view || this.state.selection.empty) return false;
+    const {from, to} = this.state.selection;
+    this.view.dispatch(this.state.tr.removeMark(from, to, caxtonSchema.marks.link));
+    return true;
+  }
+
+  toggleBlockquote() {
+    const top = this.#selectedTopBlock();
+    if (!top) return false;
+    let replacement = null;
+    if (top.node.type === caxtonSchema.nodes.blockquote) {
+      if (top.node.childCount !== 1 || !['paragraph', 'heading'].includes(top.node.firstChild.type.name)) return false;
+      replacement = top.node.firstChild.type.create(
+        {...top.node.firstChild.attrs, ...this.#topSourceAttrs(top.node)},
+        top.node.firstChild.content,
+        top.node.firstChild.marks
+      );
+    } else if (['paragraph', 'heading'].includes(top.node.type.name)) {
+      const nested = top.node.type.create(this.#nestedAttrs(top.node), top.node.content, top.node.marks);
+      replacement = caxtonSchema.nodes.blockquote.create(this.#topSourceAttrs(top.node), nested);
+    }
+    return replacement ? this.#replaceTopBlock(top, replacement) : false;
+  }
+
+  toggleList(kind) {
+    if (!['bullet_list', 'ordered_list'].includes(kind)) return false;
+    const top = this.#selectedTopBlock();
+    if (!top) return false;
+    const target = caxtonSchema.nodes[kind];
+    let replacement = null;
+    if (top.node.type === target) {
+      if (top.node.childCount !== 1 || top.node.firstChild.childCount !== 1
+        || top.node.firstChild.firstChild.type !== caxtonSchema.nodes.paragraph) return false;
+      const paragraph = top.node.firstChild.firstChild;
+      replacement = caxtonSchema.nodes.paragraph.create(
+        this.#topSourceAttrs(top.node),
+        paragraph.content,
+        paragraph.marks
+      );
+    } else if (['bullet_list', 'ordered_list'].includes(top.node.type.name)) {
+      replacement = target.create(this.#listAttrs(kind, top.node), top.node.content);
+    } else if (['paragraph', 'heading'].includes(top.node.type.name)) {
+      const paragraph = caxtonSchema.nodes.paragraph.create(this.#nestedAttrs(top.node), top.node.content);
+      const item = caxtonSchema.nodes.list_item.create(null, paragraph);
+      replacement = target.create(this.#listAttrs(kind, top.node), item);
+    }
+    return replacement ? this.#replaceTopBlock(top, replacement) : false;
+  }
+
+  toggleCodeBlock() {
+    const top = this.#selectedTopBlock();
+    if (!top) return false;
+    let replacement = null;
+    if (top.node.type === caxtonSchema.nodes.code_block) {
+      replacement = caxtonSchema.nodes.paragraph.create(
+        this.#topSourceAttrs(top.node),
+        top.node.textContent ? caxtonSchema.text(top.node.textContent) : null
+      );
+    } else if (['paragraph', 'heading'].includes(top.node.type.name)) {
+      replacement = caxtonSchema.nodes.code_block.create(
+        {...this.#topSourceAttrs(top.node), params: ''},
+        top.node.textContent ? caxtonSchema.text(top.node.textContent) : null
+      );
+    }
+    return replacement ? this.#replaceTopBlock(top, replacement) : false;
+  }
+
+  selectionState() {
+    const {$from, empty} = this.state.selection;
+    const marks = empty ? ($from.marks() ?? []) : null;
+    const activeMark = (name) => marks
+      ? Boolean(caxtonSchema.marks[name].isInSet(marks))
+      : this.state.doc.rangeHasMark(this.state.selection.from, this.state.selection.to, caxtonSchema.marks[name]);
+    const top = this.#selectedTopBlock();
+    return {
+      block: top?.node.type.name ?? null,
+      heading: top?.node.type === caxtonSchema.nodes.heading ? top.node.attrs.level : null,
+      strong: activeMark('strong'),
+      em: activeMark('em'),
+      code: activeMark('code'),
+      strikethrough: activeMark('strikethrough'),
+      link: activeMark('link'),
+      canLink: !empty && Boolean(top),
+      canUndo: undo(this.state),
+      canRedo: redo(this.state),
+    };
   }
 
   setTextStyle(style) {
@@ -139,17 +276,31 @@ export class VisualEditorAdapter {
     const after = [];
     this.state.doc.forEach((node) => before.push(node));
     transaction.doc.forEach((node) => after.push(node));
-    const changed = [];
-    const comparable = before.length === after.length;
-    if (comparable) {
-      for (let index = 0; index < before.length; index += 1) {
-        if (!before[index].eq(after[index])) changed.push(index);
-      }
+    let prefix = 0;
+    while (prefix < before.length && prefix < after.length && before[prefix].eq(after[prefix])) prefix += 1;
+    let beforeEnd = before.length - 1;
+    let afterEnd = after.length - 1;
+    while (beforeEnd >= prefix && afterEnd >= prefix && before[beforeEnd].eq(after[afterEnd])) {
+      beforeEnd -= 1;
+      afterEnd -= 1;
     }
-    const index = changed[0];
-    const blockId = comparable && changed.length === 1 ? before[index].attrs.blockId : null;
-    const descriptor = blockId ? this.sourceDocument.block(blockId) : null;
-    if (!descriptor?.safe || after[index].attrs.blockId !== blockId || after[index].type.name === 'opaque_block') {
+    const changedBefore = before.slice(prefix, beforeEnd + 1);
+    const changedAfter = after.slice(prefix, afterEnd + 1);
+    const descriptors = changedBefore.map((node) => this.sourceDocument.block(node.attrs.blockId));
+    const structural = changedBefore.length !== 1 || changedAfter.length !== 1;
+    const structuralKinds = new Set(['paragraph', 'heading']);
+    const rangeSafe = changedBefore.length > 0
+      && descriptors.every((descriptor) => descriptor?.safe)
+      && changedAfter.every((node) => node.type.name !== 'opaque_block');
+    const structuralSafe = !structural || (
+      descriptors.every((descriptor) => structuralKinds.has(descriptor.kind))
+      && changedAfter.every((node) => structuralKinds.has(node.type.name))
+    );
+    if (!rangeSafe) {
+      this.onReject?.('That edit crosses a protected or non-local source boundary.');
+      return;
+    }
+    if (!structuralSafe) {
       this.onReject?.('Use Source mode to add, remove, or restructure top-level blocks.');
       return;
     }
@@ -157,14 +308,32 @@ export class VisualEditorAdapter {
     const previousState = this.state;
     try {
       this.state = this.state.apply(transaction);
-      const replacement = after[index].type.name === 'code_block'
-        ? serializeCodeBlock(after[index], descriptor)
-        : normalizedSerializedBlock(after[index]);
-      const accepted = this.onChange({blockId, replacement, transaction});
+      const replacement = changedAfter.length === 1 && changedBefore.length === 1
+        && changedAfter[0].type.name === 'code_block'
+        ? serializeCodeBlock(changedAfter[0], descriptors[0])
+        : normalizedSerializedBlocks(changedAfter);
+      const accepted = this.onChange({
+        blockId: changedBefore[0].attrs.blockId,
+        endBlockId: changedBefore.at(-1).attrs.blockId,
+        replacement,
+        transaction,
+      });
       if (!accepted || typeof accepted.block !== 'function') throw new Error('INTERACTIVE_CHANGE_REJECTED');
       this.sourceDocument = accepted;
+      const normalized = accepted.visualDocument();
+      if (normalized.childCount !== this.state.doc.childCount) throw new Error('INTERACTIVE_STRUCTURE_MISMATCH');
+      let metadata = this.state.tr;
+      this.state.doc.forEach((node, position, index) => {
+        const expected = normalized.child(index);
+        if (node.type !== expected.type) throw new Error('INTERACTIVE_TYPE_MISMATCH');
+        if (JSON.stringify(node.attrs) !== JSON.stringify(expected.attrs)) {
+          metadata = metadata.setNodeMarkup(position, undefined, expected.attrs, node.marks);
+        }
+      });
+      if (metadata.steps.length > 0) this.state = this.state.apply(metadata.setMeta('addToHistory', false));
       this.view.updateState(this.state);
       this.#rebuildMappings();
+      this.#notifySelection();
     } catch (error) {
       this.state = previousState;
       this.view.updateState(this.state);
@@ -178,6 +347,48 @@ export class VisualEditorAdapter {
     this.state = this.state.apply(transaction);
     this.view?.updateState(this.state);
     this.#rebuildMappings();
+    this.#notifySelection();
+  }
+
+  #notifySelection() {
+    this.onSelectionChange?.(this.selectionState());
+  }
+
+  #selectedTopBlock() {
+    const {from, to} = this.state.selection;
+    let found = null;
+    this.state.doc.forEach((node, position) => {
+      const end = position + node.nodeSize;
+      if (from >= position && to <= end && node.attrs.blockId && node.type.name !== 'opaque_block') {
+        found = {node, position};
+      }
+    });
+    return found;
+  }
+
+  #topSourceAttrs(node) {
+    return {
+      blockId: node.attrs.blockId,
+      sourceStart: node.attrs.sourceStart,
+      sourceEnd: node.attrs.sourceEnd,
+      sourceKind: node.attrs.sourceKind,
+    };
+  }
+
+  #nestedAttrs(node) {
+    return {...node.attrs, blockId: null, sourceStart: null, sourceEnd: null, sourceKind: null};
+  }
+
+  #listAttrs(kind, node) {
+    return kind === 'ordered_list'
+      ? {...this.#topSourceAttrs(node), order: node.attrs.order ?? 1}
+      : this.#topSourceAttrs(node);
+  }
+
+  #replaceTopBlock(top, replacement) {
+    if (this.readOnly || !this.view) return false;
+    this.view.dispatch(this.state.tr.replaceWith(top.position, top.position + top.node.nodeSize, replacement));
+    return true;
   }
 
   #topBlock(blockId) {
@@ -210,7 +421,7 @@ export class VisualEditorAdapter {
   }
 
   toggleInlineMark(blockId, from, to, markName) {
-    if (!['strong', 'em', 'code'].includes(markName)) throw new TypeError('Unsupported inline mark.');
+    if (!['strong', 'em', 'code', 'strikethrough'].includes(markName)) throw new TypeError('Unsupported inline mark.');
     const block = this.#topBlock(blockId);
     const range = this.#textRange(block, from, to);
     if (range.start === range.end) throw new RangeError('Inline mark range cannot be empty.');

@@ -1,9 +1,14 @@
 import {GFM, parser as baseMarkdownParser} from '@lezer/markdown';
-import {defaultMarkdownParser} from 'prosemirror-markdown';
+import MarkdownIt from 'markdown-it';
+import {defaultMarkdownParser, MarkdownParser} from 'prosemirror-markdown';
 import {caxtonSchema, SAFE_BLOCK_TYPES, SAFE_MARK_TYPES} from './schema.js';
 import {hasUnsafeUrl, opaquePreview, safeLinkUrl, safeMediaReference} from './security.js';
 
 const markdownParser = baseMarkdownParser.configure(GFM);
+const visualMarkdownParser = new MarkdownParser(caxtonSchema, MarkdownIt('commonmark').enable('strikethrough'), {
+  ...defaultMarkdownParser.tokens,
+  s: {mark: 'strikethrough'},
+});
 const MAX_SOURCE_UNITS = 2_097_152;
 const MAX_BLOCKS = 20_000;
 const MAX_NESTING = 128;
@@ -148,7 +153,7 @@ function taskListJson(value) {
 function safeNodeFor(descriptor) {
   let parsed;
   try {
-    parsed = defaultMarkdownParser.parse(descriptor.source);
+    parsed = visualMarkdownParser.parse(descriptor.source);
   } catch {
     return null;
   }
@@ -296,6 +301,22 @@ export class SourceDocumentAdapter {
       throw new TypeError('Invalid localized replacement.');
     }
     return this.source.slice(0, block.start) + replacement + this.source.slice(block.end);
+  }
+
+  applyRangePatch(startBlockId, endBlockId, replacement, expectedSource) {
+    if (expectedSource !== this.source) throw new Error('STALE_SOURCE');
+    const startIndex = this.blocks.findIndex((block) => block.id === startBlockId);
+    const endIndex = this.blocks.findIndex((block) => block.id === endBlockId);
+    if (startIndex < 0 || endIndex < startIndex) throw new Error('BLOCK_NOT_EDITABLE');
+    const selected = this.blocks.slice(startIndex, endIndex + 1);
+    if (!selected[0]?.safe || !selected.at(-1)?.safe
+      || selected.some((block) => !block.safe && block.kind !== 'trivia')) {
+      throw new Error('BLOCK_NOT_EDITABLE');
+    }
+    if (typeof replacement !== 'string' || replacement.includes('\u0000') || replacement.length > 262_144) {
+      throw new TypeError('Invalid localized replacement.');
+    }
+    return this.source.slice(0, selected[0].start) + replacement + this.source.slice(selected.at(-1).end);
   }
 }
 
