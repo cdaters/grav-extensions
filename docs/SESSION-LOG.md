@@ -948,3 +948,96 @@ suite inventory incremental and risk ordered.
   only reload, explicit Save, keyboard/focus/read-only, responsive/theme,
   console, and logs before default page-field replacement. Do not add Jarvis,
   collaboration, jobs, batch, MCP, autosave, or broad rich-construct work.
+
+## 2026-08-30 — Jarvis 0.3.2 provider setup and operator experience
+
+- Re-read the canonical state, suite README/architecture/roadmap, Decision 0004,
+  Jarvis brief/manual/configuration/blueprint, Admin2 controller/page/panel,
+  provider/introspection/credential/transport/reliability implementations,
+  deterministic and signed-in tests, package guards, and the canonical DDEV
+  fixture before editing. Preserved unrelated Site Workshop/Cache Hearth and
+  Spitfire-theme dirty work. The audited starting point was Jarvis 0.3.0 plus
+  the source-free 0.3.1 Commander consumer milestone.
+- Confirmed existing security and provider strengths: credentials were already
+  lazy environment-only values; official origins and compatible-instance bases
+  were immutable server configuration; bounded transport enforced HTTPS,
+  public DNS/pinning, TLS, no redirects/proxies, and response limits; validation
+  used non-generating model discovery; errors were typed/redacted; API/page
+  permissions, hash-only receipts, and unsaved-only Accept remained authoritative.
+  The actual usability gaps were missing exact environment names and setup links,
+  invisible disabled built-ins, conflated local credential/remote validation
+  status, ambiguous configured-versus-discovered models, selection loss on
+  discovery failure, and YAML-only compatible/reliability/pricing configuration.
+- Reviewed current Grav 2/Admin2 configuration behavior. Layered/server
+  environment loading is documented, but Admin2's `ConfigSecretMasker` only
+  masks secret-looking ordinary YAML from API output; it is not encrypted
+  storage and has no independent key-management/rotation trust model. Added no
+  plaintext secret field, browser secret round trip, or invented encryption.
+  Environment variables remain the required credential resolver and preferred
+  production path.
+- Added a private provider-neutral setup catalog and Admin bootstrap projection
+  for built-in, compatible, and extension providers. It exposes enablement,
+  registration, exact credential-variable name, local Missing/Configured/
+  Invalid state, configured model, safe compatible base URI, discovery support,
+  declared capabilities, official help, and normalized validation state—never
+  the resolved credential. Explicit Validate/Test Connection remains server-
+  side, permission checked, API-token protected, fixed-provider authority, and
+  model-list based; initial Admin2 render makes no provider request.
+- Updated both Admin2 surfaces with setup/status cards, separate credential and
+  validation badges, official links and OpenAI ChatGPT/API distinction, explicit
+  validation action, preferred provider, configured-default labels, discovered
+  capability/model choices, unavailable-default warning, and graceful discovery
+  failure that retains the configured/current model. Failures distinguish
+  missing/malformed credentials, authentication, rate/quota, transport,
+  configuration/response, and provider availability without raw JSON, response
+  bodies, endpoint authority, headers, stack traces, or secrets.
+- Expanded the Admin2 blueprint with server-validated non-secret preferred
+  provider, default models, compatible instance ID/public HTTPS base/credential
+  environment-variable name/discovery declaration, selected bounded retry/cache/
+  budget/context/chunking settings, and optional versioned pricing metadata.
+  Credentials, arbitrary request endpoints, private-network opt-ins, provider
+  wire shapes, and frozen public contracts remain excluded.
+- Rewrote the traveling manual as an installation guide covering Quick Start,
+  OpenAI API platform/projects/keys, dedicated-project benefits, API billing
+  versus ChatGPT subscriptions, Models-read plus Responses-write restricted-key
+  needs derived from the actual adapter, Anthropic, DDEV, production PHP-FPM/
+  service environments, validation, defaults/model discovery, rotation/removal,
+  compatible instances, troubleshooting, and security. Jarvis explicitly never
+  uses ChatGPT cookies, sessions, OAuth state, browser storage, or subscription
+  credentials.
+- Verified the exact developer workflow at
+  `/Users/cdaters/Documents/Spitfire/custom-plugins/file-vault-ddev`: create the
+  already-ignored `.ddev/config.local.yaml` with
+  `web_environment: [GRAV_JARVIS_OPENAI_API_KEY=sk-REPLACE-ME]`, run
+  `ddev restart`, and use a presence-only `ddev exec` check. This reaches both
+  nginx/PHP-FPM and CLI execution; replacement/removal plus restart rotates or
+  removes it. Repository/package guards exclude `.ddev`, `.env*`, and credential
+  files. Production injects the same exact variable through a hosting secret
+  manager, container/service environment, or protected PHP-FPM pool and reloads
+  the web process; `.env.local` is only a protected untracked fallback.
+- Added five deterministic PHP provider-setup checks, expanded the Node component
+  contract to nine checks, and expanded the signed-in Chrome DDEV regression.
+  The full 69-check PHP suite, nine component checks, and eleven black-box checks
+  pass, covering missing OpenAI/Anthropic keys, configured/malformed/auth-failed
+  fixtures, help and exact environment names, explicit validation, discovery,
+  configured/unavailable defaults, provider/model changes, graceful failure,
+  no leakage, permissions, CSRF/API token, responsive/theme/accessibility, all
+  six proposal actions, and no page save/publish. Repository preflight, YAML,
+  JavaScript, Composer, whitespace, package secret guards, ZIP integrity, exact
+  packaged 0.3.0-to-0.3.2 upgrade, fresh install, cache clear, public/Admin 200,
+  anonymous Jarvis 401, and relevant logs pass. Host PHP is absent; DDEV PHP
+  8.3.31 supplied syntax/runtime evidence.
+- Boolean-only checks found no OpenAI or Anthropic credential on the host or in
+  DDEV. The explicitly opt-in live smoke was therefore skipped; no live request,
+  credential exposure, generation, or charge occurred. The deterministic test
+  provider supplied configured/success/failure browser proof.
+- Packaged `dist/grav-jarvis-0.3.2.zip`, SHA-256
+  `f9dd4ad786279682947fa132a507bab7bed360dde82d6f7a2a535e52bb808c06`.
+  All prior Jarvis archives remain intact. Release testing restored the DDEV
+  fixture to its original Jarvis 0.3.0/config-absent state.
+- Jarvis's known limits remain deliberate: no secure Admin credential backend,
+  per-user preference store, CLI setup command, streaming/tools, durable
+  history/accounting, private compatible endpoint, Gemini/OpenRouter, site-wide
+  jobs, MCP workflow, automatic mutation, or structure-preserving chunked
+  rewrite. The active suite milestone returns to Caxton 0.2.0; Commander 0.3.13
+  concurrency hardening remains paused but recommended before broader agents.

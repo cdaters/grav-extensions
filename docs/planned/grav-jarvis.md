@@ -1,8 +1,9 @@
 # Jarvis
 
-**Status:** 0.3.0 Jarvis runtime plus the 0.3.1 optional-consumer milestone
-implemented through Grav Commander 0.3.12; Commander ordinary Save concurrency
-hardening is the recommended next milestone before broader agent/site work
+**Status:** 0.3.2 provider-setup/operator release plus the 0.3.1 optional-
+consumer milestone implemented through Grav Commander 0.3.12; frozen 0.1.x
+public contracts remain unchanged, and Caxton 0.2.0 is the suite's active next
+milestone before the paused Commander concurrency and broader agent/site work
 
 **Product name:** Jarvis
 
@@ -630,6 +631,46 @@ an externally changed disk version, but normal Save has no general optimistic-
 concurrency token. Commander 0.3.13 should close that write-boundary gap before
 the AI surface expands.
 
+### 0.3.2 — provider setup and operator experience (implemented)
+
+- audited the built-in OpenAI and Anthropic adapters, compatible-instance
+  profile, Admin2 page/panel, configuration blueprint, credentials, transport,
+  tests, DDEV fixture, and operator manual before changing behavior;
+- added a provider-neutral, browser-safe setup catalog that reports enablement,
+  registration, exact credential environment-variable name, credential
+  presence/shape, configured default model, compatible base URI, declared
+  capabilities, and normalized validation state without resolving a secret into
+  a response or JavaScript bundle;
+- made disabled first-party providers and missing credentials visible, separated
+  local credential status from remote validation, added explicit server-side
+  Validate/Test Connection, retained configured models through discovery
+  failures, and flags a configured model absent from a successful catalog
+  without silently replacing it;
+- exposed validated non-secret preferred provider, per-provider default model,
+  compatible-instance profile, selected retry/cache/budget/context/chunking
+  controls, and optional versioned pricing metadata through Grav's ordinary
+  Admin2 configuration. Provider credential values remain excluded;
+- documented OpenAI API project/key creation, API billing versus ChatGPT
+  subscription billing, dedicated-project benefits, the actual minimum
+  practical Models-read and Responses-write key permissions, Anthropic setup,
+  exact ignored DDEV `config.local.yaml`, production process environment,
+  validation, rotation/removal, model choice, and categorized troubleshooting;
+- reviewed Grav 2/Admin2 configuration and secret masking. Ordinary plugin YAML
+  remains plaintext even when the API masks secret-looking fields, so it is not
+  a qualifying secret store. Jarvis adds no plaintext secret field or invented
+  encryption backend; environment credentials remain preferred and required;
+  and
+- added deterministic provider-setup/component coverage and signed-in Admin2
+  browser coverage for missing/configured/invalid credentials, setup help,
+  exact environment names, validation, discovery, default/unavailable models,
+  graceful failure, leakage denial, accessibility, responsive layout, and
+  inherited theme behavior. Initial Admin2 render never performs a live call.
+
+The 0.3.2 release changes no frozen public interface, provider endpoint, request
+wire shape, credential resolver contract, SSRF policy, receipt, permission, or
+content-mutation boundary. Its package and final release hash are recorded in
+`CURRENT-STATE.md` and `docs/SESSION-LOG.md`.
+
 ### 0.4.0 — agent and site-wide workflows
 
 - batch selection, per-item proposals, selected apply, resumability, and
@@ -653,15 +694,15 @@ the AI surface expands.
 
 Tests are layered and use fake credentials/providers by default. The 0.1.0
 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI,
-0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin, and 0.3.0
-reliability/chunking contracts run together with
+0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin, 0.3.0
+reliability/chunking, and 0.3.2 provider-setup contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
 
 `./scripts/test-grav-jarvis-admin-ui.sh` provides the deterministic isolated
-component contract. `./scripts/test-grav-jarvis-admin-browser.sh` is the 0.2.1
-black-box gate: it temporarily installs the test provider, creates a random
+component contract. `./scripts/test-grav-jarvis-admin-browser.sh` is the signed-
+in black-box gate: it temporarily installs the test provider, creates a random
 Admin2 account, runs actual authenticated page and editor interactions through
 Chrome/Chromium, scans browser/backend failures, then restores the previous
 plugin, account-index, notification, and cache state.
@@ -686,7 +727,7 @@ Live-provider smoke tests are opt-in, budget-capped, and never a routine release
 prerequisite. No production content mutation or production credential is
 required for regression testing.
 
-Versions 0.2.0 through 0.3.0 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
+Versions 0.2.0 through 0.3.2 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
 component/event harness proves authenticated same-API browser transport,
 provider-neutral requests, response escaping, graceful absence, current
 unsaved-buffer capture, explicit replace-only Accept, non-mutating Reject, and
@@ -708,7 +749,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 through 0.3.0 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.3.2 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

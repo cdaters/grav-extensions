@@ -100,6 +100,16 @@ try {
     console.error(`Jarvis page diagnostic: ${page.url()} :: ${(await page.getByRole('main').first().innerText()).slice(0, 500)}`);
     throw error;
   }
+  await assistant.locator('.provider-setup code').filter({ hasText: 'GRAV_JARVIS_OPENAI_API_KEY' }).waitFor({ state: 'visible' });
+  const setupText = await assistant.locator('.provider-setup').innerText();
+  assert.match(setupText, /GRAV_JARVIS_OPENAI_API_KEY/);
+  assert.match(setupText, /GRAV_JARVIS_ANTHROPIC_API_KEY/);
+  assert.match(setupText, /ChatGPT login or subscription is not an API credential/i);
+  assert.match(setupText, /Open official key setup/i);
+  assert.doesNotMatch(setupText, /sk-[A-Za-z0-9_-]{12,}/, 'A credential-shaped value entered the provider setup view.');
+  assert.equal(await assistant.locator('#check').innerText(), 'Validate / Test connection');
+  console.log('PASS: first-party provider setup help and credential-safe status cards');
+
   await assistant.locator('#provider option').filter({ hasText: 'Browser Fixture' }).waitFor({ state: 'attached' });
   await selectProvider(assistant, 'browser-fixture');
   await assistant.locator('.status.ready').waitFor();
@@ -133,13 +143,17 @@ try {
   console.log('PASS: API token and fixed provider-authority boundary');
 
   await selectProvider(assistant, 'browser-missing');
-  await assistant.getByText('Needs configuration', { exact: true }).waitFor();
+  await assistant.locator('.status.warn').filter({ hasText: 'Needs configuration' }).waitFor();
   assert.match(await assistant.locator('#provider-note').innerText(), /credential.*server environment/i);
   assert.equal(await assistant.getByRole('button', { name: 'Ask Jarvis' }).isDisabled(), true);
   await selectProvider(assistant, 'browser-unavailable');
-  await assistant.getByText('Temporarily unavailable', { exact: true }).waitFor();
+  await assistant.locator('.status.warn').filter({ hasText: 'Temporarily unavailable' }).waitFor();
   assert.equal(await assistant.getByRole('button', { name: 'Ask Jarvis' }).isDisabled(), true);
-  console.log('PASS: missing-credential and provider-unavailable states');
+  await selectProvider(assistant, 'browser-auth');
+  await assistant.locator('.status.warn').filter({ hasText: 'Needs configuration' }).waitFor();
+  assert.match(await assistant.locator('#provider-note').innerText(), /rejected.*credential/i);
+  assert.match(await assistant.locator('.provider-card.selected').innerText(), /Credential\s+Invalid/i);
+  console.log('PASS: missing-credential, authentication-failure, and provider-unavailable states');
 
   await selectProvider(assistant, 'browser-flaky');
   await assistant.locator('.status.ready').waitFor();

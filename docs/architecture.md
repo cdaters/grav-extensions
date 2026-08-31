@@ -127,7 +127,7 @@ toolbar replacement and may optionally consume Jarvis later.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Jarvis 0.3.0:** provider-neutral service plus hardened permission-filtered Admin2
+- **Jarvis 0.3.2:** provider-neutral service plus hardened permission-filtered Admin2
   assistant and native page context panel. Six internal prompt actions operate
   on bounded title/frontmatter/media/current-unsaved-buffer context. Proposals
   render before/after, use capped one-time actor/route/source/proposal hash
@@ -144,6 +144,14 @@ toolbar replacement and may optionally consume Jarvis later.
   Grav/Markdown chunk provenance. Large-context execution is summarize-only
   with bounded partials/final synthesis. It adds no job/history database,
   external telemetry, retrieval/RAG, recursive expansion, or write authority.
+  Provider setup metadata is an internal browser-safe projection of validated
+  server configuration: it may disclose enablement, exact credential variable
+  names, configured defaults, compatible-instance HTTPS origins, and normalized
+  status, but never credential values or provider response bodies. Secrets stay
+  in the server environment because Grav/Admin2 masking of ordinary YAML is not
+  encrypted secret storage. Explicit validation uses the existing fixed-origin,
+  non-generating introspection boundary; plugin boot and initial Admin2 render
+  make no provider request.
 - **Caxton 0.1.1:** runnable source-fidelity contract foundation with exact
   no-edit serialization, ordered byte spans, safe localized heading/paragraph
   edits, opaque executable/ambiguous/unknown constructs, stale-source hashing,

@@ -41,6 +41,7 @@ final class GravJarvisBrowserFixturePlugin extends Plugin
         $registry->register(new BrowserFixtureProvider('browser-fixture', 'usable', $state));
         $registry->register(new BrowserFixtureProvider('browser-flaky', 'flaky', $state));
         $registry->register(new BrowserFixtureProvider('browser-missing', 'missing', $state));
+        $registry->register(new BrowserFixtureProvider('browser-auth', 'auth', $state));
         $registry->register(new BrowserFixtureProvider('browser-unavailable', 'unavailable', $state));
     }
 }

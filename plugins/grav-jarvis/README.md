@@ -1,9 +1,11 @@
 # Jarvis
 
-Jarvis 0.3.0 is the reliable, provider-neutral AI service for Grav 2. It adds
-bounded transient retries, optional privacy-scoped caching, normalized usage,
-versioned estimated costs, opt-in budgets, and Grav-aware Markdown chunking to
-the permission-filtered Admin2 and provider foundation.
+Jarvis 0.3.2 is the provider-neutral AI service for Grav 2. Its Admin2 setup
+view explains provider credentials, validates access without generating text,
+discovers models, and distinguishes the configured default from the live
+catalog. Bounded transient retries, optional privacy-scoped caching, normalized
+usage, versioned estimated costs, opt-in budgets, and Grav-aware Markdown
+chunking remain available behind the same frozen provider contracts.
 
 Page actions are review-first. Jarvis captures the current unsaved Markdown
 buffer, produces a proposal, and shows a before/after comparison. **Accept**
@@ -19,35 +21,238 @@ in server environment variables and never enter Admin2.
 - PHP 8.3 or newer, following Grav 2's supported runtime
 - PHP cURL extension for production provider requests
 
-## Installation
+## Quick Start
 
-Copy the `grav-jarvis` directory to:
+1. Copy `grav-jarvis` to `user/plugins/grav-jarvis` and clear Grav's cache:
+
+   ```bash
+   bin/grav clearcache
+   ```
+
+2. Sign in to Admin2 and open **Jarvis**. The provider cards show **Missing**
+   until the matching server environment variable exists. Seeing this state is
+   expected on a new install; the plugin does not ask the browser for a key.
+3. Obtain an API key from the provider's API console. For OpenAI, follow the
+   project-key procedure below; a ChatGPT subscription is not sufficient.
+4. Add the key to the Grav/PHP server environment, never to plugin YAML. For
+   OpenAI the exact name is `GRAV_JARVIS_OPENAI_API_KEY`; for Anthropic it is
+   `GRAV_JARVIS_ANTHROPIC_API_KEY`.
+5. Restart/reload the relevant web service or DDEV project, return to Jarvis,
+   and choose **Validate / Test connection**.
+6. Review discovered models. Keep the configured default or choose another
+   model for the current request. Persist non-secret provider/default-model
+   changes through **Plugin settings**.
+
+The plugin is enabled by default and registers `$grav['gravJarvis']`. OpenAI
+and Anthropic are enabled independently. No credential is resolved and no
+network request occurs merely because the plugin boots.
+
+## OpenAI setup
+
+Use the [OpenAI API platform](https://platform.openai.com/), not the ordinary
+ChatGPT conversation interface:
+
+1. Sign in with the OpenAI account that should own Jarvis API usage.
+2. Use an existing API project or create a dedicated Jarvis project from
+   [OpenAI project settings](https://platform.openai.com/settings/organization/projects).
+   A dedicated project is recommended, not mandatory: it isolates usage
+   accounting, project spend/model controls, key rotation/revocation, and the
+   blast radius of a leaked key from unrelated applications.
+3. Configure API billing and appropriate usage limits for that API
+   organization/project. OpenAI API billing is separate from ChatGPT billing.
+4. Open the project's [API Keys page](https://platform.openai.com/api-keys) and
+   choose **Create new secret key**.
+5. Prefer a dedicated Jarvis key. If the project-key UI offers restricted
+   endpoint permissions, Jarvis needs read access to Models for
+   `GET /v1/models` and write access to Responses for `POST /v1/responses`.
+   It does not need organization administration, project/key management, file,
+   assistant, batch, fine-tuning, or other API permissions for its current
+   implementation. Permission labels can evolve; map them to these two actual
+   endpoints rather than granting unrelated access.
+6. Copy and securely store the secret when it is created; the full value may
+   not be shown again.
+7. Configure it on the Grav/PHP server as
+   `GRAV_JARVIS_OPENAI_API_KEY`, restart/reload the service, then select
+   **Validate / Test connection** in Jarvis Admin2.
+8. Discover and select the desired model. Jarvis will flag a configured default
+   that discovery does not return, but will not silently replace it.
+
+Never put the real key in Git, Markdown, plugin configuration YAML, screenshots,
+browser storage, JavaScript, a committed DDEV file, a prompt, or chat. Jarvis
+does not create keys and must not receive one through this documentation.
+
+### OpenAI API billing is not a ChatGPT subscription
+
+A ChatGPT login or subscription—including Plus, Pro, Business, Enterprise, or
+another ChatGPT plan—is not an OpenAI API credential and does not provide
+Jarvis API billing. ChatGPT and the API platform maintain separate billing and
+usage systems; see OpenAI's official
+[billing distinction](https://help.openai.com/en/articles/9039756-billing-settings-in-chatgpt-vs-platform).
+
+Jarvis requires an API-platform project key. It never reads or attempts to use
+ChatGPT cookies, browser sessions, OAuth state, local browser storage, or
+ChatGPT subscription credentials.
+
+## Anthropic setup
+
+1. Sign in to the Claude Console and open
+   [Settings → API keys](https://console.anthropic.com/settings/keys).
+2. Create a key appropriate to the workspace/account that should own Jarvis
+   usage. Follow Anthropic's current
+   [authentication guidance](https://platform.claude.com/docs/en/manage-claude/authentication)
+   for personal versus service-account keys, workspace scope, expiration, and
+   rotation.
+3. Configure the secret on the Grav/PHP server as
+   `GRAV_JARVIS_ANTHROPIC_API_KEY`, restart/reload the service, and validate it
+   in Jarvis Admin2.
+4. Review the discovered model list and configured default.
+
+Anthropic Console/browser-session credentials are not provider API keys and
+are never used by Jarvis.
+
+## DDEV and local development
+
+The repository's canonical disposable fixture is:
 
 ```text
-user/plugins/grav-jarvis
+/Users/cdaters/Documents/Spitfire/custom-plugins/file-vault-ddev
 ```
 
-Clear Grav's cache after installing or updating:
+It uses DDEV 1.25.3 and nginx/PHP-FPM. Its generated `.ddev/.gitignore` already
+ignores `.ddev/config.local.yaml`, making that local override the cleanest
+development-only credential file for this fixture. Create or edit:
+
+```yaml
+# .ddev/config.local.yaml — local and ignored; never commit this file
+web_environment:
+  - GRAV_JARVIS_OPENAI_API_KEY=sk-REPLACE-ME
+  # - GRAV_JARVIS_ANTHROPIC_API_KEY=sk-ant-REPLACE-ME
+```
+
+Then restart DDEV so the variable reaches both PHP-FPM and `ddev exec`:
 
 ```bash
-bin/grav clearcache
+cd /Users/cdaters/Documents/Spitfire/custom-plugins/file-vault-ddev
+ddev restart
+ddev exec bash -lc 'test -n "$GRAV_JARVIS_OPENAI_API_KEY" && echo "OpenAI credential configured" || echo "OpenAI credential missing"'
 ```
 
-The plugin is enabled by default and registers its service as
-`$grav['gravJarvis']`. The official `openai` and `anthropic` providers are
-registered by default.
-Without `GRAV_JARVIS_OPENAI_API_KEY` in the server process environment,
-validation reports a missing credential and generation fails through Jarvis's
-typed, redacted failure boundary. The provider may be disabled, and its
-non-secret default model changed, in plugin configuration.
+The check reports presence only and never prints the value. Open Jarvis Admin2
+and validate OpenAI. From this repository, the explicitly opt-in bounded live
+proof can use the same container environment:
 
-Anthropic behaves the same way with
-`GRAV_JARVIS_ANTHROPIC_API_KEY`. Credentials are resolved lazily only when the
-corresponding provider is validated, inspected, or called. Either built-in
-provider may be enabled or disabled independently.
+```bash
+cd /Users/cdaters/Code/grav-extensions
+GRAV_JARVIS_LIVE_SMOKE=1 ./scripts/test-grav-jarvis-live.sh openai
+```
 
-Compatible providers are disabled by default and configured as named instances
-in environment-specific YAML. An instance contains only non-secret metadata:
+Normal tests never make that call. To rotate the key, replace the value in
+`.ddev/config.local.yaml` and run `ddev restart`; to remove it, delete the line
+or local file and restart. In any DDEV project that does not carry the standard
+ignore rule, add `.ddev/config.local.yaml` to the project's root `.gitignore`
+before storing a secret. Jarvis packages exclude `.ddev` and reject `.env*` or
+common credential files.
+
+## Production environment configuration
+
+Prefer the hosting platform's secret manager, container/service environment,
+or PHP-FPM pool configuration so the secret is injected into the web PHP
+process. For example, a protected PHP-FPM pool configuration can provide:
+
+```ini
+env[GRAV_JARVIS_OPENAI_API_KEY] = sk-REPLACE-ME
+env[GRAV_JARVIS_ANTHROPIC_API_KEY] = sk-ant-REPLACE-ME
+```
+
+Reload PHP-FPM after changing it. Shell exports affect only that shell and do
+not automatically reach an already-running PHP-FPM/web process.
+
+Grav 2 can also load an untracked site-root `.env.local` file. This is a
+filesystem fallback, not an Admin secret store: restrict its permissions,
+ensure the web server denies `.env*` requests, exclude it from source control
+and backups shared outside the trusted operator boundary, and prefer managed
+service secrets where available.
+
+```text
+GRAV_JARVIS_OPENAI_API_KEY=sk-REPLACE-ME
+```
+
+Do not use `GRAV_CONFIG__...` to copy a provider key into plugin configuration.
+Jarvis deliberately reads only its provider-specific environment variables.
+
+## Validate / Test Connection
+
+The Admin2 action is authenticated, permission checked, and server-side. It
+uses provider validation/model discovery rather than a content-generation
+request, so it does not intentionally spend generation tokens. The browser
+receives only normalized status, safe issue text, capabilities, and models—no
+credential, Authorization header, raw provider JSON, response body, endpoint
+authority, or stack trace.
+
+States distinguish missing/malformed credentials, rejected authentication,
+rate/quota limits, transport failure, invalid configuration/response, and an
+otherwise unavailable provider. **Configured** means a locally well-formed
+environment value exists; **Valid** means the provider accepted the model-list
+request. Those are intentionally different claims.
+
+## Model selection and defaults
+
+Set the preferred provider and each provider's non-secret default model in
+Admin2 **Plugin settings**. The Jarvis page opens with the preferred registered
+provider, identifies the configured default explicitly, and lists discovered
+models and available capability metadata.
+
+Discovery never rewrites configuration. A temporary discovery failure retains
+the configured default and any current selection. If discovery succeeds but
+does not return the configured model, Jarvis flags it as not discovered so the
+operator can investigate deprecation, account/model permissions, or a renamed
+identifier; it does not guess a replacement.
+
+## Credential rotation and removal
+
+1. Create the replacement key in the provider project/workspace and apply only
+   the permissions Jarvis needs.
+2. Replace the server environment value and reload/restart PHP-FPM, the hosting
+   service, or DDEV.
+3. Validate in Jarvis Admin2 and confirm model discovery succeeds.
+4. Revoke/delete the old provider key.
+
+For removal, delete the environment value, reload the service, and validate
+that Jarvis reports **Missing**. Disabling a provider removes it from request
+selection but does not delete or expose a server-managed secret.
+
+## Troubleshooting provider setup
+
+- **“I have ChatGPT Plus/Pro but Jarvis says OpenAI is not configured.”** A
+  ChatGPT plan is separate from the API platform. Create an API project key,
+  configure API billing/limits, and set `GRAV_JARVIS_OPENAI_API_KEY` on the
+  server.
+- **The variable works in my shell but Admin2 says Missing.** PHP-FPM/nginx or
+  Apache is a different long-running process. Inject the variable into that
+  service (or use protected `.env.local`) and reload it. A shell-only `export`
+  does not update the web process.
+- **Invalid/authentication failed.** The key may be mistyped, revoked, expired,
+  assigned to the wrong project/workspace, or missing the model-list permission.
+  Rotate it; do not paste it into logs or a support message.
+- **Rate limited or no available quota.** Check provider API usage, project
+  limits, and API billing. A ChatGPT payment method does not configure OpenAI
+  API billing.
+- **Configured model not discovered.** Check the exact identifier, project
+  model permissions, account access, and provider deprecation notices. Jarvis
+  intentionally preserves the configured value until an administrator changes
+  it.
+- **DDEV still says Missing after editing local config.** Run `ddev restart`;
+  container environment changes are applied at restart, not merely by editing
+  the file.
+- **Provider temporarily unavailable/transport failure.** Check outbound HTTPS,
+  DNS, TLS trust, firewall policy, and the provider status page. Jarvis does not
+  follow redirects or environment proxies and refuses private/reserved targets.
+
+## OpenAI-compatible providers
+
+Compatible providers are disabled by default. Admin2 plugin settings can store
+only the instance ID, immutable public HTTPS base URI, credential
+environment-variable **name**, default model, and truthful discovery switch:
 
 ```yaml
 providers:
@@ -61,8 +266,30 @@ providers:
         model_discovery: true
 ```
 
-The environment-variable name must belong to the instance identifier's Jarvis
-namespace. Its value exists only in the process environment.
+The credential variable must match the instance's provider namespace; its
+value exists only in the server environment. Admin2 shows the declared fixed
+capabilities and non-secret base URI. Per-request endpoints, browser-supplied
+headers, private/loopback hosts, redirects, and mutable endpoints remain
+forbidden.
+
+## Security notes
+
+- Grav 2/Admin2 masks secret-looking YAML values before returning configuration
+  to a browser, but the underlying value is still ordinary plaintext YAML.
+  That is not an encrypted secret store. Jarvis therefore provides no API-key
+  field and adds no home-grown encryption layer.
+- Environment variables remain the supported and preferred production source.
+  Values are resolved lazily into non-serializable in-memory credential
+  objects, redacted from errors/results, and never returned by setup/status APIs.
+- Provider credentials, Authorization headers, request/response bodies, raw
+  upstream errors, and stack traces are excluded from Admin2, JavaScript,
+  caches, logs, fixtures, diagnostics, screenshots, and release packages.
+- OpenAI uses only the fixed official base; Anthropic uses only its fixed
+  official base. Compatible endpoints are operator-selected once at server
+  configuration time and retain HTTPS/public-address/DNS-pinning controls.
+- Validation, discovery, and generation remain subject to backend API-token,
+  permission, provider, and page-authorization checks. Client controls are not
+  authoritative.
 
 ## Admin2 assistant and page actions
 
@@ -70,10 +297,13 @@ Jarvis adds a sidebar page for general prompts and a native context-panel
 launcher in the Admin2 page editor. Both call Jarvis through authenticated Grav
 API routes; the browser never calls a provider endpoint.
 
-The assistant shows registered providers, discovered models when available,
-safe validation state, loading/error/retry feedback, normalized output, usage,
-estimated cost, request/retry count, and cache state. A discovery failure leaves the configured provider
-default available. Provider and model choices are not persisted in 0.2.1.
+The assistant shows enabled and disabled provider setup cards, local credential
+state, exact environment-variable names, safe remote validation, configured
+defaults, discovered models, loading/error/retry feedback, normalized output,
+usage, estimated cost, request/retry count, and cache state. A discovery failure
+leaves the configured provider default and current selection available. The
+preferred provider and provider defaults persist through normal Admin2 plugin
+configuration; one-off selector choices remain local to the current surface.
 
 The page panel supports Rewrite, Proofread, Shorten, Expand, Summarize, and
 Custom Prompt. The internal prompt library has stable action identifiers,
@@ -88,7 +318,7 @@ last event uses `mode: replace`, which keeps the update inside Admin2's normal
 dirty/undo/editor behavior. Jarvis does not dispatch save or publish events.
 
 Selection-aware editing is intentionally deferred: Admin2 2.1.2 does not
-publish a stable selected-text contract. Version 0.2.1 operates on the whole
+publish a stable selected-text contract. Version 0.3.2 operates on the whole
 current buffer rather than reaching into editor internals.
 
 ## Reliability, cost, and large context
@@ -492,8 +722,9 @@ the `Testing` namespace and are never registered during normal plugin boot.
 contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
-Run the complete frozen 0.1.x provider suite plus the 0.2.x Admin and 0.3.0
-reliability/chunking contracts with host PHP or the repository's DDEV fixture:
+Run the complete frozen 0.1.x provider suite plus the 0.2.x Admin, 0.3.0
+reliability/chunking, and 0.3.2 provider-setup contracts with host PHP or the
+repository's DDEV fixture:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh

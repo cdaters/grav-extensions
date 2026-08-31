@@ -13,6 +13,7 @@ use Grav\Plugin\Api\Response\ApiResponse;
 use Grav\Plugin\GravJarvis\Admin\ActionPromptLibrary;
 use Grav\Plugin\GravJarvis\Admin\BoundedContextBuilder;
 use Grav\Plugin\GravJarvis\Admin\JarvisAdminService;
+use Grav\Plugin\GravJarvis\Admin\ProviderSetupCatalog;
 use Grav\Plugin\GravJarvis\Admin\TransientProposalStore;
 use Grav\Plugin\GravJarvis\Contracts\JarvisServiceInterface;
 use Grav\Plugin\GravJarvis\Contracts\Exception\BudgetExceededException;
@@ -32,7 +33,9 @@ final class ApiController extends AbstractApiController
         $this->requirePermission($request, 'grav-jarvis.access');
         $canApprove = $this->isSuperWithinScope($request)
             || $this->hasPermissionWithinScope($request, 'grav-jarvis.approve');
-        return ApiResponse::create($this->admin()->bootstrap($canApprove));
+        $canManage = $this->isSuperWithinScope($request)
+            || $this->hasPermissionWithinScope($request, 'api.config.write');
+        return ApiResponse::create($this->admin()->bootstrap($canApprove, $canManage));
     }
 
     public function validateProvider(ServerRequestInterface $request): ResponseInterface
@@ -325,12 +328,18 @@ final class ApiController extends AbstractApiController
         if ($cache === '') {
             throw new ApiException(503, 'Service Unavailable', 'Jarvis temporary storage is unavailable.');
         }
+        $service = $this->service();
+        $configuration = $this->config->get('plugins.grav-jarvis', []);
+        $configuration = is_array($configuration) ? $configuration : [];
+        $setups = new ProviderSetupCatalog($configuration, $service);
         return new JarvisAdminService(
-            $this->service(),
+            $service,
             new BoundedContextBuilder(),
             new ActionPromptLibrary(),
             new TransientProposalStore(rtrim($cache, '/\\') . '/grav-jarvis/proposals'),
-            $this->siteScope()
+            $this->siteScope(),
+            $setups->providers(),
+            $setups->defaultProvider()
         );
     }
 

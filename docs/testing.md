@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.0 provider/Admin2/retry/cache/usage/cost/budget/chunk contracts plus 0.3.1 public-only Commander consumer proof and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
+| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.2 provider-setup/Admin2 plus 0.3.0 retry/cache/usage/cost/budget/chunk contracts, 0.3.1 public-only Commander consumer proof, and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
 | Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 deterministic PHP contract and 0.1.1 isolated Node/actual-Chrome engine proof implemented; signed-in Admin2 boundary begins with 0.2.0 |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
@@ -179,7 +179,8 @@ alone do not prove value/change/Save separation.
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
 transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin,
-and 0.3.0 reliability/chunking suite with host PHP or a DDEV project:
+0.3.0 reliability/chunking, and 0.3.2 provider-setup suite with host PHP or a
+DDEV project:
 
 ```bash
 ./scripts/test-grav-jarvis-contract.sh
@@ -251,6 +252,15 @@ oversized indivisible blocks; maximum count; explicit infrastructure-only
 truncation; summarize-only chunk execution; bounded final synthesis; and denial
 of rewrite-style chunk execution. All fixtures are offline and deterministic.
 
+The 0.3.2 provider-setup contract proves that browser-visible metadata contains
+the built-in and compatible providers, exact expected environment-variable
+names, enablement, configured defaults, safe HTTPS instance metadata, declared
+capabilities, and separate credential/validation state without credential
+values. It covers missing, configured, malformed, disabled, authentication-
+failed, discovery-failed, and configured-model-unavailable paths; configured
+models survive temporary discovery failure. It also rejects secret-value
+blueprint fields and verifies the DDEV/package ignore boundary.
+
 Run the isolated Admin2 browser-component contract on the host:
 
 ```bash
@@ -268,7 +278,10 @@ status/error roles, accessible labels, visible focus rules, replacement and
 discard requests, safe proposal retention, inherited theme variables, and
 responsive layout rules.
 The 0.3.0 assertions add budget-blocked rendering and concise normalized usage,
-estimated/unknown cost, request/retry, and cache-hit indicators.
+estimated/unknown cost, request/retry, and cache-hit indicators. The 0.3.2
+assertions add provider setup cards, exact credential-variable help, the
+ChatGPT/API distinction, official setup links, configured/default model state,
+discovery failure retention, and credential-value leakage denial.
 
 Run the authenticated Admin2 black-box regression against the canonical
 disposable DDEV fixture (or pass project, base URL, and page route arguments):
@@ -281,9 +294,11 @@ The harness copies the current Jarvis source and a test-only deterministic
 provider into the fixture, creates a random temporary Admin2 account, drives
 Chrome/Chromium through the actual Admin and page editor, then restores prior
 plugins, account index, notifications, and cache state. It never uses a live
-provider or credential. The eleven signed-in checks cover login, both Jarvis
-surfaces, provider/model selection, validation, missing/unavailable provider,
-typed rate-limit retry, API-token and provider-authority denial, all six action
+provider or credential. The signed-in checks cover login, both Jarvis surfaces,
+provider/model selection, setup/help and exact environment names, explicit
+validation, missing/invalid/unavailable provider state, discovery and
+configured-default model state, typed rate-limit retry, API-token and provider-
+authority denial, all six action
 identifiers, bounded exact whole-buffer context, proposal preview, explicit
 Reject, Accept exactly once, stale/regeneration behavior, unsaved-only reload,
 keyboard/labels, narrow layout, light/dark inheritance, no page mutation

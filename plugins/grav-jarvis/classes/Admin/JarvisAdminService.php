@@ -25,12 +25,15 @@ final class JarvisAdminService
         private readonly BoundedContextBuilder $contexts,
         private readonly ActionPromptLibrary $prompts,
         private readonly TransientProposalStore $proposals,
-        private readonly string $siteScope = 'grav-site'
+        private readonly string $siteScope = 'grav-site',
+        /** @var list<array<string, mixed>> */
+        private readonly array $providerSetups = [],
+        private readonly ?string $defaultProvider = null
     ) {
     }
 
     /** @return array<string, mixed> */
-    public function bootstrap(bool $canApprove): array
+    public function bootstrap(bool $canApprove, bool $canManage = false): array
     {
         $providers = [];
         foreach ($this->jarvis->providerIds() as $providerId) {
@@ -42,11 +45,17 @@ final class JarvisAdminService
             $providers[] = [
                 'id' => $providerId,
                 'capabilities' => $capabilities,
+                'default_model' => $this->setup($providerId)['default_model'] ?? null,
+                'preferred' => $providerId === $this->defaultProvider,
             ];
         }
         return [
             'available' => true,
             'providers' => $providers,
+            'provider_setups' => $this->providerSetups,
+            'default_provider' => $this->defaultProvider,
+            'can_manage' => $canManage,
+            'settings_path' => '/plugins/grav-jarvis',
             'actions' => $this->prompts->actions(),
             'prompt_version' => ActionPromptLibrary::VERSION,
             'can_approve' => $canApprove,
@@ -79,6 +88,7 @@ final class JarvisAdminService
                 'provider_id' => $providerId,
                 'usable' => $result->usable,
                 'state' => $this->validationState($result->usable, $issues),
+                'credential_status' => $this->credentialStatus($providerId, $issues, $result->usable),
                 'issues' => $issues,
                 'capabilities' => $result->capabilities,
             ];
@@ -90,11 +100,14 @@ final class JarvisAdminService
     /** @return array<string, mixed> */
     public function models(string $providerId): array
     {
+        $defaultModel = $this->setup($providerId)['default_model'] ?? null;
         if (!$this->jarvis instanceof ProviderIntrospectionServiceInterface) {
             return [
                 'provider_id' => $providerId,
                 'discovery_supported' => false,
                 'models' => [],
+                'configured_default_model' => $defaultModel,
+                'configured_default_available' => null,
                 'message' => 'This provider uses its configured default model.',
             ];
         }
@@ -104,19 +117,38 @@ final class JarvisAdminService
                     'provider_id' => $providerId,
                     'discovery_supported' => false,
                     'models' => [],
+                    'configured_default_model' => $defaultModel,
+                    'configured_default_available' => null,
                     'message' => 'This provider uses its configured default model.',
                 ];
             }
+            $catalog = $this->jarvis->discoverModels($providerId)->toArray();
+            $availableIds = array_map(
+                static fn (array $model): string => (string) ($model['id'] ?? ''),
+                array_filter(
+                    $catalog['models'],
+                    static fn (mixed $model): bool => is_array($model) && ($model['available'] ?? true) === true
+                )
+            );
+            $defaultAvailable = is_string($defaultModel) && $defaultModel !== ''
+                ? in_array($defaultModel, $availableIds, true)
+                : null;
             return [
-                ...$this->jarvis->discoverModels($providerId)->toArray(),
+                ...$catalog,
                 'discovery_supported' => true,
-                'message' => '',
+                'configured_default_model' => $defaultModel,
+                'configured_default_available' => $defaultAvailable,
+                'message' => $defaultAvailable === false
+                    ? 'The configured default model was not returned by discovery. Jarvis will not replace it automatically.'
+                    : '',
             ];
         } catch (Throwable) {
             return [
                 'provider_id' => $providerId,
                 'discovery_supported' => true,
                 'models' => [],
+                'configured_default_model' => $defaultModel,
+                'configured_default_available' => null,
                 'message' => 'Models could not be loaded. The configured provider default remains available.',
             ];
         }
@@ -302,7 +334,7 @@ final class JarvisAdminService
             return 'usable';
         }
         $code = (string) ($issues[0]['code'] ?? '');
-        if (in_array($code, ['credential_missing', 'credential_invalid', 'configuration_invalid'], true)) {
+        if (in_array($code, ['credential_missing', 'credential_invalid', 'authentication_failed', 'configuration_invalid'], true)) {
             return 'misconfigured';
         }
         return (bool) ($issues[0]['retryable'] ?? false) ? 'retryable' : 'unavailable';
@@ -315,6 +347,7 @@ final class JarvisAdminService
             'provider_id' => $providerId,
             'usable' => false,
             'state' => $retryable ? 'retryable' : 'unavailable',
+            'credential_status' => $this->setup($providerId)['credential_status'] ?? 'unknown',
             'issues' => [[
                 'code' => $code,
                 'message' => $this->issueMessage($code),
@@ -332,12 +365,37 @@ final class JarvisAdminService
             'credential_invalid' => 'The provider credential in the server environment is malformed.',
             'authentication_failed' => 'The provider rejected the configured credential.',
             'configuration_invalid' => 'This provider configuration needs attention.',
-            'rate_limited' => 'The provider is temporarily rate limited. Try again shortly.',
+            'rate_limited' => 'The provider is rate limited or has no available project quota. Check API usage and billing, then retry.',
             'transport_unavailable' => 'The provider cannot be reached right now.',
             'response_invalid' => 'The provider returned an unsupported response.',
             'remote_validation_limited' => 'Remote validation is unavailable; the configured default model can still be used.',
             'validation_unavailable' => 'This provider does not support validation.',
             default => 'The provider is unavailable right now.',
+        };
+    }
+
+    /** @return array<string, mixed> */
+    private function setup(string $providerId): array
+    {
+        foreach ($this->providerSetups as $setup) {
+            if (($setup['id'] ?? null) === $providerId) {
+                return $setup;
+            }
+        }
+        return [];
+    }
+
+    /** @param list<array<string, mixed>> $issues */
+    private function credentialStatus(string $providerId, array $issues, bool $usable): string
+    {
+        if ($usable) {
+            return 'configured';
+        }
+        $code = (string) ($issues[0]['code'] ?? '');
+        return match ($code) {
+            'credential_missing' => 'missing',
+            'credential_invalid', 'authentication_failed' => 'invalid',
+            default => (string) ($this->setup($providerId)['credential_status'] ?? 'unknown'),
         };
     }
 }

@@ -102,6 +102,37 @@ assert.match(page.shadowRoot.innerHTML, /Text Completion/);
 assert.match(page.shadowRoot.innerHTML, /Configured default remains available/);
 console.log('PASS: provider-neutral assistant completion and graceful absence');
 
+page.state.bootstrap = {
+  can_manage: true,
+  settings_path: '/plugins/grav-jarvis',
+  providers: [{ id: 'openai', capabilities: ['model-discovery', 'text-completion'] }],
+  provider_setups: [{
+    id: 'openai', label: 'OpenAI', kind: 'official', enabled: true, registered: true,
+    credential_environment_variable: 'GRAV_JARVIS_OPENAI_API_KEY', credential_status: 'missing',
+    default_model: 'configured-model', official_setup_url: 'https://platform.openai.com/api-keys',
+    guidance: 'A ChatGPT login or subscription is not an API credential.', capabilities: ['model-discovery'],
+    configuration_status: 'valid',
+  }],
+};
+page.state.provider = 'openai'; page.state.validation = { usable: false, state: 'misconfigured', credential_status: 'missing', issues: [{ message: 'Credential missing.' }] };
+page.state.validations = { openai: page.state.validation }; page.state.defaultModel = 'configured-model';
+page.render();
+assert.match(page.shadowRoot.innerHTML, /GRAV_JARVIS_OPENAI_API_KEY/);
+assert.match(page.shadowRoot.innerHTML, /ChatGPT login or subscription is not an API credential/);
+assert.match(page.shadowRoot.innerHTML, /Official key setup|Open official key setup/);
+assert.match(page.shadowRoot.innerHTML, /Validate \/ Test connection/);
+assert.doesNotMatch(page.shadowRoot.innerHTML, /sk-provider-secret/);
+
+page.state.model = 'operator-selected-model';
+page.api = async path => path.endsWith('/validate')
+  ? { usable: true, state: 'usable', credential_status: 'configured', issues: [] }
+  : { models: [], configured_default_model: 'configured-model', configured_default_available: null, message: 'Models could not be loaded. The configured provider default remains available.' };
+await page.refreshProvider();
+assert.equal(page.state.model, 'operator-selected-model');
+assert.equal(page.state.defaultModel, 'configured-model');
+assert.match(page.state.modelMessage, /default remains available/);
+console.log('PASS: setup help, expected environment name, and graceful model-discovery failure');
+
 const panelHarness = load(panelSource, 'panel');
 assert.ok(panelHarness.Class, 'Jarvis panel component was not registered');
 const panel = new panelHarness.Class();
@@ -159,6 +190,10 @@ assert.match(pageSource, /cost unknown/);
 assert.match(panelSource, /Usage and cost/);
 assert.match(panelSource, /retry_count/);
 assert.match(panelSource, /bounded summarization/);
+assert.match(panelSource, /credential_environment_variable/);
+assert.match(panelSource, /Official key setup/);
+assert.match(pageSource, /provider-cards/);
+assert.match(pageSource, /@media\(max-width:700px\)/);
 console.log('PASS: accessible six-action review UI, fail-closed acceptance, discard, and selection deferral');
 
-console.log('Jarvis Admin2 UI contract passed (8 checks).');
+console.log('Jarvis Admin2 UI contract passed (9 checks).');

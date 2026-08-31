@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.0 runtime; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.2 provider-setup/operator release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
 | 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.1.1 isolated engine proof implemented; 0.2.0 Admin2 field next |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -97,14 +97,25 @@ The version sequence is:
    Markdown chunking. Commander remains usable through absent/disabled/
    misconfigured/provider/capability/budget failures. No Jarvis 0.3.1 ZIP was
    manufactured because no Jarvis source or public contract changed.
-10. **Commander 0.3.13 — ordinary Save concurrency hardening (recommended
+10. **0.3.2 — provider setup and operator experience (implemented):** Admin2
+    exposes provider enablement, exact credential-environment names, separate
+    credential and validation states, official setup guidance, configured
+    defaults, live-discovered models, and safe normalized failures. Validated
+    non-secret defaults, compatible-instance profiles, selected reliability/
+    cache/budget/chunking controls, and pricing metadata use ordinary Grav
+    configuration; credential values remain server environment only. The
+    traveling manual now covers OpenAI API-project keys versus ChatGPT
+    subscriptions, Anthropic, exact local DDEV and production PHP workflows,
+    rotation, model choice, validation, and troubleshooting. No frozen public
+    contract or provider wire boundary changed.
+11. **Commander 0.3.13 — ordinary Save concurrency hardening (recommended
     next):** add an expected version/content token to the existing file-write
     boundary so all saves, not only Jarvis proposal Apply, reject an externally
     changed source before overwrite.
-11. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
+12. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-12. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+13. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

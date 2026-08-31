@@ -2,6 +2,7 @@ enabled: true
 admin:
   show_sidebar: true
   show_page_panel: true
+  default_provider: openai
 providers:
   openai:
     enabled: true

@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.3.2 — 2026-08-30
+
+- Added a browser-safe Admin2 provider setup catalog covering enabled/disabled
+  state, exact credential environment-variable names, local credential status,
+  configured defaults, compatible-instance metadata, and declared capabilities
+  without returning or retaining credential values.
+- Added coherent OpenAI/Anthropic setup cards, current official key links, the
+  ChatGPT-subscription versus API-platform distinction, explicit server-side
+  Validate / Test Connection actions, and normalized credential/validation
+  failure presentation.
+- Made preferred provider, built-in/compatible provider defaults, compatible
+  instance metadata, selected reliability controls, chunk bounds, budgets, and
+  optional versioned pricing metadata manageable through the normal Admin2
+  plugin blueprint. No secret field was added.
+- Preserved configured/current model choices through discovery failure, showed
+  the configured default distinctly, and flagged a default missing from live
+  discovery without silently replacing it.
+- Rewrote the traveling operator guide with OpenAI project/key permissions,
+  API-versus-ChatGPT billing, Anthropic, production, exact canonical DDEV local
+  secret workflow, rotation/removal, validation, model selection,
+  troubleshooting, and the decision not to treat masked plaintext YAML as a
+  secure secret store.
+- Expanded deterministic backend/component and signed-in Admin2 coverage for
+  missing/configured/invalid credentials, setup help, validation, discovery,
+  default changes, graceful discovery failure, responsive/theme/accessibility,
+  no credential leakage, and package exclusion of local secret files.
+- Preserved every frozen 0.1.x public interface, fixed endpoint and SSRF policy,
+  permission/CSRF boundary, and unsaved-buffer-only proposal acceptance.
+
 ## 0.3.0 — 2026-08-30
 
 - Added additive provider-neutral reliability contracts and a service decorator

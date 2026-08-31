@@ -50,6 +50,11 @@ final class BrowserFixtureProvider implements ProviderInterface, ProviderValidat
                 new ValidationIssue('transport_unavailable', 'Fixture provider is intentionally unavailable.', ValidationIssue::ERROR, true),
             ], $this->capabilities());
         }
+        if ($this->mode === 'auth') {
+            return new ProviderValidationResult($this->providerId, false, [
+                new ValidationIssue('authentication_failed', 'Fixture credential is intentionally rejected.'),
+            ], $this->capabilities());
+        }
         return new ProviderValidationResult($this->providerId, true, [], $this->capabilities());
     }
 

@@ -13,9 +13,16 @@ contract_files=(
     "$contract_dir/anthropic-provider.php"
     "$contract_dir/admin-backend.php"
     "$contract_dir/admin-hardening.php"
+    "$contract_dir/provider-setup.php"
     "$contract_dir/reliability.php"
     "$contract_dir/chunking.php"
 )
+
+rg -q -- "--exclude='.ddev'" "$repo_root/scripts/package-extension.sh"
+rg -q -- "-name '.env.\*'" "$repo_root/scripts/package-extension.sh"
+rg -q '^\.ddev/$' "$repo_root/.gitignore"
+rg -q '^\.env\.\*$' "$repo_root/.gitignore"
+echo "PASS: repository and package guards exclude local Jarvis secret files"
 
 if command -v php >/dev/null 2>&1; then
     while IFS= read -r -d '' php_file; do

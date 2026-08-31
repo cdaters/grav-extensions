@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.3.0
-description: Reliable, cost-aware Jarvis assistance and review-first page editing for Grav 2 Admin2.
+version: 0.3.2
+description: Provider setup, reliable AI assistance, and review-first page editing for Grav 2 Admin2.
 icon: microchip
 author:
   name: Craig Daters
@@ -31,8 +31,8 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.3 reliable Admin2 assistant
-      text: Jarvis adds bounded retries, optional private response caching, usage and estimated-cost reporting, opt-in budgets, and safe Markdown chunking. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer. Provider credentials remain server-environment-only.
+      title: Jarvis 0.3.2 provider setup and assistant
+      text: Jarvis shows provider, credential, validation, and model status on its Admin2 page. Credentials remain server-environment-only and are never saved here. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer.
       underline: true
 
     admin.show_sidebar:
@@ -52,10 +52,30 @@ form:
       options: { 1: Enabled, 0: Disabled }
       validate: { type: bool }
 
+    admin.default_provider:
+      type: text
+      label: Preferred provider ID
+      help: Provider selected initially in the Jarvis assistant and page panel. Use openai, anthropic, or the stable ID of an enabled compatible/extension provider. Jarvis falls back safely if the ID is unavailable.
+      default: openai
+      validate:
+        required: true
+        pattern: '^[a-z0-9][a-z0-9._-]{0,127}$'
+
+    providers_section:
+      type: section
+      title: Provider setup
+      text: Open the Jarvis sidebar page to see credential and validation status, discover models, and run <strong>Validate / Test connection</strong>. Configure only non-secret defaults here. Never paste API keys into plugin YAML or Admin fields.
+      underline: true
+
+    openai_setup:
+      type: section
+      title: OpenAI
+      text: Jarvis needs an <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">OpenAI API-platform project key</a> in <code>GRAV_JARVIS_OPENAI_API_KEY</code>. ChatGPT Plus, Pro, Business, or other ChatGPT subscriptions do not supply API credit or an API key; API billing is separate. Jarvis never uses ChatGPT cookies, OAuth state, browser storage, or session credentials.
+
     providers.openai.enabled:
       type: toggle
       label: OpenAI provider
-      help: Registers the official OpenAI provider. A request still requires GRAV_JARVIS_OPENAI_API_KEY in the server process environment.
+      help: Registers the fixed official OpenAI API adapter. A request still requires GRAV_JARVIS_OPENAI_API_KEY in the PHP server environment.
       highlight: 1
       default: 1
       options: { 1: Enabled, 0: Disabled }
@@ -64,11 +84,16 @@ form:
     providers.openai.default_model:
       type: text
       label: OpenAI default model
-      help: Non-secret model identifier used when a provider-neutral request does not select a model. API credentials cannot be configured here.
+      help: Non-secret model identifier used when a request does not select a model. Validate OpenAI on the Jarvis page to discover current models; Jarvis never replaces this value silently.
       default: gpt-5.6-luna
       validate:
         required: true
         type: text
+
+    anthropic_setup:
+      type: section
+      title: Anthropic
+      text: Create an API key in the <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Claude Console</a>, then configure <code>GRAV_JARVIS_ANTHROPIC_API_KEY</code> in the PHP server environment. Jarvis does not store the key in Grav configuration.
 
     providers.anthropic.enabled:
       type: toggle
@@ -82,11 +107,70 @@ form:
     providers.anthropic.default_model:
       type: text
       label: Anthropic default model
-      help: Non-secret model identifier used when a provider-neutral request does not select a model. API credentials cannot be configured here.
+      help: Non-secret model identifier used when a request does not select a model. Validate Anthropic on the Jarvis page to discover current models; Jarvis never replaces this value silently.
       default: claude-sonnet-5
       validate:
         required: true
         type: text
+
+    compatible_setup:
+      type: section
+      title: OpenAI-compatible instances
+      text: Optional instances must implement Jarvis's documented Responses-compatible subset. Only public HTTPS base URIs and environment-variable <em>names</em> are stored. Endpoints remain immutable per instance, and private/loopback destinations remain blocked.
+
+    providers.openai_compatible.enabled:
+      type: toggle
+      label: Register compatible instances
+      highlight: 0
+      default: 0
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }
+
+    providers.openai_compatible.instances:
+      type: list
+      label: Compatible provider instances
+      help: Each instance declares only text completion, provider validation, and optional model discovery. Credential values must exist only in the named server environment variable.
+      style: vertical
+      collapsed: true
+      btnLabel: Add compatible instance
+      fields:
+        .id:
+          type: text
+          label: Instance ID
+          help: Stable lowercase provider ID. The credential variable must use the matching GRAV_JARVIS_<ID>_ namespace.
+          validate:
+            required: true
+            pattern: '^[a-z0-9][a-z0-9._-]{0,127}$'
+        .base_uri:
+          type: text
+          label: HTTPS API base URI
+          help: Public HTTPS origin or base path without credentials, query, fragment, or trailing slash. The server revalidates the destination and pins DNS.
+          placeholder: https://gateway.example/v1
+          validate:
+            required: true
+            pattern: '^https://[^/?#\\s]+(?:/[^?#\\s]*)?[^/?#\\s]$'
+        .credential_environment_variable:
+          type: text
+          label: Credential environment-variable name
+          help: "The name only; never enter the secret value. Example for ID compatible-gateway: GRAV_JARVIS_COMPATIBLE_GATEWAY_API_KEY."
+          placeholder: GRAV_JARVIS_COMPATIBLE_GATEWAY_API_KEY
+          validate:
+            required: true
+            pattern: '^GRAV_JARVIS_[A-Z][A-Z0-9_]{2,120}$'
+        .default_model:
+          type: text
+          label: Default model
+          validate:
+            required: true
+            type: text
+        .model_discovery:
+          type: toggle
+          label: Model discovery available
+          help: Enable only when GET /models implements the documented compatible profile. When disabled, validation checks only local configuration and credential presence.
+          highlight: 1
+          default: 1
+          options: { 1: Enabled, 0: Disabled }
+          validate: { type: bool }
 
     reliability_section:
       type: section
@@ -104,9 +188,17 @@ form:
 
     reliability.retry.max_attempts:
       type: number
-      label: Maximum attempts
+      label: Maximum provider attempts per request
+      help: Includes the first request. Only normalized transient failures retry; authentication and configuration failures never do.
       default: 3
       validate: { min: 1, max: 8 }
+
+    reliability.retry.max_elapsed_ms:
+      type: number
+      label: Maximum retry time (milliseconds)
+      help: Total elapsed retry window for one request. The default is 5 seconds.
+      default: 5000
+      validate: { min: 1, max: 60000 }
 
     reliability.cache.enabled:
       type: toggle
@@ -119,7 +211,7 @@ form:
 
     reliability.cache.ttl_seconds:
       type: number
-      label: Cache lifetime in seconds
+      label: Cache lifetime (seconds)
       default: 300
       validate: { min: 1, max: 86400 }
 
@@ -145,7 +237,7 @@ form:
 
     reliability.budgets.max_input_bytes:
       type: number
-      label: Maximum input bytes per request
+      label: Maximum input (bytes per request)
       validate: { min: 1, max: 16777216 }
 
     reliability.budgets.max_estimated_output_units:
@@ -156,13 +248,13 @@ form:
 
     reliability.budgets.max_estimated_cost_per_request:
       type: text
-      label: Maximum estimated cost per request
+      label: Maximum estimated cost per request (pricing currency)
       help: Non-negative decimal amount in the configured pricing currency. Unknown pricing is reported, not falsely enforced.
       validate: { type: text }
 
     reliability.budgets.max_estimated_cost_per_operation:
       type: text
-      label: Maximum estimated cost per operation
+      label: Maximum estimated cost per operation (pricing currency)
       help: Cumulative non-negative decimal bound for retries and chunk synthesis within one in-memory logical operation.
       validate: { type: text }
 
@@ -173,7 +265,7 @@ form:
 
     reliability.chunking.max_chunk_bytes:
       type: number
-      label: Maximum Markdown chunk bytes
+      label: Maximum Markdown chunk (bytes)
       default: 12288
       validate: { min: 1024, max: 65536 }
 
@@ -182,3 +274,96 @@ form:
       label: Maximum chunks
       default: 16
       validate: { min: 1, max: 64 }
+
+    reliability.chunking.max_total_bytes:
+      type: number
+      label: Maximum source considered for chunking (bytes)
+      help: Larger input fails clearly; Jarvis does not silently truncate normal large-context operations.
+      default: 196608
+      validate: { min: 1024, max: 2097152 }
+
+    reliability.chunking.max_synthesis_bytes:
+      type: number
+      label: Maximum summary synthesis input (bytes)
+      default: 49152
+      validate: { min: 1024, max: 1048576 }
+
+    pricing_section:
+      type: section
+      title: Optional pricing metadata
+      text: Pricing is operator-maintained metadata used only for estimates and budgets. Jarvis never fetches prices and never labels an estimate as the provider's bill. Update the version/date whenever rates change; leave the model list empty when you prefer unknown cost.
+      underline: true
+
+    pricing.version:
+      type: text
+      label: Pricing catalog version
+      help: Your own bounded identifier, for example operator-2026-08. Use unconfigured when no pricing is maintained.
+      default: unconfigured
+      validate:
+        required: true
+        type: text
+
+    pricing.as_of:
+      type: date
+      label: Pricing effective date
+      help: Optional YYYY-MM-DD date for the operator-supplied rates.
+
+    pricing.currency:
+      type: text
+      label: Currency code
+      help: Three-letter uppercase ISO-style code used for estimates, for example USD.
+      default: USD
+      validate:
+        required: true
+        pattern: '^[A-Z]{3}$'
+
+    pricing.models:
+      type: list
+      label: Model pricing entries
+      help: Decimal amount per million provider-reported units. Provider/model pairs must be unique.
+      style: vertical
+      collapsed: true
+      btnLabel: Add model pricing
+      fields:
+        .provider:
+          type: text
+          label: Provider ID
+          validate:
+            required: true
+            pattern: '^[a-z0-9][a-z0-9._-]{0,127}$'
+        .model:
+          type: text
+          label: Model ID
+          validate:
+            required: true
+            type: text
+        .unit:
+          type: text
+          label: Usage unit
+          help: Usually tokens; must match the provider-reported unit.
+          default: tokens
+          validate:
+            required: true
+            pattern: '^[a-z0-9][a-z0-9._-]{0,127}$'
+        .input_per_million:
+          type: text
+          label: Input cost per million units
+          validate:
+            required: true
+            pattern: '^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,9})?$'
+        .output_per_million:
+          type: text
+          label: Output cost per million units
+          validate:
+            required: true
+            pattern: '^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,9})?$'
+        .cache_read_per_million:
+          type: text
+          label: Cache-read cost per million units (optional)
+          validate:
+            pattern: '^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,9})?$'
+        .cache_write_per_million:
+          type: text
+          label: Cache-write cost per million units (optional)
+          validate:
+            pattern: '^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,9})?$'
