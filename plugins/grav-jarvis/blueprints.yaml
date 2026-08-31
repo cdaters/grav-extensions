@@ -1,8 +1,8 @@
 name: Jarvis
 slug: grav-jarvis
 type: plugin
-version: 0.3.2
-description: Provider setup, reliable AI assistance, and review-first page editing for Grav 2 Admin2.
+version: 0.3.3
+description: Secure provider setup, reliable AI assistance, and review-first page editing for Grav 2 Admin2.
 icon: microchip
 author:
   name: Craig Daters
@@ -31,8 +31,8 @@ form:
 
     foundation:
       type: section
-      title: Jarvis 0.3.2 provider setup and assistant
-      text: Jarvis shows provider, credential, validation, and model status on its Admin2 page. Credentials remain server-environment-only and are never saved here. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer.
+      title: Jarvis 0.3.3 secure provider setup and assistant
+      text: Open the Jarvis Admin2 page to save first-party API keys in its dedicated encrypted local store or keep using environment variables. Credentials are never stored in this ordinary plugin configuration. Proposals never save or publish a page; Accept updates only the current unsaved editor buffer.
       underline: true
 
     admin.show_sidebar:
@@ -64,7 +64,7 @@ form:
     providers_section:
       type: section
       title: Provider setup
-      text: Open the Jarvis sidebar page to see credential and validation status, discover models, and run <strong>Validate / Test connection</strong>. Configure only non-secret defaults here. Never paste API keys into plugin YAML or Admin fields.
+      text: Open the Jarvis sidebar page to see credential source and validation status, use encrypted <strong>Save &amp; Validate</strong> for OpenAI/Anthropic, discover models, and review host readiness. Configure only non-secret defaults on this settings screen; never paste API keys into ordinary plugin fields or YAML.
       underline: true
 
     openai_setup:
@@ -75,7 +75,7 @@ form:
     providers.openai.enabled:
       type: toggle
       label: OpenAI provider
-      help: Registers the fixed official OpenAI API adapter. A request still requires GRAV_JARVIS_OPENAI_API_KEY in the PHP server environment.
+      help: Registers the fixed official OpenAI API adapter. Use encrypted key entry on the Jarvis page or GRAV_JARVIS_OPENAI_API_KEY in the PHP server environment; the environment value takes precedence.
       highlight: 1
       default: 1
       options: { 1: Enabled, 0: Disabled }
@@ -93,12 +93,12 @@ form:
     anthropic_setup:
       type: section
       title: Anthropic
-      text: Create an API key in the <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Claude Console</a>, then configure <code>GRAV_JARVIS_ANTHROPIC_API_KEY</code> in the PHP server environment. Jarvis does not store the key in Grav configuration.
+      text: Create an API key in the <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Claude Console</a>, then save it from the Jarvis page or configure <code>GRAV_JARVIS_ANTHROPIC_API_KEY</code> in the PHP server environment. Jarvis never stores the key in ordinary Grav configuration.
 
     providers.anthropic.enabled:
       type: toggle
       label: Anthropic provider
-      help: Registers the official Anthropic provider. A request still requires GRAV_JARVIS_ANTHROPIC_API_KEY in the server process environment.
+      help: Registers the official Anthropic provider. Use encrypted key entry on the Jarvis page or GRAV_JARVIS_ANTHROPIC_API_KEY in the server environment; the environment value takes precedence.
       highlight: 1
       default: 1
       options: { 1: Enabled, 0: Disabled }

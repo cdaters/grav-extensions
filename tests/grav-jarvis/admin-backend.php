@@ -190,12 +190,13 @@ namespace GravJarvisAdminContract {
     foreach (['grav-jarvis.access', 'grav-jarvis.use', 'grav-jarvis.approve', 'authorizePageAction'] as $required) {
         expect(str_contains($controller, $required), "Controller enforcement missing: {$required}");
     }
-    foreach (['->save(', '->publish(', 'file_put_contents('] as $forbidden) {
+    foreach (['$page->save(', '$page->publish(', 'file_put_contents('] as $forbidden) {
         expect(!str_contains($controller, $forbidden), "Controller contains forbidden mutation primitive: {$forbidden}");
     }
     $pluginYaml = (string) file_get_contents($pluginDirectory . '/grav-jarvis.yaml');
     expect(!preg_match('/api[_-]?key|secret|password|credential/i', $pluginYaml), 'Persisted plugin YAML contains credential fields.');
-    echo "PASS: permission gates, no page persistence, and environment-only secret boundary\n";
+    expect(str_contains($controller, "'grav-jarvis.manage'"), 'Credential-management permission gate is missing.');
+    echo "PASS: permission gates, no page persistence, and write-only credential boundary\n";
 
     foreach (glob($temp . '/*') ?: [] as $file) {
         if (is_file($file)) @unlink($file);

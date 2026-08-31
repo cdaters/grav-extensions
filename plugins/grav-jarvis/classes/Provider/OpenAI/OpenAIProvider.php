@@ -58,11 +58,14 @@ final class OpenAIProvider implements
         $this->redactor = SecretRedactor::fromEnvironment();
     }
 
-    public static function createProduction(string $defaultModel = self::DEFAULT_MODEL): self
+    public static function createProduction(
+        string $defaultModel = self::DEFAULT_MODEL,
+        ?CredentialResolverInterface $credentials = null
+    ): self
     {
         return new self(
             $defaultModel,
-            new EnvironmentCredentialResolver(self::ID),
+            $credentials ?? new EnvironmentCredentialResolver(self::ID),
             BoundedHttpTransport::forAllowedBaseUris([self::API_BASE_URI])
         );
     }

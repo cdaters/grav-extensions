@@ -1098,3 +1098,99 @@ suite inventory incremental and risk ordered.
   Source-permission, read-only, and keyboard regressions. Media/table editing,
   Jarvis, collaboration, jobs, batch, MCP, autosave, and alternate writes remain
   deferred.
+
+## 2026-08-31 — Jarvis 0.3.3 encrypted credential usability and host readiness
+
+- Resumed from canonical Jarvis 0.3.2 and audited the complete plugin, frozen
+  contracts, Admin2 page/panel, provider adapters, setup catalog, blueprint,
+  reliability/cache/budget/pricing controls, README, DDEV fixture, tests, and
+  roadmap before changing behavior. Also inspected Site Safeguard's capability
+  groups/graceful downgrade and Grav Commander's permission-filtered header
+  Settings navigation. No runtime dependency on either was introduced.
+- Confirmed 0.3.2's strengths: environment-only lazy credentials, fixed official
+  endpoints, compatible-provider public-HTTPS/SSRF policy, normalized non-
+  generating validation/model discovery, configured-model retention, safe
+  failures, and useful non-secret settings. The verified gaps were no safe
+  beginner key-entry path, no host-readiness explanation, and a settings link
+  below rather than in the page header.
+- Preserved every frozen 0.1.x contract. Added an internal first-party composite
+  resolver with exact priority: direct provider environment variable, encrypted
+  local provider record, then missing. A malformed environment credential fails
+  closed; removing a valid environment override reveals a retained local record.
+  OpenAI-compatible and extension-owned providers retain their existing
+  credential ownership and immutable endpoint rules.
+- Added a dedicated versioned store at
+  `user/data/grav-jarvis/credentials`. Records contain provider/backend/key-
+  source/AAD-version metadata, random nonce/IV, authenticated ciphertext and,
+  for GCM, its tag—never plaintext. Native Sodium XChaCha20-Poly1305 is preferred;
+  OpenSSL AES-256-GCM is the authenticated fallback. No-AEAD hosts remain fully
+  environment-capable with Admin key entry disabled. The optional protected
+  plaintext compatibility fallback was rejected as an unjustified security and
+  maintenance tradeoff.
+- Added exclusive/race-safe first-use creation of a separate random 32-byte
+  local master key, atomic same-directory credential writes, `0700` directory/
+  `0600` file hardening, exact provider path validation, and symlink refusal.
+  Advanced operators may set `GRAV_JARVIS_MASTER_KEY=base64:<32 random bytes>`;
+  arbitrary passwords, weak derivation, padding, and truncation are rejected.
+  Records name their local/external source so adding an external key does not
+  invalidate older local records, and unavailable backends/keys never trigger
+  downgrade or regeneration.
+- Added write-only OpenAI/Anthropic Admin2 key entry, Save & Validate, Replace,
+  Remove, safe effective-source/backend and environment-override state, and
+  storage-success-versus-remote-validation messaging. Empty input is a no-op,
+  not deletion. The only browser occurrence of a secret is the initial
+  authenticated request; it is immediately cleared and never returned in
+  bootstrap, validation, models, errors, component state, ordinary config, or
+  later traffic.
+- Added a top-right accessible **Settings** shortcut using the existing Admin2
+  base-path convention and separate plugin-config authority, plus a concise
+  readiness disclosure with Required, Required for Admin keys, Recommended,
+  Fallback, and Optional/Advanced states for PHP, cURL/HTTPS, Sodium,
+  OpenSSL-GCM, protected data/master-key storage, environment variables, and
+  external-key validity. Narrow layout, inherited light/dark variables,
+  keyboard focus, and graceful environment-only downgrade are covered.
+- Rewrote the traveling README around the beginner workflow and retained exact
+  advanced setup. OpenAI guidance uses the official API platform/projects/keys,
+  billing-separation, and key-permissions documentation and records the actual
+  adapter needs: Models read for `GET /v1/models` and Responses write for
+  `POST /v1/responses`. ChatGPT subscriptions/cookies/session/OAuth/browser
+  state are never credentials. Anthropic guidance uses the current official
+  authentication/key documentation and records `GET /v1/models` plus
+  `POST /v1/messages` only.
+- Verified the exact advanced DDEV workflow remains an ignored
+  `.ddev/config.local.yaml` containing
+  `web_environment: [GRAV_JARVIS_OPENAI_API_KEY=sk-REPLACE-ME]`, followed by
+  `ddev restart` and a presence-only `ddev exec` check. Production can inject
+  the same direct provider variables—or the strict external Jarvis master key—
+  through a secret manager, service/container environment, or protected
+  PHP-FPM pool. Environment values retain precedence.
+- The deterministic DDEV PHP suite passes 75 checks, including six new grouped
+  credential/readiness checks for both encryption backends, save/decrypt/
+  replace/remove, tamper/tag failure, wrong/missing/corrupt key, malformed/
+  unknown versions, external/local mode, resolution priority/reveal, no-AEAD,
+  unwritable path, and symlink denial. Every Jarvis PHP file passes DDEV PHP
+  8.3.31 syntax. The isolated Node Admin2 contract, YAML/JavaScript/shell syntax,
+  repository preflight, whitespace, and package guards pass.
+- The signed-in Chrome DDEV regression passes eleven grouped checks including
+  real Settings navigation/readiness rendering, submission-only key handling,
+  anonymous credential-write 401, provider/model/failure states, both Admin2
+  surfaces, all six proposal actions, replay/stale behavior, responsive/theme/
+  keyboard accessibility, no page save/publish, and clean console/page/log
+  state. Provider success is deterministically intercepted in the browser; no
+  normal test makes a live provider request.
+- Added `scripts/test-grav-jarvis-package.sh`. It passes an exact packaged
+  0.3.2-to-0.3.3 upgrade with site-config preservation, upgraded public HTTP
+  200/anonymous Jarvis 401, fresh 0.3.3 install, and archive denial of DDEV,
+  environment, user-data, and master-key files, then restores the fixture.
+- Host and DDEV presence-only checks found no OpenAI or Anthropic credential,
+  so the opt-in bounded live smoke was skipped. No key was requested, created,
+  exposed, provider request made, or charge incurred.
+- Packaged `dist/grav-jarvis-0.3.3.zip`, SHA-256
+  `4d33947e17447cbec447d90eaf0d34e9106e678c196d44a03cd055c1cada0451`.
+  All prior Jarvis packages remain intact. Jarvis changes are isolated from the
+  concurrently dirty Caxton, Site Workshop/Cache Hearth, and Spitfire work.
+- Known limitation and exact next Jarvis milestone: 0.3.3 migrates a provider
+  explicitly when its key is replaced but does not transactionally rotate all
+  records. Jarvis 0.3.4 should add rollback-safe local-to-external, external-A-
+  to-B, and OpenSSL-to-Sodium whole-store migration/rotation with interruption
+  recovery and no plaintext export. Do not start that milestone automatically.

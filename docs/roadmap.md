@@ -16,7 +16,7 @@ can never be mistaken for an installable Grav package.
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |
 | 10 | Edge Console | Narrow, audited Cloudflare operations using scoped API tokens | Specification queued |
-| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.2 provider-setup/operator release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
+| 11 | Jarvis (`grav-jarvis`) | Shared AI services, Admin2 assistance, safe proposals, and Grav REST/MCP agent composition | 0.3.3 encrypted credential-usability/readiness release; 0.3.1 optional-consumer milestone proven through Grav Commander 0.3.12 |
 | 12 | Caxton (`grav-caxton`; formerly Page Studio) | Source-faithful Grav 2/Admin2 visual and block editing without proprietary storage | 0.2.0 first Admin2 field implemented; 0.2.1 structural-authoring hardening next |
 
 Existing products that are not part of that build sequence remain first-class:
@@ -108,14 +108,26 @@ The version sequence is:
     subscriptions, Anthropic, exact local DDEV and production PHP workflows,
     rotation, model choice, validation, and troubleshooting. No frozen public
     contract or provider wire boundary changed.
-11. **Commander 0.3.13 — ordinary Save concurrency hardening (recommended
+11. **0.3.3 — encrypted credential usability and host readiness
+    (implemented):** write-only OpenAI/Anthropic Save & Validate, environment-
+    first multi-source resolution, versioned user-data ciphertext, Sodium-
+    preferred/OpenSSL-GCM-fallback authenticated encryption, auto-managed or
+    strict external random master keys, safe source/override reporting, a
+    Site-Safeguard-quality readiness panel, and a Commander-style top Settings
+    shortcut. No plaintext fallback, frozen-contract change, endpoint widening,
+    or secret-bearing plugin configuration was added.
+12. **0.3.4 — explicit master-key/backend migration and rotation (recommended
+    next Jarvis milestone):** transactionally re-encrypt all stored records,
+    support rollback-safe local/external master-key rotation, and add recovery
+    export/import metadata without exporting credential plaintext.
+13. **Commander 0.3.13 — ordinary Save concurrency hardening (recommended
     next):** add an expected version/content token to the existing file-write
     boundary so all saves, not only Jarvis proposal Apply, reject an externally
     changed source before overwrite.
-12. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
+14. **0.4.0 — agents and site-wide work:** permission-checked API/MCP
    composition, enumerated batch proposals, resumable jobs, Gemini/OpenRouter
    as justified, and optional suite integrations.
-13. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
+15. **1.0.0 — supported platform:** stable compatibility/deprecation promises,
    migrations, complete black-box/security evidence, and operator guidance.
 
 The canonical feature, security, compatibility, testing, and non-goal detail is

@@ -20,49 +20,65 @@ volumes require their own protected backups.
 
 ## Last completed checkpoint
 
-Jarvis 0.3.2 is complete as the provider-setup and operator-experience release.
-The audited 0.3.0 Admin2 assistant could validate and discover registered
-providers, choose a provider/model for a request, and render safe normalized
-failures, while the provider adapters already enforced environment-only lazy
-credentials, fixed immutable endpoints, bounded HTTPS/SSRF controls, and non-
-generating model-list validation. The setup gap was real but narrower than a
-new credential system: disabled first-party providers disappeared, credential
-presence and remote validation were conflated, exact environment-variable
-names and official setup guidance were absent, configured defaults were not
-distinct from live model discovery, discovery failure lost useful selection
-state, and compatible instances plus reliability/pricing controls were YAML-
-only or insufficiently explained.
+Jarvis 0.3.3 is complete as the encrypted credential-usability and host-
+readiness release. The audited 0.3.2 implementation already had strong provider
+introspection, official setup guidance, environment-only credentials, fixed
+official endpoints, bounded HTTPS/SSRF controls, non-generating validation,
+model discovery/default retention, and useful non-secret Admin2 settings. Its
+real usability gaps were the lack of a safe beginner key-entry path, no host-
+capability explanation, and a Plugin settings link buried below the page header.
 
-Admin2 now shows OpenAI, Anthropic, compatible, and extension-provider setup
-cards with enablement/registration, exact credential-variable name, separate
-Missing/Configured/Invalid credential state, validation status, configured
-default, discovered models/capabilities, official setup links, safe failure
-guidance, and explicit **Validate / Test connection**. Disabled built-ins remain
-visible. Successful discovery flags—but never silently replaces—a configured
-model missing from the catalog; temporary failure retains the configured/current
-selection. Initial page/panel load remains offline. Administrators can persist
-only validated non-secret preferred/default provider/model values, compatible-
-instance profiles, selected retry/cache/budget/context/chunking controls, and
-optional versioned pricing metadata through ordinary Grav plugin settings.
+Admin2 now provides a permission-filtered top-right **Settings** shortcut,
+write-only OpenAI/Anthropic key fields, **Save & Validate**, Replace/Remove,
+effective credential source/backend, environment-override explanation, and a
+concise required/recommended/optional/fallback readiness panel. A key is sent
+only in its initial authenticated write request, immediately cleared from the
+form, and never returned in bootstrap, status, validation, model discovery,
+errors, JavaScript state, ordinary YAML, or later browser traffic. Storage
+success remains distinct from remote rejection so an invalid key can be
+replaced, retried, or removed without silent loss.
 
-Credential values intentionally cannot be configured in Admin2. Grav 2's
-layered environment support is suitable for server injection, but Admin2's
-configuration secret masker only prevents secret-looking YAML values from being
-returned through its API; it does not encrypt ordinary plugin YAML or provide a
-qualifying rotation/key-management backend. Jarvis therefore adds neither a
-plaintext key field nor invented encryption. Production should inject
-`GRAV_JARVIS_OPENAI_API_KEY` or `GRAV_JARVIS_ANTHROPIC_API_KEY` through the
-hosting secret manager, service/container environment, or protected PHP-FPM
-pool, then reload the web process. An untracked, permission-restricted site
-`.env.local` is documented only as a filesystem fallback.
+The frozen credential resolver contract remains unchanged. OpenAI and
+Anthropic now use a private composite resolver with exact priority: direct
+provider environment credential, encrypted local provider credential, then
+missing. A malformed higher-priority environment value fails closed. Compatible
+providers remain environment-only. Non-secret preferred/default provider/model,
+compatible-instance, selected reliability/cache/budget/chunking, and versioned
+pricing controls remain ordinary validated Grav configuration.
 
-The canonical DDEV workflow uses the fixture's already-ignored
-`.ddev/config.local.yaml` with `web_environment`, followed by `ddev restart` and
-a presence-only `ddev exec` check. That makes the same variable visible to web
-PHP and Jarvis CLI/live-smoke execution. Repository/package guards exclude
-`.ddev`, `.env*`, and credential files. No OpenAI or Anthropic key existed in
-the host or DDEV environment at release time, so the opt-in bounded live smoke
-was correctly skipped and no provider call or charge occurred.
+Encrypted records live only under `user/data/grav-jarvis/credentials`, separate
+from plugin YAML and packages. New writes prefer native Sodium XChaCha20-
+Poly1305 and fall back only to OpenSSL AES-256-GCM authenticated encryption.
+Hosts with neither backend remain fully usable with environment credentials;
+Jarvis implements no plaintext compatibility store. Records are versioned and
+bind provider identity, backend, key source, nonce/IV, authenticated metadata,
+and ciphertext. Tampering, malformed/unknown versions, wrong/missing keys,
+unavailable named backends, symlinked paths, and unsafe/unwritable storage fail
+closed without regeneration or downgrade.
+
+First Admin use atomically creates a separate random 32-byte local master key
+with `0700` directory and `0600` file hardening. Advanced operators may instead
+set `GRAV_JARVIS_MASTER_KEY=base64:<exactly-32-random-bytes>`; arbitrary
+passwords, truncation, and padding are rejected. The external key is preferred
+for new records, while existing records retain their explicit local/external
+source. The local-key threat model is honest: compromise of the runtime account
+that exposes both key and ciphertext can recover credentials. It primarily
+protects against normal config export/Git/YAML disclosure and isolated
+ciphertext theft.
+
+Migration is explicit in 0.3.3. Replacing a provider key writes it with the best
+current backend/key source; untouched records retain their named backend and
+source. Environment removal reveals a retained local record. Whole-store,
+rollback-safe master-key rotation is deliberately deferred to Jarvis 0.3.4
+rather than risking partial multi-record re-encryption.
+
+The canonical DDEV advanced workflow remains the fixture's already-ignored
+`.ddev/config.local.yaml` plus `web_environment`, `ddev restart`, and a
+presence-only `ddev exec` check. Production may use hosting secrets,
+service/container environment, or protected PHP-FPM variables. Environment
+credentials retain operational priority. No OpenAI or Anthropic key was present
+for this release, so the opt-in live smoke was skipped and no provider call or
+charge occurred.
 
 ```yaml
 # .ddev/config.local.yaml
@@ -151,7 +167,7 @@ mapping, performance, accessibility, limitation, and Admin2 boundary record
 is `docs/caxton-editor-engine.md`.
 
 Jarvis 0.3.1 remains complete as an optional consuming-plugin milestone through
-Grav Commander 0.3.12; Jarvis 0.3.2 changes only private setup/Admin2,
+Grav Commander 0.3.12; Jarvis 0.3.3 changes only private provider/security/Admin2,
 configuration, documentation, and test surfaces. Commander has no Jarvis package
 dependency and resolves `$grav['gravJarvis']` only after the public contracts
 are available, so all existing Commander behavior survives a missing,
@@ -177,7 +193,7 @@ current unsaved textarea and never invokes a file-write route. Reject, expiry,
 cross-user/file use, source or disk change, and replay fail closed. The normal
 Commander Save action remains the only persistence boundary.
 
-Jarvis 0.3.2 (`grav-jarvis`) retains the 0.3.0 reliability, cost-control, and
+Jarvis 0.3.3 (`grav-jarvis`) retains the 0.3.0 reliability, cost-control, and
 safe large-context infrastructure under Decision 0004 and adds the operator
 setup experience described above.
 The 0.1.0 `JarvisServiceInterface`,
@@ -464,7 +480,7 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   fatal/uncaught log entry. Host PHP remains unavailable, so repository
   preflight truthfully skips host PHP. The disposable fixture was restored to
   Commander 0.3.11 with temporary Jarvis plugins removed.
-- Jarvis's deterministic source suite passes seventy-eight checks: seven
+- Jarvis's deterministic PHP source suite passes seventy-five checks: seven
   frozen 0.1.0 registration/service/failure/redaction checks, twelve 0.1.1
   provider-boundary checks, and nine 0.1.2 bounded-transport/OpenAI checks.
   Those checks cover destination policy/DNS pinning, generic service routing,
@@ -499,16 +515,20 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   extension metadata, exact environment names without values, disabled and
   missing/configured/malformed/authentication-failed states, preferred/default
   providers, unavailable/default models, discovery-failure retention, blueprint
-  secrecy, and DDEV/package guards. Nine Node checks add budget-error, concise
-  usage/cost/retry/cache rendering, setup help, ChatGPT/API distinction,
-  discovered/default-model handling, and leakage denial. The separate signed-in
-  browser gate passes eleven end-to-end checks covering both Admin2 surfaces,
-  setup/validation states, and all six actions through actual interactions.
+  secrecy, and DDEV/package guards. Six 0.3.3 credential/readiness checks add
+  Sodium/OpenSSL save/decrypt/replace/remove, tamper/tag/wrong-key/malformed/
+  version failures, external/local key state, environment precedence/reveal,
+  no-AEAD/unwritable downgrade, and symlink refusal. Nine grouped Node checks
+  add write-only key entry, Settings authority, readiness, storage-success/
+  validation-failure state, and leakage denial. The separate signed-in browser
+  gate passes eleven grouped end-to-end checks covering both Admin2 surfaces,
+  Settings, readiness, submission-only secret handling, setup/validation
+  states, and all six actions through actual interactions.
 - Every Jarvis PHP file passes PHP 8.3 syntax in DDEV. Repository
   structure/YAML/hygiene preflight, whitespace validation, Composer/JSON and
   YAML parsing, Composer validation, JavaScript/shell syntax and component
   contracts, changed-Markdown link validation, source/package credential
-  scans, ZIP integrity, packaged 0.3.0-to-0.3.2 upgrade, fresh 0.3.2 package
+  scans, ZIP integrity, packaged 0.3.2-to-0.3.3 upgrade, fresh 0.3.3 package
   install, Grav cache clearing, cURL availability, public/Admin/Jarvis/page
   HTTP health, anonymous 401, authenticated signed-in Admin2 flows, browser
   console/page errors, and clean relevant log checks pass. Host PHP remains
@@ -516,9 +536,9 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
   supplied lint/runtime evidence. No live credential existed on the host or in
   DDEV, so the explicitly opt-in smoke was skipped and no live request/charge
   occurred.
-- The verified Jarvis package is `dist/grav-jarvis-0.3.2.zip`, SHA-256
-  `f9dd4ad786279682947fa132a507bab7bed360dde82d6f7a2a535e52bb808c06`.
-  Versioned 0.1.0 through 0.3.0 packages and hashes remain intact.
+- The verified Jarvis package is `dist/grav-jarvis-0.3.3.zip`, SHA-256
+  `4d33947e17447cbec447d90eaf0d34e9106e678c196d44a03cd055c1cada0451`.
+  Versioned 0.1.0 through 0.3.2 packages and hashes remain intact.
 - The verified Commander package is `dist/grav-commander-0.3.12.zip`, SHA-256
   `b662269b2fb3749e9ab594c9674e3c8ff9d6531aed458d829aa4ee1bd3011789`.
   The consumer-only 0.3.1 milestone still has no separately manufactured
@@ -572,7 +592,8 @@ rule. `docs/testing.md` contains the risk-ordered coverage inventory.
 
 ## Active milestone
 
-Jarvis 0.3.2 is complete and packaged as the provider-setup/operator checkpoint.
+Jarvis 0.3.3 is complete and packaged as the encrypted credential-usability and
+host-readiness checkpoint.
 Caxton 0.2.0 is complete, packaged, installed in the canonical DDEV site, and
 left there for owner review. Page Studio is a superseded recovery link only.
 The previously recommended Commander 0.3.13 work remains paused—not cancelled—
@@ -593,6 +614,9 @@ batch, MCP, background jobs, autosave, or a parallel page-write route.
 
 - Selection-aware editing and structured metadata proposal application are
   deferred until stable public Admin2 events exist.
+- Transactional whole-store master-key/backend rotation is deferred to Jarvis
+  0.3.4; 0.3.3 supports explicit per-provider replacement under the current
+  preferred backend/key source and never silently migrates an untouched record.
 - Gemini and OpenRouter, private/local compatible endpoints, broader compatible
   profiles, live streaming, prompt/response persistence,
   durable accounting/history, background jobs, batch/site-wide workflows, and
@@ -634,7 +658,7 @@ batch, MCP, background jobs, autosave, or a parallel page-write route.
    `./scripts/test-grav-caxton-admin-browser.sh`. Preserve the frozen PHP hashes,
    both reproducible browser bundles, and the signed-in value/Save boundary.
 6. Rebuild only the package whose source changed. For the active milestone use
-   `./scripts/package-extension.sh plugin grav-caxton`; Jarvis 0.3.2 and
+   `./scripts/package-extension.sh plugin grav-caxton`; Jarvis 0.3.3 and
    Commander 0.3.12 remain their verified releases.
 7. Run `git status` and `git log --oneline --decorate -10`.
 8. Confirm the active milestone, exact next action, deferred work, and local

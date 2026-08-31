@@ -131,7 +131,7 @@ produces the expected authenticated request body.
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
 | Flexible Markdown Alerts | Markdown parsing, custom-title escaping, configured type/color/icon rendering, site-owned SVG precedence, optional Icon Bench failure isolation | initial external DDEV rendering checks passed; durable runner required |
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
-| Jarvis | provider normalization/redaction, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.2 provider-setup/Admin2 plus 0.3.0 retry/cache/usage/cost/budget/chunk contracts, 0.3.1 public-only Commander consumer proof, and deterministic signed-in regressions implemented; streaming and later batch/job boundaries remain |
+| Jarvis | provider normalization/redaction, credential encryption/resolution, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.3 Sodium/OpenSSL credential/readiness/package boundaries, 0.3.2 provider setup, 0.3.0 reliability, 0.3.1 Commander consumer proof, and deterministic signed-in regressions implemented; transactional master-key rotation, streaming, and later batch/job boundaries remain |
 | Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation | 0.1.0 PHP contract, 0.1.1 Node/Chrome engine proof, and 0.2.0 signed-in Admin2 field boundary implemented |
 | Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
 
@@ -189,7 +189,7 @@ theme inheritance, narrow layout, and no relevant browser/page/log error.
 
 Run the complete 0.1.0 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-
 transport/OpenAI, 0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin,
-0.3.0 reliability/chunking, and 0.3.2 provider-setup suite with host PHP or a
+0.3.0 reliability/chunking, 0.3.2 provider setup, and 0.3.3 credential/readiness suite with host PHP or a
 DDEV project:
 
 ```bash
@@ -271,6 +271,18 @@ failed, discovery-failed, and configured-model-unavailable paths; configured
 models survive temporary discovery failure. It also rejects secret-value
 blueprint fields and verifies the DDEV/package ignore boundary.
 
+The 0.3.3 credential contract runs Sodium and OpenSSL-GCM independently and
+proves save/decrypt/replace/remove, unique authenticated records, tamper/tag
+failure, wrong/missing/corrupt local and external keys, malformed/unknown record
+versions, environment override and fallback reveal semantics, safe preferred/
+fallback/no-AEAD host classification, unwritable-path downgrade, and exact-path
+symlink refusal. All secrets are deterministic placeholders and tests are
+offline. `./scripts/test-grav-jarvis-package.sh` backs up the DDEV fixture,
+proves an exact packaged 0.3.2-to-0.3.3 upgrade with preserved site config,
+fresh package installation, public health, anonymous API denial, and archive
+absence of DDEV/environment/user-data/master-key files, then restores the
+fixture.
+
 Run the isolated Admin2 browser-component contract on the host:
 
 ```bash
@@ -291,7 +303,10 @@ The 0.3.0 assertions add budget-blocked rendering and concise normalized usage,
 estimated/unknown cost, request/retry, and cache-hit indicators. The 0.3.2
 assertions add provider setup cards, exact credential-variable help, the
 ChatGPT/API distinction, official setup links, configured/default model state,
-discovery failure retention, and credential-value leakage denial.
+discovery failure retention, and credential-value leakage denial. The 0.3.3
+assertions add the Settings permission filter, write-only Save & Validate,
+storage-success/validation-failure separation, credential-source/override
+state, and readiness fallback rendering.
 
 Run the authenticated Admin2 black-box regression against the canonical
 disposable DDEV fixture (or pass project, base URL, and page route arguments):
@@ -313,6 +328,10 @@ identifiers, bounded exact whole-buffer context, proposal preview, explicit
 Reject, Accept exactly once, stale/regeneration behavior, unsaved-only reload,
 keyboard/labels, narrow layout, light/dark inheritance, no page mutation
 request, browser console/page errors, and recent Jarvis fatal log entries.
+The 0.3.3 browser flow also navigates the top Settings shortcut, renders actual
+host readiness, submits a placeholder credential only to an intercepted initial
+write request, proves the field clears and all later component state/HTML omit
+it, and proves an anonymous real credential-write route receives 401.
 In 0.3.0 the flaky-provider case succeeds through one automatic bounded retry
 and must render `2 requests, 1 retry`; it no longer requires a second user-
 initiated request.

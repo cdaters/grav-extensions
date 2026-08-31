@@ -9,3 +9,5 @@ actions:
         label: Run Jarvis prompts and create page proposals
       approve:
         label: Accept reviewed proposals into the unsaved page editor buffer
+      manage:
+        label: Manage Jarvis provider credentials and configuration

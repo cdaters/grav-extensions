@@ -11,6 +11,7 @@ use Grav\Plugin\GravJarvis\Provider\Anthropic\AnthropicProvider;
 use Grav\Plugin\GravJarvis\Provider\OpenAI\OpenAIProvider;
 use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\CompatibleProviderConfig;
 use Grav\Plugin\GravJarvis\Security\EnvironmentCredentialResolver;
+use Grav\Plugin\GravJarvis\Security\CredentialManager;
 use Throwable;
 
 /**
@@ -28,7 +29,8 @@ final class ProviderSetupCatalog
     /** @param array<string, mixed> $configuration */
     public function __construct(
         array $configuration,
-        private readonly JarvisServiceInterface $jarvis
+        private readonly JarvisServiceInterface $jarvis,
+        private readonly ?CredentialManager $credentials = null
     ) {
         $this->configuration = $configuration;
     }
@@ -174,6 +176,7 @@ final class ProviderSetupCatalog
             : null;
         $isRegistered = in_array($id, $registered, true);
 
+        $credential = $this->credentialDetails($id, $environmentVariable);
         return [
             'id' => $id,
             'label' => $label,
@@ -181,7 +184,13 @@ final class ProviderSetupCatalog
             'enabled' => $enabled,
             'registered' => $isRegistered,
             'credential_environment_variable' => $environmentVariable,
-            'credential_status' => $this->credentialStatus($id, $environmentVariable),
+            'credential_status' => $credential['status'],
+            'credential_source' => $credential['source'] ?? null,
+            'credential_backend' => $credential['backend'] ?? null,
+            'master_key_source' => $credential['master_key_source'] ?? null,
+            'stored_credential_present' => $credential['stored_credential_present'] ?? false,
+            'stored_credential_inactive' => $credential['stored_credential_inactive'] ?? false,
+            'admin_credential_supported' => $this->credentials?->supportsAdminCredential($id) ?? false,
             'default_model' => $defaultModel,
             'base_uri' => null,
             'model_discovery' => true,
@@ -206,6 +215,21 @@ final class ProviderSetupCatalog
         } catch (Throwable) {
             return 'invalid';
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function credentialDetails(string $providerId, string $environmentVariable): array
+    {
+        if ($this->credentials !== null && $this->credentials->supportsAdminCredential($providerId)) {
+            return $this->credentials->status($providerId);
+        }
+        return [
+            'status' => $this->credentialStatus($providerId, $environmentVariable),
+            'source' => null,
+            'backend' => null,
+            'stored_credential_present' => false,
+            'stored_credential_inactive' => false,
+        ];
     }
 
     /** @return list<string> */

@@ -1,0 +1,15 @@
+enabled: true
+admin:
+  show_sidebar: true
+  show_page_panel: true
+  default_provider: anthropic
+providers:
+  openai:
+    enabled: true
+    default_model: package-upgrade-openai-model
+  anthropic:
+    enabled: true
+    default_model: package-upgrade-anthropic-model
+  openai_compatible:
+    enabled: false
+    instances: []

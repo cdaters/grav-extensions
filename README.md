@@ -44,7 +44,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
-| Jarvis | Plugin | 0.3.2 provider-setup and operator-experience release; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
+| Jarvis | Plugin | 0.3.3 encrypted credential-usability and host-readiness release; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
 | Caxton | Plugin | 0.2.0 first source-faithful Admin2 field | `user/plugins/grav-caxton` |
 | Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
 
@@ -55,7 +55,7 @@ has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and
 ## Jarvis AI services and Admin2 assistant
 
 **Jarvis** (`grav-jarvis`) is the Grav 2 AI-service and agent-integration
-framework. The runnable 0.3.2 package preserves its frozen 0.1.x contracts and
+framework. The runnable 0.3.3 package preserves its frozen 0.1.x contracts and
 adds bounded reliability, cost/budget reporting, safe summarize-only chunking,
 the permission-filtered Admin2 assistant, and native page-editor panel
 for six review-first actions. It reads the current unsaved buffer through

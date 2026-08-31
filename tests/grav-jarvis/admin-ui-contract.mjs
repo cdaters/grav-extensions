@@ -104,14 +104,23 @@ console.log('PASS: provider-neutral assistant completion and graceful absence');
 
 page.state.bootstrap = {
   can_manage: true,
+  can_configure: true,
   settings_path: '/plugins/grav-jarvis',
+  environment_readiness: {
+    best_backend: 'sodium', local_storage_available: true,
+    requirements: [
+      { key: 'sodium', label: 'Preferred encrypted local storage', group: 'recommended', available: true, detail: 'Sodium available' },
+      { key: 'openssl_gcm', label: 'Authenticated encryption fallback', group: 'fallback', available: true, detail: 'OpenSSL AES-256-GCM available' },
+    ],
+  },
   providers: [{ id: 'openai', capabilities: ['model-discovery', 'text-completion'] }],
   provider_setups: [{
     id: 'openai', label: 'OpenAI', kind: 'official', enabled: true, registered: true,
     credential_environment_variable: 'GRAV_JARVIS_OPENAI_API_KEY', credential_status: 'missing',
     default_model: 'configured-model', official_setup_url: 'https://platform.openai.com/api-keys',
     guidance: 'A ChatGPT login or subscription is not an API credential.', capabilities: ['model-discovery'],
-    configuration_status: 'valid',
+    configuration_status: 'valid', admin_credential_supported: true,
+    credential_source: 'missing', stored_credential_present: false,
   }],
 };
 page.state.provider = 'openai'; page.state.validation = { usable: false, state: 'misconfigured', credential_status: 'missing', issues: [{ message: 'Credential missing.' }] };
@@ -121,7 +130,38 @@ assert.match(page.shadowRoot.innerHTML, /GRAV_JARVIS_OPENAI_API_KEY/);
 assert.match(page.shadowRoot.innerHTML, /ChatGPT login or subscription is not an API credential/);
 assert.match(page.shadowRoot.innerHTML, /Official key setup|Open official key setup/);
 assert.match(page.shadowRoot.innerHTML, /Validate \/ Test connection/);
+assert.match(page.shadowRoot.innerHTML, /Save &amp; Validate|Save & Validate/);
+assert.match(page.shadowRoot.innerHTML, /Environment readiness/);
+assert.match(page.shadowRoot.innerHTML, /Sodium available/);
+assert.match(page.shadowRoot.innerHTML, />⚙<|Settings/);
 assert.doesNotMatch(page.shadowRoot.innerHTML, /sk-provider-secret/);
+
+let credentialRequest;
+page.api = async (path, options) => {
+  credentialRequest = { path, body: options.body };
+  return {
+    credential: { status: 'configured', source: 'encrypted_local', backend: 'sodium', stored_credential_present: true },
+    validation: { usable: false, state: 'misconfigured', credential_status: 'invalid', issues: [{ message: 'Provider rejected the credential.' }] },
+    models: null,
+    message: 'Credential saved securely, but provider validation did not succeed.',
+  };
+};
+page.shadowRoot.getElementById = id => id === 'credential-openai' ? { value: 'sk-provider-secret-value' } : null;
+await page.saveCredential('openai');
+assert.equal(credentialRequest.path, '/grav-jarvis/providers/openai/credential');
+assert.equal(credentialRequest.body.credential, 'sk-provider-secret-value');
+assert.equal(page.setup('openai').credential_source, 'encrypted_local');
+page.render();
+assert.doesNotMatch(page.shadowRoot.innerHTML, /sk-provider-secret-value/);
+assert.match(page.shadowRoot.innerHTML, /saved securely, but provider validation did not succeed/i);
+console.log('PASS: write-only Save & Validate clears secret state and retains safe failure status');
+
+page.state.bootstrap.can_configure = false;
+page.render();
+assert.doesNotMatch(page.shadowRoot.innerHTML, /Open Jarvis plugin settings/);
+page.state.bootstrap.can_configure = true;
+page.render();
+console.log('PASS: Settings shortcut is hidden without configuration authority');
 
 page.state.model = 'operator-selected-model';
 page.api = async path => path.endsWith('/validate')

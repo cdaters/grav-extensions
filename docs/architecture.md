@@ -127,12 +127,14 @@ toolbar replacement and may optionally consume Jarvis later.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
 - **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
-- **Jarvis 0.3.2:** provider-neutral service plus hardened permission-filtered Admin2
+- **Jarvis 0.3.3:** provider-neutral service plus hardened permission-filtered Admin2
   assistant and native page context panel. Six internal prompt actions operate
   on bounded title/frontmatter/media/current-unsaved-buffer context. Proposals
   render before/after, use capped one-time actor/route/source/proposal hash
   receipts with explicit rejection/replacement revocation, and can replace only
-  the unsaved editor buffer after explicit approval; no Jarvis route saves or
+  the unsaved editor buffer after explicit approval; first-party credentials
+  resolve environment-first and may otherwise use a private authenticated-
+  encryption store under Grav user data; no Jarvis route saves or
   publishes. Authenticated deterministic browser coverage exercises all six
   actions, lifecycle conflicts, safe provider failures, accessibility,
   responsive layout, and theme inheritance. The 0.1.x OpenAI, Anthropic,

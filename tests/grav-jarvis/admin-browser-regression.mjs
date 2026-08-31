@@ -33,6 +33,8 @@ const pageErrors = [];
 const pageMutationRequests = [];
 const proposalRequests = [];
 const jarvisHttpFailures = [];
+const submittedCredential = 'sk-jarvis-browser-submission-only-123456789';
+const credentialRequests = [];
 
 page.on('console', message => {
   if (message.type() === 'error') consoleErrors.push(message.text());
@@ -52,6 +54,9 @@ page.on('request', request => {
   }
   if (url.pathname.endsWith('/api/v1/grav-jarvis/proposals') && method === 'POST') {
     proposalRequests.push(JSON.parse(request.postData() || '{}'));
+  }
+  if (url.pathname.includes('/api/v1/grav-jarvis/providers/openai/credential')) {
+    credentialRequests.push({ method, path: url.pathname, body: request.postData() || '' });
   }
 });
 
@@ -108,6 +113,35 @@ try {
   assert.match(setupText, /Open official key setup/i);
   assert.doesNotMatch(setupText, /sk-[A-Za-z0-9_-]{12,}/, 'A credential-shaped value entered the provider setup view.');
   assert.equal(await assistant.locator('#check').innerText(), 'Validate / Test connection');
+  await assistant.getByText('Environment readiness', { exact: true }).waitFor({ state: 'visible' });
+  await assistant.getByRole('button', { name: /Settings/ }).click();
+  await page.waitForURL(url => url.pathname.endsWith('/admin/plugins/grav-jarvis'));
+  await page.goBack({ waitUntil: 'networkidle' });
+  await assistant.waitFor({ state: 'visible' });
+  console.log('PASS: permission-filtered top-level Settings shortcut reaches Jarvis configuration');
+
+  await page.route('**/api/v1/grav-jarvis/providers/openai/credential', async route => {
+    const body = route.request().postDataJSON();
+    assert.equal(body.credential, submittedCredential, 'Write-only credential submission changed.');
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: {
+      stored: true,
+      credential: { status: 'configured', source: 'encrypted_local', backend: 'sodium', master_key_source: 'local', stored_credential_present: true, stored_credential_inactive: false },
+      validation: { provider_id: 'openai', usable: true, state: 'usable', credential_status: 'configured', issues: [], capabilities: ['model-discovery', 'provider-validation', 'text-completion'] },
+      models: { models: [{ id: 'fixture-openai', label: 'Fixture OpenAI', available: true }], configured_default_model: 'configured-model', configured_default_available: false, message: '' },
+      message: 'Credential saved securely and provider validation succeeded.',
+    } }) });
+  });
+  await assistant.getByLabel('API key').first().fill(submittedCredential);
+  await assistant.getByRole('button', { name: 'Save & Validate' }).first().click();
+  await assistant.getByText(/saved securely and provider validation succeeded/i).waitFor();
+  assert.equal(await assistant.getByLabel('API key').first().inputValue(), '', 'Credential field was not cleared after submission.');
+  const assistantState = await assistant.evaluate(element => JSON.stringify(element.state));
+  const assistantHtml = await assistant.evaluate(element => element.shadowRoot.innerHTML);
+  assert.doesNotMatch(assistantState, new RegExp(submittedCredential));
+  assert.doesNotMatch(assistantHtml, new RegExp(submittedCredential));
+  assert.equal(credentialRequests.filter(item => item.body.includes(submittedCredential)).length, 1, 'Credential appeared outside its initial request.');
+  await page.unroute('**/api/v1/grav-jarvis/providers/openai/credential');
+  console.log('PASS: signed-in Save & Validate sends the key once and never retains or renders it');
   console.log('PASS: first-party provider setup help and credential-safe status cards');
 
   await assistant.locator('#provider option').filter({ hasText: 'Browser Fixture' }).waitFor({ state: 'attached' });
@@ -122,6 +156,10 @@ try {
     const anonymous = await fetch(element.apiUrl('/grav-jarvis/bootstrap'), {
       headers: { Accept: 'application/json' }, credentials: 'omit', cache: 'no-store',
     });
+    const anonymousCredentialWrite = await fetch(element.apiUrl('/grav-jarvis/providers/openai/credential'), {
+      method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: '{}', credentials: 'omit', cache: 'no-store',
+    });
     let injected;
     try {
       await element.api('/grav-jarvis/completions', {
@@ -135,9 +173,10 @@ try {
     } catch (error) {
       injected = { accepted: false, status: error.status };
     }
-    return { anonymous: anonymous.status, injected };
+    return { anonymous: anonymous.status, anonymousCredentialWrite: anonymousCredentialWrite.status, injected };
   });
   assert.equal(securityBoundary.anonymous, 401, 'A browser request without the Admin2 API token was not denied.');
+  assert.equal(securityBoundary.anonymousCredentialWrite, 401, 'An anonymous credential write was not denied.');
   assert.equal(securityBoundary.injected.accepted, false, 'Provider authority injection was accepted.');
   assert.equal(securityBoundary.injected.status, 422, 'Provider authority injection did not fail validation.');
   console.log('PASS: API token and fixed provider-authority boundary');

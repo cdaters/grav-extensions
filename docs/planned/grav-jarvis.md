@@ -1,10 +1,9 @@
 # Jarvis
 
-**Status:** 0.3.2 provider-setup/operator release plus the 0.3.1 optional-
+**Status:** 0.3.3 encrypted credential-usability/readiness release plus the 0.3.1 optional-
 consumer milestone implemented through Grav Commander 0.3.12; frozen 0.1.x
-public contracts remain unchanged, and Caxton 0.2.0 is implemented with 0.2.1
-structural-authoring hardening next before the paused Commander concurrency and
-broader agent/site work
+public contracts remain unchanged; explicit transactional master-key/backend
+rotation is the next Jarvis security milestone before broader agent/site work
 
 **Product name:** Jarvis
 
@@ -672,6 +671,42 @@ wire shape, credential resolver contract, SSRF policy, receipt, permission, or
 content-mutation boundary. Its package and final release hash are recorded in
 `CURRENT-STATE.md` and `docs/SESSION-LOG.md`.
 
+### 0.3.3 — encrypted credential usability and host readiness (implemented)
+
+- retained the frozen `CredentialResolverInterface` and environment-only
+  provider path, then added an internal environment-first composite resolver
+  for the two first-party providers;
+- added write-only Admin2 OpenAI/Anthropic credential entry with encrypted
+  Save & Validate, safe storage-versus-remote-validation messages, Replace,
+  Remove, Validate, effective-source/backend display, and environment-override
+  explanation. Empty input never deletes or replaces a record;
+- stored versioned authenticated ciphertext only under
+  `user/data/grav-jarvis/credentials`, separate from plugin YAML/config export.
+  Sodium XChaCha20-Poly1305 is preferred; OpenSSL AES-256-GCM is the safe
+  fallback; hosts with neither remain environment-only. No plaintext
+  compatibility store exists;
+- added exclusive first-use creation of a separate random 32-byte local master
+  key with `0700`/`0600` hardening and strict optional
+  `GRAV_JARVIS_MASTER_KEY=base64:...` external keys. Records name their backend
+  and key source; a missing/wrong key or unavailable backend never triggers
+  regeneration or downgrade;
+- added a concise environment-readiness panel modeled on Site Safeguard's
+  required/recommended/optional/fallback presentation and a permission-filtered
+  Commander-style Settings shortcut, with no runtime dependency on either;
+- preserved fixed official endpoints, compatible-provider SSRF/immutable-base
+  policy, non-generating validation/model discovery, configured-model retention,
+  review receipts, and unsaved-editor-only acceptance; and
+- added offline crypto/resolution/readiness tests, isolated Admin component
+  tests, a signed-in DDEV browser proof, and a repeatable packaged 0.3.2 upgrade/
+  fresh-install boundary. The browser sees the key only in its initial
+  authenticated submission and never receives it in a response or later state.
+
+Migration is explicit and non-destructive in 0.3.3: an untouched record keeps
+its named backend/master-key source; replacing a provider credential writes it
+with the best current backend and preferred current key source. Whole-store
+transactional master-key rotation is intentionally deferred to 0.3.4 rather
+than risking partial multi-record migration.
+
 ### 0.4.0 — agent and site-wide workflows
 
 - batch selection, per-item proposals, selected apply, resumability, and
@@ -696,7 +731,7 @@ content-mutation boundary. Its package and final release hash are recorded in
 Tests are layered and use fake credentials/providers by default. The 0.1.0
 compatibility, 0.1.1 provider-boundary, 0.1.2 bounded-transport/OpenAI,
 0.1.3 compatible-provider, 0.1.4 Anthropic, 0.2.0/0.2.1 Admin, 0.3.0
-reliability/chunking, and 0.3.2 provider-setup contracts run together with
+reliability/chunking, 0.3.2 provider setup, and 0.3.3 credential/readiness contracts run together with
 `./scripts/test-grav-jarvis-contract.sh`; the runner uses host PHP when
 available and otherwise the canonical DDEV fixture (or an explicitly selected
 DDEV project).
@@ -728,7 +763,7 @@ Live-provider smoke tests are opt-in, budget-capped, and never a routine release
 prerequisite. No production content mutation or production credential is
 required for regression testing.
 
-Versions 0.2.0 through 0.3.2 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
+Versions 0.2.0 through 0.3.3 also run `./scripts/test-grav-jarvis-admin-ui.sh`. Its isolated
 component/event harness proves authenticated same-API browser transport,
 provider-neutral requests, response escaping, graceful absence, current
 unsaved-buffer capture, explicit replace-only Accept, non-mutating Reject, and
@@ -750,7 +785,7 @@ without weakening the Grav 2 architecture.
 Public PHP and event contracts follow semantic versioning. Provider adapters
 are replaceable. A changing provider API or model name must not require another
 plugin to change its code. Every extension stays independently installable.
-Versions 0.1.1 through 0.3.2 therefore leave `ProviderInterface`,
+Versions 0.1.1 through 0.3.3 therefore leave `ProviderInterface`,
 `JarvisServiceInterface`, and `ProviderRegistryInterface` unchanged and expose
 introspection through a service subinterface and optional provider interfaces.
 

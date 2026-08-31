@@ -28,12 +28,14 @@ final class JarvisAdminService
         private readonly string $siteScope = 'grav-site',
         /** @var list<array<string, mixed>> */
         private readonly array $providerSetups = [],
-        private readonly ?string $defaultProvider = null
+        private readonly ?string $defaultProvider = null,
+        /** @var array<string, mixed> */
+        private readonly array $environmentReadiness = []
     ) {
     }
 
     /** @return array<string, mixed> */
-    public function bootstrap(bool $canApprove, bool $canManage = false): array
+    public function bootstrap(bool $canApprove, bool $canManage = false, bool $canConfigure = false): array
     {
         $providers = [];
         foreach ($this->jarvis->providerIds() as $providerId) {
@@ -55,7 +57,9 @@ final class JarvisAdminService
             'provider_setups' => $this->providerSetups,
             'default_provider' => $this->defaultProvider,
             'can_manage' => $canManage,
+            'can_configure' => $canConfigure,
             'settings_path' => '/plugins/grav-jarvis',
+            'environment_readiness' => $this->environmentReadiness,
             'actions' => $this->prompts->actions(),
             'prompt_version' => ActionPromptLibrary::VERSION,
             'can_approve' => $canApprove,

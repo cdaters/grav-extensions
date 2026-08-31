@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.3 — 2026-08-30
+
+- Added write-only OpenAI and Anthropic credential management to Admin2 with a
+  single Save & Validate flow, Replace/Remove controls, safe effective-source
+  reporting, and no secret returned after the initial submission.
+- Added a dedicated versioned credential store under Grav user data, separate
+  from plugin YAML. Environment credentials retain priority; local records use
+  Sodium XChaCha20-Poly1305 when available or authenticated OpenSSL AES-256-GCM
+  as a fallback. Hosts with neither backend remain environment-only.
+- Added atomic auto-managed 32-byte local master-key creation with restrictive
+  permissions and strict optional `GRAV_JARVIS_MASTER_KEY=base64:...` external
+  master keys. Existing records retain their named backend/key source and never
+  silently downgrade or regenerate a missing key.
+- Added a concise environment-readiness panel covering PHP/cURL, protected data
+  storage, master-key state, Sodium, OpenSSL-GCM, and environment credentials,
+  plus a permission-filtered top-level Settings shortcut.
+- Added deterministic crypto, tampering, malformed/version, wrong-key,
+  resolution-priority, host-downgrade, symlink, Admin component, and package
+  leakage coverage while preserving frozen 0.1.x interfaces and fixed provider
+  endpoint/SSRF policy.
+
 ## 0.3.2 — 2026-08-30
 
 - Added a browser-safe Admin2 provider setup catalog covering enabled/disabled

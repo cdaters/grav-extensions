@@ -1,17 +1,16 @@
 # Jarvis
 
-Jarvis 0.3.2 is the provider-neutral AI service for Grav 2. Its Admin2 setup
-view explains provider credentials, validates access without generating text,
-discovers models, and distinguishes the configured default from the live
-catalog. Bounded transient retries, optional privacy-scoped caching, normalized
-usage, versioned estimated costs, opt-in budgets, and Grav-aware Markdown
-chunking remain available behind the same frozen provider contracts.
+Jarvis 0.3.3 is the provider-neutral AI service for Grav 2. A normal
+administrator can open Jarvis, paste an OpenAI or Anthropic API key, choose
+**Save & Validate**, discover models, and begin using the assistant. The key is
+written only to Jarvis's dedicated encrypted server-side store; it is never
+returned to the browser or copied into ordinary plugin YAML. Advanced operators
+can continue to inject environment credentials, which always take precedence.
 
 Page actions are review-first. Jarvis captures the current unsaved Markdown
 buffer, produces a proposal, and shows a before/after comparison. **Accept**
 updates only that unsaved buffer; it never saves, publishes, deletes, or
-otherwise mutates a page. **Reject** changes nothing. Provider credentials stay
-in server environment variables and never enter Admin2.
+otherwise mutates a page. **Reject** changes nothing.
 
 ## Requirements
 
@@ -20,6 +19,8 @@ in server environment variables and never enter Admin2.
 - Admin2 2.1.2 or newer for the native page-editor context panel
 - PHP 8.3 or newer, following Grav 2's supported runtime
 - PHP cURL extension for production provider requests
+- Sodium (recommended) or OpenSSL with AES-256-GCM for Admin-entered encrypted
+  credentials. If neither is available, environment credentials still work.
 
 ## Quick Start
 
@@ -29,19 +30,22 @@ in server environment variables and never enter Admin2.
    bin/grav clearcache
    ```
 
-2. Sign in to Admin2 and open **Jarvis**. The provider cards show **Missing**
-   until the matching server environment variable exists. Seeing this state is
-   expected on a new install; the plugin does not ask the browser for a key.
+2. Sign in to Admin2 and open **Jarvis**. The header includes an authorized
+   **Settings** shortcut for non-secret plugin defaults. Provider cards and the
+   concise **Environment readiness** panel explain whether encrypted key entry
+   is available.
 3. Obtain an API key from the provider's API console. For OpenAI, follow the
    project-key procedure below; a ChatGPT subscription is not sufficient.
-4. Add the key to the Grav/PHP server environment, never to plugin YAML. For
-   OpenAI the exact name is `GRAV_JARVIS_OPENAI_API_KEY`; for Anthropic it is
-   `GRAV_JARVIS_ANTHROPIC_API_KEY`.
-5. Restart/reload the relevant web service or DDEV project, return to Jarvis,
-   and choose **Validate / Test connection**.
+4. Paste the key into that provider's write-only **API key** field and choose
+   **Save & Validate**. Jarvis encrypts it outside plugin YAML before testing
+   the provider and discovering models. A validation failure does not discard a
+   successfully stored key; replace, retry, or remove it from the same card.
+5. Advanced operators may instead set `GRAV_JARVIS_OPENAI_API_KEY` or
+   `GRAV_JARVIS_ANTHROPIC_API_KEY` in the web PHP environment. Restart/reload
+   the service, return to Jarvis, and choose **Validate / Test connection**.
 6. Review discovered models. Keep the configured default or choose another
    model for the current request. Persist non-secret provider/default-model
-   changes through **Plugin settings**.
+   changes through the header **Settings** button.
 
 The plugin is enabled by default and registers `$grav['gravJarvis']`. OpenAI
 and Anthropic are enabled independently. No credential is resolved and no
@@ -63,7 +67,8 @@ ChatGPT conversation interface:
 4. Open the project's [API Keys page](https://platform.openai.com/api-keys) and
    choose **Create new secret key**.
 5. Prefer a dedicated Jarvis key. If the project-key UI offers restricted
-   endpoint permissions, Jarvis needs read access to Models for
+   endpoint permissions (see OpenAI's official
+   [key-permissions guide](https://help.openai.com/en/articles/8867743)), Jarvis needs read access to Models for
    `GET /v1/models` and write access to Responses for `POST /v1/responses`.
    It does not need organization administration, project/key management, file,
    assistant, batch, fine-tuning, or other API permissions for its current
@@ -71,9 +76,10 @@ ChatGPT conversation interface:
    endpoints rather than granting unrelated access.
 6. Copy and securely store the secret when it is created; the full value may
    not be shown again.
-7. Configure it on the Grav/PHP server as
+7. Paste it into OpenAI's write-only field in Jarvis Admin2 and choose
+   **Save & Validate**. For an advanced environment deployment, configure it as
    `GRAV_JARVIS_OPENAI_API_KEY`, restart/reload the service, then select
-   **Validate / Test connection** in Jarvis Admin2.
+   **Validate / Test connection**.
 8. Discover and select the desired model. Jarvis will flag a configured default
    that discovery does not return, but will not silently replace it.
 
@@ -87,7 +93,7 @@ A ChatGPT login or subscription—including Plus, Pro, Business, Enterprise, or
 another ChatGPT plan—is not an OpenAI API credential and does not provide
 Jarvis API billing. ChatGPT and the API platform maintain separate billing and
 usage systems; see OpenAI's official
-[billing distinction](https://help.openai.com/en/articles/9039756-billing-settings-in-chatgpt-vs-platform).
+[billing distinction](https://help.openai.com/en/articles/9039756).
 
 Jarvis requires an API-platform project key. It never reads or attempts to use
 ChatGPT cookies, browser sessions, OAuth state, local browser storage, or
@@ -97,15 +103,20 @@ ChatGPT subscription credentials.
 
 1. Sign in to the Claude Console and open
    [Settings → API keys](https://console.anthropic.com/settings/keys).
-2. Create a key appropriate to the workspace/account that should own Jarvis
-   usage. Follow Anthropic's current
+2. Create a personal or service-account key appropriate to the workspace that
+   should own Jarvis usage, and choose an appropriate expiration. A dedicated
+   Jarvis/workspace-scoped key limits unrelated access and makes accounting,
+   rotation, and revocation clearer. Follow Anthropic's current
    [authentication guidance](https://platform.claude.com/docs/en/manage-claude/authentication)
    for personal versus service-account keys, workspace scope, expiration, and
    rotation.
-3. Configure the secret on the Grav/PHP server as
-   `GRAV_JARVIS_ANTHROPIC_API_KEY`, restart/reload the service, and validate it
-   in Jarvis Admin2.
-4. Review the discovered model list and configured default.
+3. Jarvis currently needs the key to list models with `GET /v1/models` and send
+   completions with `POST /v1/messages`; it does not call Anthropic's Admin,
+   Files, Batches, or key-management APIs.
+4. Paste the secret into Anthropic's write-only Jarvis Admin2 field and choose
+   **Save & Validate**. For an advanced environment deployment, configure
+   `GRAV_JARVIS_ANTHROPIC_API_KEY`, restart/reload, and validate it in Admin2.
+5. Review the discovered model list and configured default.
 
 Anthropic Console/browser-session credentials are not provider API keys and
 are never used by Jarvis.
@@ -155,9 +166,11 @@ common credential files.
 
 ## Production environment configuration
 
-Prefer the hosting platform's secret manager, container/service environment,
-or PHP-FPM pool configuration so the secret is injected into the web PHP
-process. For example, a protected PHP-FPM pool configuration can provide:
+The beginner-safe default is Admin2 encrypted storage. Production operators who
+already have a managed secret system should prefer the hosting platform's
+secret manager, container/service environment, or PHP-FPM pool configuration.
+Direct provider variables override a stored local credential without deleting
+it. For example, a protected PHP-FPM pool configuration can provide:
 
 ```ini
 env[GRAV_JARVIS_OPENAI_API_KEY] = sk-REPLACE-ME
@@ -180,6 +193,59 @@ GRAV_JARVIS_OPENAI_API_KEY=sk-REPLACE-ME
 Do not use `GRAV_CONFIG__...` to copy a provider key into plugin configuration.
 Jarvis deliberately reads only its provider-specific environment variables.
 
+### Optional external Jarvis master key
+
+By default, the first Admin-entered credential causes Jarvis to atomically
+create a 32-byte random master key beside—but separate from—the encrypted
+records under `user/data/grav-jarvis/credentials`. The directory is hardened to
+`0700` and files to `0600` where the filesystem supports Unix permissions.
+
+Advanced deployments may keep the encryption key outside the Grav filesystem:
+
+```text
+GRAV_JARVIS_MASTER_KEY=base64:REPLACE-WITH-BASE64-OF-EXACTLY-32-RANDOM-BYTES
+```
+
+Generate the required representation in a trusted administrative shell:
+
+```bash
+php -r 'echo "base64:", base64_encode(random_bytes(32)), PHP_EOL;'
+```
+
+Store the output in the deployment secret manager; never commit or paste it
+into Jarvis YAML. Jarvis accepts only the `base64:` representation of exactly
+32 random bytes. It does not truncate, pad, or treat a human password as a key.
+The external key is preferred for newly saved/replaced records. Each existing
+record keeps its explicit local/external key source so merely adding the
+variable cannot make an older local record unreadable.
+
+## Encrypted local credential architecture
+
+Credential resolution is deterministic:
+
+1. the provider's direct environment variable;
+2. that provider's encrypted local Jarvis record;
+3. missing.
+
+Jarvis does not implement a plaintext compatibility store. If no authenticated
+encryption backend is available, Admin key entry is disabled and the provider
+environment variables remain fully supported.
+
+New local records use Sodium XChaCha20-Poly1305 when available. Otherwise,
+Jarvis uses OpenSSL AES-256-GCM only when the runtime advertises that exact
+authenticated cipher. Every record is versioned and contains only provider ID,
+backend/key-source metadata, nonce/IV, authentication data, and ciphertext.
+Provider credentials are never stored in `grav-jarvis.yaml` or ordinary Grav
+configuration. Authentication failure, malformed records, wrong keys, missing
+backends, and tampering fail closed.
+
+The auto-managed key protects against ordinary plugin configuration export,
+accidental YAML/Git disclosure, and isolated theft of the encrypted record. It
+does not protect against a full compromise of the Grav runtime account or
+filesystem that exposes both the key and ciphertext. Use environment provider
+credentials or an external master key when stronger operational separation is
+required.
+
 ## Validate / Test Connection
 
 The Admin2 action is authenticated, permission checked, and server-side. It
@@ -189,11 +255,17 @@ receives only normalized status, safe issue text, capabilities, and models—no
 credential, Authorization header, raw provider JSON, response body, endpoint
 authority, or stack trace.
 
+**Save & Validate** first commits the encrypted record atomically and then runs
+the same non-generating provider validation/model discovery path. Therefore a
+message such as “Credential saved securely, but OpenAI rejected the key” means
+storage succeeded and remote validation failed; the operator can replace,
+retry, or remove it without ambiguity.
+
 States distinguish missing/malformed credentials, rejected authentication,
 rate/quota limits, transport failure, invalid configuration/response, and an
-otherwise unavailable provider. **Configured** means a locally well-formed
-environment value exists; **Valid** means the provider accepted the model-list
-request. Those are intentionally different claims.
+otherwise unavailable provider. **Configured** means a well-formed environment
+or decryptable local value exists; **Valid** means the provider accepted the
+model-list request. Those are intentionally different claims.
 
 ## Model selection and defaults
 
@@ -208,18 +280,31 @@ does not return the configured model, Jarvis flags it as not discovered so the
 operator can investigate deprecation, account/model permissions, or a renamed
 identifier; it does not guess a replacement.
 
-## Credential rotation and removal
+## Credential rotation, migration, and removal
 
 1. Create the replacement key in the provider project/workspace and apply only
    the permissions Jarvis needs.
-2. Replace the server environment value and reload/restart PHP-FPM, the hosting
-   service, or DDEV.
-3. Validate in Jarvis Admin2 and confirm model discovery succeeds.
+2. For encrypted local storage, enter the replacement and choose **Save &
+   Validate**. For an environment deployment, replace the value and
+   reload/restart PHP-FPM, the hosting service, or DDEV.
+3. Confirm validation and model discovery succeed.
 4. Revoke/delete the old provider key.
 
-For removal, delete the environment value, reload the service, and validate
-that Jarvis reports **Missing**. Disabling a provider removes it from request
-selection but does not delete or expose a server-managed secret.
+Use **Remove stored credential** to delete only Jarvis's encrypted local record.
+It never changes an environment value. If an environment credential overrides
+a stored record, the card says so and still allows the inactive record to be
+removed. Removing an environment value reveals an existing stored local
+credential on the next request.
+
+Backend and local-to-external migration occurs on an explicit provider
+replacement: saving a new key uses the currently preferred Sodium/OpenSSL
+backend and external/local master-key mode, while untouched records retain
+their original backend and source. Jarvis never silently downgrades a Sodium
+record. If its named backend or master key is unavailable, it fails safely and
+leaves the record unchanged. Whole-store master-key rotation is deliberately
+deferred; today rotate by obtaining each provider replacement key, replacing
+the stored records under the new master-key mode, validating them, and only
+then retiring the old key.
 
 ## Troubleshooting provider setup
 
@@ -247,6 +332,14 @@ selection but does not delete or expose a server-managed secret.
 - **Provider temporarily unavailable/transport failure.** Check outbound HTTPS,
   DNS, TLS trust, firewall policy, and the provider status page. Jarvis does not
   follow redirects or environment proxies and refuses private/reserved targets.
+- **Encrypted key entry is unavailable.** Expand **Environment readiness**. If
+  both Sodium and OpenSSL AES-256-GCM are unavailable, use a provider
+  environment variable. If the data directory or master key is missing,
+  corrupt, symlinked, or unwritable, correct the protected server-side path;
+  Jarvis will not regenerate a key while encrypted records exist.
+- **An environment credential is active.** Environment values intentionally
+  win. Remove/reload that value to use the stored local credential, or remove
+  the inactive local record from its card.
 
 ## OpenAI-compatible providers
 
@@ -274,10 +367,29 @@ forbidden.
 
 ## Security notes
 
-- Grav 2/Admin2 masks secret-looking YAML values before returning configuration
-  to a browser, but the underlying value is still ordinary plaintext YAML.
-  That is not an encrypted secret store. Jarvis therefore provides no API-key
-  field and adds no home-grown encryption layer.
+- The only browser request containing a provider secret is the administrator's
+  initial authenticated Save & Validate submission. The field is cleared
+  immediately; the server never returns the value in bootstrap, status,
+  validation, models, errors, debug data, or later state.
+- Credential add/replace/remove routes use the Admin2 API-token/CSRF boundary,
+  require `grav-jarvis.manage`, plugin-configuration write, or super authority; accept fixed first-party
+  provider IDs only, and reject extra request fields. The Settings shortcut is
+  separately visible only to plugin-configuration-authorized users.
+- The encryption implementation uses PHP's native authenticated primitives and
+  `random_bytes`; it does not implement custom cryptography, unauthenticated
+  CBC/ECB, weak password conversion, or plaintext fallback.
+- Symbolic-link substitutions, malformed/version-confused records, wrong keys,
+  unavailable named backends, and authentication-tag failures are rejected.
+  Writes use a same-directory temporary file and atomic rename; first local-key
+  creation uses exclusive creation so concurrent first use cannot overwrite an
+  existing key.
+- Authorization headers remain secret value objects rather than loggable
+  strings. Provider output/errors are normalized and redacted; raw upstream
+  JSON, stack traces, endpoints, and credentials do not cross Admin responses.
+- Jarvis never reads ChatGPT or Claude browser cookies, session/OAuth state,
+  browser storage, or subscription credentials. Fixed official and validated
+  compatible endpoints preserve the existing SSRF and immutable-authority
+  boundary.
 - Environment variables remain the supported and preferred production source.
   Values are resolved lazily into non-serializable in-memory credential
   objects, redacted from errors/results, and never returned by setup/status APIs.
@@ -508,9 +620,10 @@ The only credential name used by this adapter is:
 GRAV_JARVIS_OPENAI_API_KEY
 ```
 
-Set it in the PHP/web/CLI process environment or the hosting platform's secret
-manager. It is not a YAML key, Admin field, request option, query parameter,
-ordinary header value, diagnostic field, test fixture, or package file.
+Supply it through the encrypted Admin2 flow or the PHP/web/CLI process
+environment. It is not a YAML key, request option, query parameter, diagnostic
+field, fixture, or package file. After the one write-only Admin submission, the
+provider receives the value only as a non-serializable credential object.
 
 ## Official Anthropic provider
 
@@ -545,8 +658,8 @@ The only credential name used by this adapter is:
 GRAV_JARVIS_ANTHROPIC_API_KEY
 ```
 
-Its value follows the same environment-only, non-serializable, redacted path
-as every Jarvis provider credential. No plugin setting accepts the value.
+Its value follows the same encrypted-local-or-environment, non-serializable,
+redacted path as OpenAI. No ordinary plugin setting accepts the value.
 
 ## Bounded production transport
 
@@ -682,15 +795,19 @@ also pass through the same redactor before a `CompletionResult` is returned.
 Jarvis discovers non-empty environment values whose names begin with
 `GRAV_JARVIS_` and treats them as secrets for redaction. It also redacts common
 authorization, API-key, token, credential, password, and secret assignments.
-Environment values are held only in memory; no secret is written to plugin
-configuration, request metadata, logs, caches, fixtures, or packages.
+Environment values are held only in memory. Admin-entered values are persisted
+only as authenticated ciphertext in the protected user-data store. Neither
+source writes a secret to plugin configuration, request metadata, logs, caches,
+fixtures, or packages.
 
-Provider credentials must be resolved inside a provider from server-side
-environment variables. They are never a `CompletionRequest` option, ordinary
-HTTP header string, plugin YAML value, Admin field, API payload, log field, or
-serialized DTO.
+Provider credentials are resolved inside a provider through the unchanged
+credential contract. They are never a `CompletionRequest` option, ordinary
+HTTP header string, plugin YAML value, response payload, log field, or
+serialized DTO. An Admin-entered value appears only in the initial authenticated
+write request and is never echoed.
 
-`EnvironmentCredentialResolver` is bound to one provider identifier. It only
+`CompositeCredentialResolver` first delegates to the existing
+`EnvironmentCredentialResolver`, which is bound to one provider identifier and only
 accepts uppercase environment names within that provider's namespace. For
 provider `example-provider`, the namespace is:
 
@@ -703,7 +820,9 @@ They cannot be serialized, display as redacted during debugging, and can be
 prefixed safely for an HTTP authentication scheme without converting the
 secret into an ordinary configuration value. Missing, malformed, and cross-
 provider environment references fail with typed exceptions that mention only
-the provider and environment-variable name.
+the provider and environment-variable name. Only environment absence permits
+the encrypted local fallback; a malformed higher-priority environment value
+fails closed.
 
 ## Deterministic HTTP conformance
 
@@ -723,7 +842,7 @@ contract tests. It hashes the canonical request and returns a stable response
 and character-unit usage. Jarvis never registers it during normal plugin boot.
 
 Run the complete frozen 0.1.x provider suite plus the 0.2.x Admin, 0.3.0
-reliability/chunking, and 0.3.2 provider-setup contracts with host PHP or the
+reliability/chunking, 0.3.2 provider setup, and 0.3.3 credential/readiness contracts with host PHP or the
 repository's DDEV fixture:
 
 ```bash

@@ -18,6 +18,7 @@ use Grav\Plugin\GravJarvis\Admin\TransientProposalStore;
 use Grav\Plugin\GravJarvis\Contracts\JarvisServiceInterface;
 use Grav\Plugin\GravJarvis\Contracts\Exception\BudgetExceededException;
 use Grav\Plugin\GravJarvis\Contracts\Exception\ProviderFailureException;
+use Grav\Plugin\GravJarvis\Security\CredentialManager;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,9 +34,11 @@ final class ApiController extends AbstractApiController
         $this->requirePermission($request, 'grav-jarvis.access');
         $canApprove = $this->isSuperWithinScope($request)
             || $this->hasPermissionWithinScope($request, 'grav-jarvis.approve');
-        $canManage = $this->isSuperWithinScope($request)
-            || $this->hasPermissionWithinScope($request, 'api.config.write');
-        return ApiResponse::create($this->admin()->bootstrap($canApprove, $canManage));
+        return ApiResponse::create($this->admin()->bootstrap(
+            $canApprove,
+            $this->canManage($request),
+            $this->canConfigure($request)
+        ));
     }
 
     public function validateProvider(ServerRequestInterface $request): ResponseInterface
@@ -48,6 +51,64 @@ final class ApiController extends AbstractApiController
     {
         $this->requirePermission($request, 'grav-jarvis.access');
         return ApiResponse::create($this->admin()->models($this->providerId($request)));
+    }
+
+    public function saveCredential(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requireManagement($request);
+        $providerId = $this->managedProviderId($request);
+        $body = $this->body($request, ['credential']);
+        $credential = $this->requiredString($body, 'credential', 8192);
+        unset($body['credential']);
+        try {
+            $stored = $this->credentials()->save($providerId, $credential);
+        } catch (RuntimeException $error) {
+            throw new ApiException(
+                statusCode: 503,
+                errorTitle: 'Credential Storage Unavailable',
+                detail: $this->safeCredentialStorageMessage($error),
+                errorCode: 'jarvis_credential_storage_unavailable'
+            );
+        } finally {
+            if (isset($credential)) {
+                \Grav\Plugin\GravJarvis\Security\SodiumAeadBackend::zero($credential);
+            }
+        }
+
+        $validation = $this->admin()->validation($providerId);
+        $models = $validation['usable'] ? $this->admin()->models($providerId) : null;
+        return ApiResponse::create([
+            'stored' => true,
+            'storage' => $stored,
+            'credential' => $this->credentials()->status($providerId),
+            'validation' => $validation,
+            'models' => $models,
+            'message' => $validation['usable']
+                ? 'Credential saved securely and provider validation succeeded.'
+                : 'Credential saved securely, but provider validation did not succeed.',
+        ]);
+    }
+
+    public function removeCredential(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->requireManagement($request);
+        $providerId = $this->managedProviderId($request);
+        $this->body($request, []);
+        try {
+            $removed = $this->credentials()->remove($providerId);
+        } catch (RuntimeException) {
+            throw new ApiException(
+                statusCode: 503,
+                errorTitle: 'Credential Removal Failed',
+                detail: 'Jarvis could not safely remove the encrypted local credential.',
+                errorCode: 'jarvis_credential_remove_failed'
+            );
+        }
+        return ApiResponse::create([
+            'removed' => $removed,
+            'credential' => $this->credentials()->status($providerId),
+            'message' => 'The encrypted local credential was removed. Environment credentials, if configured, are unchanged.',
+        ]);
     }
 
     public function complete(ServerRequestInterface $request): ResponseInterface
@@ -331,7 +392,8 @@ final class ApiController extends AbstractApiController
         $service = $this->service();
         $configuration = $this->config->get('plugins.grav-jarvis', []);
         $configuration = is_array($configuration) ? $configuration : [];
-        $setups = new ProviderSetupCatalog($configuration, $service);
+        $credentials = $this->credentials(false);
+        $setups = new ProviderSetupCatalog($configuration, $service, $credentials);
         return new JarvisAdminService(
             $service,
             new BoundedContextBuilder(),
@@ -339,8 +401,58 @@ final class ApiController extends AbstractApiController
             new TransientProposalStore(rtrim($cache, '/\\') . '/grav-jarvis/proposals'),
             $this->siteScope(),
             $setups->providers(),
-            $setups->defaultProvider()
+            $setups->defaultProvider(),
+            $credentials?->readiness() ?? []
         );
+    }
+
+    private function credentials(bool $required = true): ?CredentialManager
+    {
+        $credentials = $this->grav['gravJarvisCredentials'] ?? null;
+        if ($credentials instanceof CredentialManager) {
+            return $credentials;
+        }
+        if ($required) {
+            throw new ApiException(503, 'Service Unavailable', 'Jarvis credential storage is unavailable; use environment credentials.');
+        }
+        return null;
+    }
+
+    private function canManage(ServerRequestInterface $request): bool
+    {
+        return $this->isSuperWithinScope($request)
+            || $this->hasPermissionWithinScope($request, 'grav-jarvis.manage')
+            || $this->hasPermissionWithinScope($request, 'api.config.write');
+    }
+
+    private function canConfigure(ServerRequestInterface $request): bool
+    {
+        return $this->isSuperWithinScope($request)
+            || $this->hasPermissionWithinScope($request, 'api.config.write');
+    }
+
+    private function requireManagement(ServerRequestInterface $request): void
+    {
+        if (!$this->canManage($request)) {
+            $this->requirePermission($request, 'api.super');
+        }
+    }
+
+    private function managedProviderId(ServerRequestInterface $request): string
+    {
+        $providerId = $this->providerId($request);
+        if (!$this->credentials()->supportsAdminCredential($providerId)) {
+            throw new ValidationException('Jarvis does not manage credentials for this provider.');
+        }
+        return $providerId;
+    }
+
+    private function safeCredentialStorageMessage(RuntimeException $error): string
+    {
+        $message = $error->getMessage();
+        return str_starts_with($message, 'No authenticated') || str_starts_with($message, 'The protected')
+            ? $message
+            : 'Jarvis could not save the credential in protected local storage. Existing credentials were not changed.';
     }
 
     private function siteScope(): string

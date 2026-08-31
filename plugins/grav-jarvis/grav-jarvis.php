@@ -11,6 +11,9 @@ use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\CompatibleProviderConfig;
 use Grav\Plugin\GravJarvis\Provider\OpenAICompatible\OpenAICompatibleProvider;
 use Grav\Plugin\GravJarvis\Provider\ProviderRegistry;
 use Grav\Plugin\GravJarvis\Security\SecretRedactor;
+use Grav\Plugin\GravJarvis\Security\CredentialManager;
+use Grav\Plugin\GravJarvis\Security\EncryptedCredentialStore;
+use Grav\Plugin\GravJarvis\Security\MasterKeyManager;
 use Grav\Plugin\GravJarvis\Service\JarvisService;
 use Grav\Plugin\GravJarvis\Service\ReliableJarvisService;
 use Grav\Plugin\GravJarvis\Reliability\BudgetGuard;
@@ -31,6 +34,7 @@ final class GravJarvisPlugin extends Plugin
     public const SLUG = 'grav-jarvis';
     public const SERVICE_KEY = 'gravJarvis';
     public const PROVIDER_EVENT = 'onJarvisProviderRegister';
+    public const CREDENTIAL_MANAGER_KEY = 'gravJarvisCredentials';
 
     public static function getSubscribedEvents(): array
     {
@@ -65,6 +69,7 @@ final class GravJarvisPlugin extends Plugin
 
         $registry = new ProviderRegistry();
         $redactor = SecretRedactor::fromEnvironment();
+        $credentialManager = $this->credentialManager();
 
         if ($this->config->get('plugins.' . self::SLUG . '.providers.openai.enabled', true)) {
             try {
@@ -75,7 +80,10 @@ final class GravJarvisPlugin extends Plugin
                 if (!is_string($defaultModel)) {
                     throw new \InvalidArgumentException('The OpenAI default model must be a string.');
                 }
-                $registry->register(OpenAIProvider::createProduction($defaultModel));
+                $registry->register(OpenAIProvider::createProduction(
+                    $defaultModel,
+                    $credentialManager?->resolver(OpenAIProvider::ID)
+                ));
             } catch (Throwable $error) {
                 $this->logRegistrationFailure('OpenAI registration failed', $error, $redactor);
             }
@@ -90,7 +98,10 @@ final class GravJarvisPlugin extends Plugin
                 if (!is_string($defaultModel)) {
                     throw new \InvalidArgumentException('The Anthropic default model must be a string.');
                 }
-                $registry->register(AnthropicProvider::createProduction($defaultModel));
+                $registry->register(AnthropicProvider::createProduction(
+                    $defaultModel,
+                    $credentialManager?->resolver(AnthropicProvider::ID)
+                ));
             } catch (Throwable $error) {
                 $this->logRegistrationFailure('Anthropic registration failed', $error, $redactor);
             }
@@ -185,6 +196,8 @@ final class GravJarvisPlugin extends Plugin
             $group->get('/bootstrap', [$controller, 'bootstrap']);
             $group->post('/providers/{id}/validate', [$controller, 'validateProvider']);
             $group->get('/providers/{id}/models', [$controller, 'models']);
+            $group->post('/providers/{id}/credential', [$controller, 'saveCredential']);
+            $group->post('/providers/{id}/credential/remove', [$controller, 'removeCredential']);
             $group->post('/completions', [$controller, 'complete']);
             $group->get('/page-context', [$controller, 'pageContext']);
             $group->post('/proposals', [$controller, 'propose']);
@@ -258,6 +271,32 @@ final class GravJarvisPlugin extends Plugin
     private function enabled(): bool
     {
         return (bool) $this->config->get('plugins.' . self::SLUG . '.enabled', true);
+    }
+
+    private function credentialManager(): ?CredentialManager
+    {
+        if (isset($this->grav[self::CREDENTIAL_MANAGER_KEY])) {
+            $manager = $this->grav[self::CREDENTIAL_MANAGER_KEY];
+            return $manager instanceof CredentialManager ? $manager : null;
+        }
+        $locator = $this->grav['locator'] ?? null;
+        if (!is_object($locator) || !method_exists($locator, 'findResource')) {
+            return null;
+        }
+        $data = (string) $locator->findResource('user://data', true, true);
+        if ($data === '') {
+            return null;
+        }
+        $directory = rtrim($data, '/\\') . '/grav-jarvis/credentials';
+        $manager = new CredentialManager(
+            new EncryptedCredentialStore($directory, new MasterKeyManager($directory)),
+            [
+                OpenAIProvider::ID => OpenAIProvider::CREDENTIAL_ENVIRONMENT_VARIABLE,
+                AnthropicProvider::ID => AnthropicProvider::CREDENTIAL_ENVIRONMENT_VARIABLE,
+            ]
+        );
+        $this->grav[self::CREDENTIAL_MANAGER_KEY] = $manager;
+        return $manager;
     }
 
     private function userCan(object $user, string $permission): bool
