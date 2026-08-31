@@ -115,6 +115,16 @@ try {
   assert.doesNotMatch(visual, /##|\*\*/);
   assert.match(visual, /Visible heading/);
   assert.match(await field.locator('[data-caxton-opaque="twig"]').innerText(), /\{% protected %\}/);
+  const initialRhythm = await field.evaluate((element) => {
+    const heading = element.querySelector('.ProseMirror h2');
+    const paragraph = element.querySelector('.ProseMirror p');
+    return {
+      headingBottom: parseFloat(getComputedStyle(heading).marginBottom),
+      paragraphBottom: parseFloat(getComputedStyle(paragraph).marginBottom),
+    };
+  });
+  assert.ok(initialRhythm.headingBottom >= 6, JSON.stringify(initialRhythm));
+  assert.ok(initialRhythm.paragraphBottom >= 12, JSON.stringify(initialRhythm));
   assert.deepEqual(pageMutations, []);
   if (screenshotPath) await page.screenshot({path: screenshotPath, fullPage: true});
   console.log('PASS: authenticated Caxton field hides Markdown punctuation and protects Twig');
@@ -146,6 +156,43 @@ try {
   await page.locator(tag).waitFor({state: 'visible'});
   assert.equal((await snapshot()).content, savedValue);
   console.log('PASS: only the ordinary Admin2 Save persists Caxton content');
+
+  const rhythmMutationCount = pageMutations.length;
+  const rhythmSource = 'First paragraph.\n\nSecond paragraph.\n\n# Heading\n\nHeading paragraph.\n\n- First item\n- Second item\n\nAfter list.\n\n> Quoted text.\n\nAfter quote.\n\n```text\ncode\n```\n\nAfter code.\n\n{% protected %}\n\nAfter protected.\n';
+  await page.evaluate((content) => window.dispatchEvent(new CustomEvent('grav:editor:insert-content', {detail: {mode: 'replace', content}})), rhythmSource);
+  await page.waitForTimeout(100);
+  const rhythm = await field.evaluate(async (element) => {
+    let styleChanges = 0;
+    element.addEventListener('change', () => { styleChanges += 1; });
+    const inspect = () => {
+      const nodes = [...element.querySelector('.ProseMirror').children];
+      return {
+        gaps: nodes.slice(1).map((node, index) => Math.round((node.getBoundingClientRect().top - nodes[index].getBoundingClientRect().bottom) * 10) / 10),
+        tags: nodes.map((node) => node.dataset.caxtonOpaque ? `opaque:${node.dataset.caxtonOpaque}` : node.tagName.toLowerCase()),
+        listStyle: getComputedStyle(element.querySelector('ul')).listStyleType,
+        blockquoteMargin: parseFloat(getComputedStyle(element.querySelector('blockquote')).marginTop),
+        codeMargin: parseFloat(getComputedStyle(element.querySelector('pre')).marginBottom),
+        protectedMargin: parseFloat(getComputedStyle(element.querySelector('[data-caxton-opaque]')).marginTop),
+      };
+    };
+    document.documentElement.classList.remove('dark');
+    const light = inspect();
+    document.documentElement.classList.add('dark');
+    const dark = inspect();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    return {light, dark, styleChanges, content: element.value, state: element.querySelector('[data-caxton-state]').textContent};
+  });
+  for (const theme of [rhythm.light, rhythm.dark]) {
+    assert.ok(theme.gaps.every((gap) => gap >= 8), JSON.stringify(theme));
+    assert.notEqual(theme.listStyle, 'none', JSON.stringify(theme));
+    assert.ok(theme.blockquoteMargin >= 12 && theme.codeMargin >= 12 && theme.protectedMargin >= 12, JSON.stringify(theme));
+  }
+  assert.equal(rhythm.styleChanges, 0);
+  assert.equal(rhythm.content, rhythmSource);
+  assert.equal(rhythm.state, 'Unsaved changes');
+  assert.equal(pageMutations.length, rhythmMutationCount);
+  await page.evaluate((content) => window.dispatchEvent(new CustomEvent('grav:editor:insert-content', {detail: {mode: 'replace', content}})), savedValue);
+  console.log('PASS: signed-in light/dark computed rhythm survives Admin2 reset without content or dirty-state side effects');
 
   const mutationCount = pageMutations.length;
   await selectVisualText('saved');
@@ -188,8 +235,77 @@ try {
   assert.equal((await snapshot()).content, '* Toolbar paragraph.\n');
   await field.getByRole('button', {name: 'Numbered list'}).click();
   assert.equal((await snapshot()).content, '1. Toolbar paragraph.\n');
+
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('grav:editor:insert-content', {
+    detail: {mode: 'replace', content: 'Media anchor.\n'},
+  })));
+  await selectVisualText('Media', true);
+  await field.getByRole('button', {name: 'Page media'}).click();
+  await field.locator('[data-caxton-media-dialog]').waitFor({state: 'visible'});
+  assert.match(await field.locator('[data-caxton-media-list]').innerText(), /fixture\.png/);
+  await field.locator('[data-caxton-media-alt]').fill('Fixture image');
+  await field.locator('[data-caxton-media-insert]').click();
+  assert.match((await snapshot()).content, /!\[Fixture image\]\(fixture\.png\)/);
   assert.equal(pageMutations.length, mutationCount, 'Toolbar actions must remain unsaved-buffer changes.');
-  console.log('PASS: links, strikethrough, paragraph structure, quotes, and lists remain source-faithful and unsaved');
+  console.log('PASS: links, strikethrough, paragraph structure, quotes, lists, and Admin2 page media remain source-faithful and unsaved');
+
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('grav:editor:insert-content', {
+    detail: {mode: 'replace', content: 'Editable sentence.\n\nUnchanged context.\n'},
+  })));
+  await selectVisualText('Editable sentence.');
+  await field.getByRole('button', {name: 'Jarvis'}).click();
+  const jarvisDialog = field.locator('[data-caxton-jarvis-dialog]');
+  await jarvisDialog.waitFor({state: 'visible'});
+  await field.locator('[data-caxton-jarvis-provider]').selectOption('browser-fixture');
+  await field.locator('[data-caxton-jarvis-action]').selectOption('rewrite');
+  await field.getByRole('button', {name: 'Generate proposal'}).click();
+  await field.locator('[data-caxton-jarvis-result]').waitFor({state: 'visible'});
+  assert.equal(await field.locator('[data-caxton-jarvis-original]').innerText(), 'Editable sentence.');
+  assert.match(await field.locator('[data-caxton-jarvis-output]').innerText(), /^JARVIS_BROWSER_FIXTURE_RESPONSE:[a-f0-9]{16}$/);
+  assert.match(await field.locator('[data-caxton-jarvis-meta]').innerText(), /browser-fixture.*fixture-alpha.*usage/s);
+  const beforeProposal = (await snapshot()).content;
+  await field.getByRole('button', {name: 'Reject'}).click();
+  assert.equal((await snapshot()).content, beforeProposal);
+
+  await field.getByRole('button', {name: 'Generate proposal'}).click();
+  await field.locator('[data-caxton-jarvis-result]').waitFor({state: 'visible'});
+  const proposed = await field.locator('[data-caxton-jarvis-output]').innerText();
+  await field.getByRole('button', {name: 'Accept into unsaved buffer'}).click();
+  await page.waitForFunction(({selector, replacement}) => document.querySelector(selector)?.value.includes(replacement), {
+    selector: tag,
+    replacement: proposed,
+  });
+  const accepted = (await snapshot()).content;
+  assert.equal(accepted, `${proposed}\n\nUnchanged context.\n`);
+  assert.equal(pageMutations.length, mutationCount, 'Jarvis Accept must not persist the page.');
+  await field.getByRole('button', {name: 'Undo'}).click();
+  assert.equal((await snapshot()).content, beforeProposal);
+  await field.getByRole('button', {name: 'Redo'}).click();
+  assert.equal((await snapshot()).content, accepted);
+  await field.getByRole('button', {name: 'Undo'}).click();
+  await field.getByRole('button', {name: 'Source'}).click();
+  await field.evaluate((element) => {
+    const from = element.value.indexOf('Editable sentence.');
+    element.source.setSelection(from, from + 'Editable sentence.'.length);
+    element.source.focus();
+  });
+  await field.getByRole('button', {name: 'Jarvis'}).click();
+  await jarvisDialog.waitFor({state: 'visible'});
+  await field.locator('[data-caxton-jarvis-provider]').selectOption('browser-fixture');
+  await field.locator('[data-caxton-jarvis-action]').selectOption('proofread');
+  await field.getByRole('button', {name: 'Generate proposal'}).click();
+  await field.locator('[data-caxton-jarvis-result]').waitFor({state: 'visible'});
+  const sourceProposed = await field.locator('[data-caxton-jarvis-output]').innerText();
+  await field.getByRole('button', {name: 'Accept into unsaved buffer'}).click();
+  await page.waitForFunction(({selector, replacement}) => document.querySelector(selector)?.value.includes(replacement), {
+    selector: tag,
+    replacement: sourceProposed,
+  });
+  assert.equal((await snapshot()).content, `${sourceProposed}\n\nUnchanged context.\n`);
+  await field.getByRole('button', {name: 'Undo'}).click();
+  assert.equal((await snapshot()).content, beforeProposal);
+  await field.getByRole('button', {name: 'Visual'}).click();
+  console.log('PASS: deterministic Jarvis proposal preview, Reject, Accept, and one-step undo/redo stay in the unsaved buffer');
 
   const responsive = await field.evaluate((element) => {
     document.documentElement.classList.add('dark');
@@ -225,6 +341,9 @@ try {
   assert.ok(settingsValues.includes('undo'), JSON.stringify(settingsValues));
   assert.ok(settingsValues.includes('blockquote'), JSON.stringify(settingsValues));
   assert.ok(settingsValues.includes('strikethrough'), JSON.stringify(settingsValues));
+  assert.ok(settingsValues.includes('horizontal_rule'), JSON.stringify(settingsValues));
+  assert.ok(settingsValues.includes('media'), JSON.stringify(settingsValues));
+  assert.ok(settingsValues.includes('jarvis'), JSON.stringify(settingsValues));
   assert.ok(settingsValues.includes('source'), JSON.stringify(settingsValues));
   console.log('PASS: Admin2 plugin settings expose the ordered safe toolbar configuration');
   const relevantConsoleErrors = consoleErrors.filter((message) => !message.startsWith('Failed to load resource:'));

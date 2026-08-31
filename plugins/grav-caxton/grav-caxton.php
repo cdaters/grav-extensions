@@ -20,7 +20,8 @@ final class GravCaxtonPlugin extends Plugin
     private const DEFAULT_TOOLBAR = [
         'undo', 'redo', 'separator', 'heading', 'separator', 'bold', 'italic', 'strikethrough',
         'inline_code', 'remove_format', 'separator', 'link', 'blockquote',
-        'bullet_list', 'ordered_list', 'code_block', 'separator', 'source',
+        'bullet_list', 'ordered_list', 'horizontal_rule', 'code_block', 'media',
+        'separator', 'jarvis', 'source',
     ];
     private const TOOLBAR_ALIASES = [
         '|' => 'separator',
@@ -31,6 +32,7 @@ final class GravCaxtonPlugin extends Plugin
         'bulletList' => 'bullet_list',
         'orderedList' => 'ordered_list',
         'codeBlock' => 'code_block',
+        'horizontalRule' => 'horizontal_rule',
     ];
 
     public static function getSubscribedEvents(): array
@@ -38,7 +40,30 @@ final class GravCaxtonPlugin extends Plugin
         return [
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
             'onApiBlueprintResolved' => ['onApiBlueprintResolved', 0],
+            'onApiRegisterRoutes' => ['onApiRegisterRoutes', 0],
         ];
+    }
+
+    public function onApiRegisterRoutes(Event $event): void
+    {
+        if (!$this->config->get('plugins.' . self::SLUG . '.enabled', true)
+            || !$this->config->get('plugins.' . self::SLUG . '.jarvis.enabled', true)) {
+            return;
+        }
+        require_once __DIR__ . '/classes/Jarvis/CaxtonJarvisException.php';
+        require_once __DIR__ . '/classes/Jarvis/CaxtonProposalStore.php';
+        require_once __DIR__ . '/classes/Jarvis/CaxtonJarvisService.php';
+        require_once __DIR__ . '/classes/Controller/ApiController.php';
+        $routes = $event['routes'];
+        $controller = \Grav\Plugin\GravCaxton\Controller\ApiController::class;
+        $routes->group('/grav-caxton', static function ($group) use ($controller): void {
+            $group->get('/jarvis/status', [$controller, 'jarvisStatus']);
+            $group->get('/jarvis/providers/{id}/models', [$controller, 'jarvisModels']);
+            $group->post('/jarvis/providers/{id}/validate', [$controller, 'jarvisValidate']);
+            $group->post('/jarvis/proposals', [$controller, 'jarvisPropose']);
+            $group->post('/jarvis/proposals/{id}/accept', [$controller, 'jarvisAccept']);
+            $group->post('/jarvis/proposals/{id}/discard', [$controller, 'jarvisDiscard']);
+        });
     }
 
     public function autoload(): void
@@ -107,7 +132,9 @@ final class GravCaxtonPlugin extends Plugin
         $event['fields'] = $this->replaceMarkdownFields(
             $fields,
             $this->userCan($user, 'grav-caxton.source'),
-            $this->configuredToolbar()
+            $this->configuredToolbar(),
+            (bool) $this->config->get('plugins.' . self::SLUG . '.jarvis.enabled', true)
+                && $this->userCan($user, 'grav-jarvis.use')
         );
     }
 
@@ -115,7 +142,7 @@ final class GravCaxtonPlugin extends Plugin
      * @param array<array-key, mixed> $fields
      * @return array<array-key, mixed>
      */
-    private function replaceMarkdownFields(array $fields, bool $allowSource, array $toolbar): array
+    private function replaceMarkdownFields(array $fields, bool $allowSource, array $toolbar, bool $allowJarvis): array
     {
         foreach ($fields as $key => $field) {
             if (!is_array($field)) {
@@ -126,12 +153,13 @@ final class GravCaxtonPlugin extends Plugin
                 $field['type'] = 'caxton';
                 $caxton = is_array($field['caxton'] ?? null) ? $field['caxton'] : [];
                 $caxton['allow_source'] = $allowSource;
+                $caxton['allow_jarvis'] = $allowJarvis;
                 $caxton['toolbar'] = $this->normalizeToolbar($caxton['toolbar'] ?? $toolbar, $allowSource);
                 $field['caxton'] = $caxton;
             }
 
             if (isset($field['fields']) && is_array($field['fields'])) {
-                $field['fields'] = $this->replaceMarkdownFields($field['fields'], $allowSource, $toolbar);
+                $field['fields'] = $this->replaceMarkdownFields($field['fields'], $allowSource, $toolbar, $allowJarvis);
             }
 
             $fields[$key] = $field;

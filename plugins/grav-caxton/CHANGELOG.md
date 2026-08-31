@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.0 - 2026-08-31
+
+- Complete the planned 0.2.2 authoring slice: scoped paragraph/heading/list/
+  quote/code/rule/media/protected-block rhythm, explicit light/dark palettes,
+  page-media insertion and image editing, reference links, horizontal rules,
+  code-language selection, and improved list transactions.
+- Prove computed inter-block spacing in signed-in Admin2 under reset styles and
+  prove theme/resize/presentation changes do not mutate source, emit change, or
+  create false dirty state.
+- Add optional public-contract-only Jarvis discovery, provider validation/model
+  discovery, seven bounded selection/block actions, and concise provider/model/
+  usage/cost feedback without changing Jarvis itself.
+- Add text-only Original/Proposed review with explicit Reject and one-time
+  Accept into the unsaved buffer, 15-minute hash-only actor/page/source/range
+  receipts, stale/replay protection, and one-step proposal undo/redo.
+- Require Caxton, Jarvis, and page permissions at the API boundary; exclude
+  opaque constructs and restrict code blocks to read-only or explicit custom
+  actions. Caxton remains fully usable when Jarvis is absent or failing.
+- Add deterministic PHP, isolated Chrome, and signed-in DDEV coverage for all
+  actions, failure categories, proposal binding, Visual/Source integration,
+  media/authoring behavior, real spacing, and Save-only persistence.
+
 ## 0.2.1 - 2026-08-31
 
 - Replace browser `Canvas` colors with explicit light/dark Admin2-aware editor,

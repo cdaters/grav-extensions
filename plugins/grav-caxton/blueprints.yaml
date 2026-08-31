@@ -1,7 +1,7 @@
 name: Caxton
 slug: grav-caxton
 type: plugin
-version: 0.2.1
+version: 0.3.0
 description: Source-faithful visual and source editing for Grav 2 and Admin2.
 icon: pen-ruler
 author:
@@ -66,6 +66,18 @@ form:
         - blockquote
         - bullet_list
         - ordered_list
+        - horizontal_rule
         - code_block
+        - media
         - separator
+        - jarvis
         - source
+
+    jarvis.enabled:
+      type: toggle
+      label: Optional Jarvis actions
+      help: Shows selection-aware AI actions only when Jarvis is installed and the user has both Caxton and Jarvis permissions. Caxton remains complete without Jarvis.
+      highlight: 1
+      default: 1
+      options: { 1: Enabled, 0: Disabled }
+      validate: { type: bool }

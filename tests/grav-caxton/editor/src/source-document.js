@@ -26,6 +26,7 @@ const OPAQUE_LABELS = {
   table: 'Markdown table',
   malformed: 'Malformed source',
   unsafe_url: 'Unsafe URL source',
+  reference_definition: 'Link reference',
   unknown: 'Unsupported source',
   mixed: 'Mixed source',
 };
@@ -113,6 +114,9 @@ function fenceMetadata(source) {
 }
 
 function descriptorKind(lezerName, source, tree) {
+  if (lezerName === 'LinkReference' || /^[ \t]{0,3}\[[^\]\r\n]{1,80}\]:[ \t]+\S+/m.test(source)) {
+    return {kind: 'reference_definition', safe: false};
+  }
   if (lezerName === 'FencedCode') {
     return fenceMetadata(source).closed
       ? {kind: 'code_block', safe: true}
@@ -150,10 +154,12 @@ function taskListJson(value) {
   return result;
 }
 
-function safeNodeFor(descriptor) {
+function safeNodeFor(descriptor, referenceDefinitions = '') {
   let parsed;
   try {
-    parsed = visualMarkdownParser.parse(descriptor.source);
+    parsed = visualMarkdownParser.parse(referenceDefinitions && /\[[^\]]+\]\[[^\]]*\]/.test(descriptor.source)
+      ? `${descriptor.source.replace(/\s+$/, '')}\n\n${referenceDefinitions}`
+      : descriptor.source);
   } catch {
     return null;
   }
@@ -196,7 +202,9 @@ function opaqueNode(descriptor) {
     sourceEnd: descriptor.end,
     sourceKind: descriptor.kind,
     label: OPAQUE_LABELS[descriptor.kind] ?? OPAQUE_LABELS.unknown,
-    preview: opaquePreview(descriptor.source),
+    preview: descriptor.kind === 'reference_definition'
+      ? 'Definition preserved in source mode'
+      : opaquePreview(descriptor.source),
   });
 }
 
@@ -207,6 +215,7 @@ export class SourceDocumentAdapter {
     if (source.length > limit) throw new RangeError('Caxton source exceeds the configured browser-unit limit.');
     if (source.includes('\u0000')) throw new TypeError('Caxton source cannot contain NUL.');
     this.source = source;
+    this.referenceDefinitions = (source.match(/^[ \t]{0,3}\[[^\]\r\n]{1,80}\]:[ \t]+\S+[^\r\n]*(?:\r?\n|\r|$)/gm) || []).join('\n');
     this.blocks = [];
     this.diagnostics = [];
     this.#parse();
@@ -260,7 +269,7 @@ export class SourceDocumentAdapter {
       metadata: kind === 'code_block' ? fenceMetadata(this.source.slice(start, end)) : {},
     };
     if (safe) {
-      descriptor.node = safeNodeFor(descriptor);
+      descriptor.node = safeNodeFor(descriptor, this.referenceDefinitions);
       if (descriptor.node === null) {
         descriptor.safe = false;
         descriptor.kind = 'mixed';

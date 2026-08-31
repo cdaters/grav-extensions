@@ -258,11 +258,33 @@ namespace GravCaxtonContract {
     expectSame(
         ['undo', 'redo', 'separator', 'heading', 'separator', 'bold', 'italic', 'strikethrough', 'inline_code',
             'remove_format', 'separator', 'link', 'blockquote', 'bullet_list', 'ordered_list',
-            'code_block', 'separator', 'source'],
+            'horizontal_rule', 'code_block', 'media', 'separator', 'jarvis', 'source'],
         $resolved[0]['caxton']['toolbar'],
         'The bounded default toolbar must reach the field in its configured order.'
     );
     expectSame('editor', $resolved[1]['type'], 'Explicit code-editor fields must remain untouched.');
+    expectSame(false, $resolved[0]['caxton']['allow_jarvis'], 'Jarvis actions require their independent use permission.');
+
+    $jarvisAllowedBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-caxton.use', 'grav-jarvis.use']),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $plugin->onApiBlueprintResolved($jarvisAllowedBlueprint);
+    expectSame(true, $jarvisAllowedBlueprint['fields'][0]['caxton']['allow_jarvis'], 'Jarvis use permission must expose the optional control when enabled.');
+
+    $jarvisDisabledPlugin = new \Grav\Plugin\GravCaxtonPlugin();
+    $jarvisDisabledPlugin->setContractContext(
+        new ContractContainer(),
+        new ContractConfig(['plugins.grav-caxton.jarvis.enabled' => false])
+    );
+    $jarvisDisabledBlueprint = new \RocketTheme\Toolbox\Event\Event([
+        'context' => 'page',
+        'user' => new FakeUser(['grav-caxton.use', 'grav-jarvis.use']),
+        'fields' => [['name' => 'content', 'type' => 'markdown']],
+    ]);
+    $jarvisDisabledPlugin->onApiBlueprintResolved($jarvisDisabledBlueprint);
+    expectSame(false, $jarvisDisabledBlueprint['fields'][0]['caxton']['allow_jarvis'], 'Disabled Jarvis integration must not expose a dead control.');
 
     $deniedBlueprint = new \RocketTheme\Toolbox\Event\Event([
         'context' => 'page',
@@ -467,5 +489,5 @@ namespace GravCaxtonContract {
     expect(count($failureLogger->errors) === 1, 'Extension failure must produce one bounded log entry.');
     expect(!str_contains($failureLogger->errors[0], $secret), 'Registration logs must not disclose exception content.');
 
-    fwrite(STDOUT, "Caxton 0.1.0 contract checks passed.\n");
+    fwrite(STDOUT, "Caxton 0.3.0 contract checks passed.\n");
 }

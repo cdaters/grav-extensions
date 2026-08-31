@@ -33,7 +33,9 @@ function serializeCodeBlock(node, descriptor) {
   const metadata = descriptor.metadata;
   if (!metadata?.closed) return normalizedSerializedBlock(node);
   const body = node.textContent.replace(/\r\n|\r|\n/g, metadata.newline);
-  return `${metadata.opening}${metadata.newline}${body}${metadata.newline}${metadata.closing}`;
+  const marker = metadata.opening.match(/^([ \t]{0,3})(`{3,}|~{3,})/)?.[0] ?? '```';
+  const info = String(node.attrs.params || '').trim();
+  return `${marker}${info}${metadata.newline}${body}${metadata.newline}${metadata.closing}`;
 }
 
 export class VisualEditorAdapter {
@@ -44,6 +46,7 @@ export class VisualEditorAdapter {
     this.onReject = typeof options.onReject === 'function' ? options.onReject : null;
     this.onSelectionChange = typeof options.onSelectionChange === 'function' ? options.onSelectionChange : null;
     this.onRequestLink = typeof options.onRequestLink === 'function' ? options.onRequestLink : null;
+    this.onRequestMedia = typeof options.onRequestMedia === 'function' ? options.onRequestMedia : null;
     this.view = null;
     this.state = EditorState.create({
       schema: caxtonSchema,
@@ -84,6 +87,16 @@ export class VisualEditorAdapter {
         'aria-label': 'Caxton visual editor proof',
         role: 'textbox',
         'aria-multiline': 'true',
+      },
+      handleClickOn: (view, position, node) => {
+        if (node.type.name !== 'image' || !this.onRequestMedia) return false;
+        let blockId = null;
+        view.state.doc.forEach((top, offset) => {
+          if (position >= offset && position <= offset + top.nodeSize) blockId = top.attrs.blockId;
+        });
+        if (!blockId) return false;
+        this.onRequestMedia(blockId);
+        return true;
       },
       dispatchTransaction: (transaction) => {
         if (this.readOnly && transaction.docChanged) return;
@@ -213,7 +226,7 @@ export class VisualEditorAdapter {
     return replacement ? this.#replaceTopBlock(top, replacement) : false;
   }
 
-  toggleCodeBlock() {
+  toggleCodeBlock(language = '') {
     const top = this.#selectedTopBlock();
     if (!top) return false;
     let replacement = null;
@@ -224,11 +237,18 @@ export class VisualEditorAdapter {
       );
     } else if (['paragraph', 'heading'].includes(top.node.type.name)) {
       replacement = caxtonSchema.nodes.code_block.create(
-        {...this.#topSourceAttrs(top.node), params: ''},
+        {...this.#topSourceAttrs(top.node), params: language},
         top.node.textContent ? caxtonSchema.text(top.node.textContent) : null
       );
     }
     return replacement ? this.#replaceTopBlock(top, replacement) : false;
+  }
+
+  setCodeLanguage(language = '') {
+    const top = this.#selectedTopBlock();
+    if (!top || top.node.type !== caxtonSchema.nodes.code_block || !/^[a-z0-9_+.-]{0,64}$/i.test(language)) return false;
+    const replacement = top.node.type.create({...top.node.attrs, params: language}, top.node.content, top.node.marks);
+    return this.#replaceTopBlock(top, replacement);
   }
 
   selectionState() {
@@ -249,6 +269,7 @@ export class VisualEditorAdapter {
       canLink: !empty && Boolean(top),
       canUndo: undo(this.state),
       canRedo: redo(this.state),
+      codeLanguage: top?.node.type === caxtonSchema.nodes.code_block ? (top.node.attrs.params || '') : '',
     };
   }
 

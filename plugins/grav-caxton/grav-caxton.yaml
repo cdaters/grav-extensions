@@ -19,6 +19,11 @@ admin:
     - blockquote
     - bullet_list
     - ordered_list
+    - horizontal_rule
     - code_block
+    - media
     - separator
+    - jarvis
     - source
+jarvis:
+  enabled: true

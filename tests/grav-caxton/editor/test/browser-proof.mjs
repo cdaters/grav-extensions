@@ -205,7 +205,7 @@ try {
     const field = document.createElement('grav-test--caxton');
     field.field = {name: 'content', caxton: {allow_source: true, toolbar: [
       'undo', '|', 'heading', '|', 'bold', 'italic', 'strikethrough', 'inline_code', 'removeformat', '|',
-      'link', 'blockquote', 'bulletList', 'orderedList', 'codeBlock', '|', 'source', 'unknown',
+      'link', 'blockquote', 'bulletList', 'orderedList', 'horizontalRule', 'codeBlock', 'media', '|', 'source', 'unknown',
     ]}};
     field.value = 'Link this text.\n';
     document.body.replaceChildren(field);
@@ -219,7 +219,7 @@ try {
   });
   assert.deepEqual(toolbar.actions, [
     'undo', 'style', 'bold', 'italic', 'strikethrough', 'inline_code', 'remove_format', 'link',
-    'blockquote', 'bullet_list', 'ordered_list', 'code_block',
+    'blockquote', 'bullet_list', 'ordered_list', 'horizontal_rule', 'code_block', 'media',
   ]);
   assert.equal(toolbar.separators, 4);
   assert.equal(toolbar.source, true);
@@ -272,10 +272,93 @@ try {
   assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '* List me.\n');
   await page.getByRole('button', {name: 'Numbered list'}).click();
   assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '1. List me.\n');
+  await page.evaluate(() => {
+    const field = window.__caxtonToolbarField;
+    const offset = field.value.indexOf('List me.') + 'List me.'.length;
+    field.visual.setSelection(offset, offset);
+    field.visual.focus();
+  });
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Second item');
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), '1. List me.\n2. Second item\n');
 
   await replaceToolbarValue('Code me.\n');
   await page.getByRole('button', {name: 'Code block'}).click();
-  assert.match(await page.evaluate(() => window.__caxtonToolbarField.value), /^```\nCode me\.\n```\n$/);
+  await page.locator('[data-caxton-code-language]').fill('javascript');
+  await page.locator('[data-caxton-code-apply]').click();
+  assert.match(await page.evaluate(() => window.__caxtonToolbarField.value), /^```javascript\nCode me\.\n```\n$/);
+
+  await page.evaluate(() => window.__caxtonToolbarField.replaceContent('Before.\n\nAfter.\n'));
+  await page.evaluate(() => { window.__caxtonToolbarField.visual.setSelection(2, 2); window.__caxtonToolbarField.visual.focus(); });
+  await page.getByRole('button', {name: 'Horizontal rule'}).click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Before.\n\n---\n\nAfter.\n');
+
+  await page.evaluate(() => {
+    window.__GRAV_PAGE_MEDIA = () => [{filename: 'photo one.jpg', type: 'image/jpeg', thumb: '', url: '/photo-one.jpg', alt: '', title: ''}];
+    window.__caxtonToolbarField.replaceContent('Media follows.\n');
+    window.__caxtonToolbarField.visual.setSelection(2, 2);
+    window.__caxtonToolbarField.visual.focus();
+  });
+  await page.getByRole('button', {name: 'Page media'}).click();
+  await page.locator('[data-caxton-media-alt]').fill('A useful photograph');
+  await page.locator('[data-caxton-media-insert]').click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Media follows.\n\n![A useful photograph](photo%20one.jpg)\n\n');
+  await page.locator('[data-caxton-media]').click();
+  await page.locator('[data-caxton-media-alt]').fill('An edited photograph');
+  await page.locator('[data-caxton-media-title]').fill('Edited title');
+  await page.locator('[data-caxton-media-insert]').click();
+  assert.equal(await page.evaluate(() => window.__caxtonToolbarField.value), 'Media follows.\n\n![An edited photograph](photo%20one.jpg "Edited title")\n\n');
+
+  await page.evaluate(() => {
+    window.__caxtonToolbarField.replaceContent('Reference this phrase.\n');
+    const text = document.querySelector('grav-test--caxton .ProseMirror p').firstChild;
+    const range = document.createRange();
+    range.setStart(text, 10); range.setEnd(text, 21);
+    getSelection().removeAllRanges(); getSelection().addRange(range);
+    text.parentElement.closest('.ProseMirror').focus();
+  });
+  await page.getByRole('button', {name: 'Link', exact: true}).click();
+  await page.locator('[data-caxton-link-reference]').fill('reference-source');
+  await page.locator('[data-caxton-link-reference-url]').fill('https://example.com/reference');
+  await page.getByRole('button', {name: 'Apply link'}).click();
+  const referenceLink = await page.evaluate(() => ({
+    source: window.__caxtonToolbarField.value,
+    visual: window.__caxtonToolbarField.querySelector('.ProseMirror').innerText,
+  }));
+  assert.match(referenceLink.source, /\[this phrase\]\[reference-source\]/);
+  assert.match(referenceLink.source, /\[reference-source\]: https:\/\/example\.com\/reference/);
+  assert.doesNotMatch(referenceLink.visual, /\[this phrase\]|\[reference-source\]/);
+
+  await page.evaluate(() => {
+    window.__caxtonToolbarField.replaceContent('# Heading\n\nFirst paragraph.\n\n## Subheading\n\nSecond paragraph.\n');
+  });
+  const rhythm = await page.evaluate(() => {
+    const field = window.__caxtonToolbarField;
+    const heading = field.querySelector('.ProseMirror h2');
+    const paragraph = field.querySelector('.ProseMirror p');
+    return {
+      headingTop: parseFloat(getComputedStyle(heading).marginTop),
+      headingBottom: parseFloat(getComputedStyle(heading).marginBottom),
+      paragraphBottom: parseFloat(getComputedStyle(paragraph).marginBottom),
+    };
+  });
+  assert.ok(rhythm.headingTop >= 20 && rhythm.headingBottom >= 6, JSON.stringify(rhythm));
+  assert.ok(rhythm.paragraphBottom >= 12, JSON.stringify(rhythm));
+
+  const jarvisUndo = await page.evaluate(() => {
+    const field = window.__caxtonToolbarField;
+    field.replaceContent('Before Jarvis.\n');
+    field.jarvisHistory = {
+      before: 'Before Jarvis.\n', after: 'After Jarvis.\n',
+      selection: {from: 0, to: 14}, afterSelection: {from: 14, to: 14},
+    };
+    field.replaceContent('After Jarvis.\n');
+    const undo = field.undoJarvis();
+    const afterUndo = field.value;
+    const redo = field.redoJarvis();
+    return {undo, redo, afterUndo, afterRedo: field.value};
+  });
+  assert.deepEqual(jarvisUndo, {undo: true, redo: true, afterUndo: 'Before Jarvis.\n', afterRedo: 'After Jarvis.\n'});
 
   await page.evaluate(() => window.__caxtonToolbarField.replaceContent('Alpha beta.\n\nGamma.\n'));
   await page.evaluate(() => {
