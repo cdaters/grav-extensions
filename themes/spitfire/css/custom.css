@@ -501,6 +501,7 @@ body.sfng-project #body-wrapper > .container > .content-item {
 .sfng-at-a-glance,
 body.sfng-project .content-item > h2,
 body.sfng-project .content-item > p,
+body.sfng-project .content-item > .sfng-project-actions,
 body.sfng-project .content-item > .markdown-alert,
 body.sfng-project .content-item > .md-alert,
 .sfng-capability-grid,
