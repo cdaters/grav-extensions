@@ -126,7 +126,11 @@ toolbar replacement and may optionally consume Jarvis later.
   overrides, and optional failure-safe Icon Bench references.
 - **Grav Commander 0.3.11:** existing GPM plugin incorporated through Git
   subtree while retaining its standalone repository and history.
-- **Spitfire 1.2.0:** working Quark 2 child theme, intentionally site-specific.
+- **Spitfire 1.4.0:** working Quark 2 child theme, intentionally site-specific,
+  with separate current-project and historical documentation shells,
+  page-tree-driven navigation, breadcrumbs, responsive project/documentation
+  presentation, and progressive enhancement that leaves navigation usable
+  without JavaScript.
 - **Jarvis 0.3.3:** provider-neutral service plus hardened permission-filtered Admin2
   assistant and native page context panel. Six internal prompt actions operate
   on bounded title/frontmatter/media/current-unsaved-buffer context. Proposals

@@ -1,0 +1,33 @@
+{% macro items(parent) %}
+    {% import _self as docs_nav %}
+    {% import 'macros/spitfire-icons.html.twig' as icons %}
+
+    {% for section in parent.children.visible if section.header.published is not same as(false) and (section.header.access is empty or authorize(section.header.access)) %}
+        {% set has_children = section.children.visible.count > 0 %}
+        {% set section_active = section.active or section.activeChild %}
+        {% set icon = section.header.doc_icon|default('workshop/document') %}
+        {% set group_id = 'sfng-doc-group-' ~ section.route|trim('/')|replace({'/': '-'}) %}
+
+        {% if has_children %}
+            <details class="sfng-doc-group" data-sfng-doc-group{% if section_active %} open{% endif %}>
+                <summary class="sfng-doc-group-toggle {{ section_active ? 'active-parent' : '' }}" aria-controls="{{ group_id }}">
+                    {{ icons.decorative(icon, 'sfng-doc-nav-icon') }}
+                    <span>{{ section.menu }}</span>
+                    <i class="fa-solid fa-chevron-down sfng-doc-chevron" aria-hidden="true"></i>
+                </summary>
+                <div class="sfng-doc-subnav" id="{{ group_id }}">
+                    <a href="{{ section.url }}" class="{{ section.active ? 'active' : '' }}"{% if section.active %} aria-current="page"{% endif %} aria-label="{{ section.menu }} overview">
+                        {{ icons.decorative('document', 'sfng-doc-nav-icon') }}
+                        <span>Overview</span>
+                    </a>
+                    {{ docs_nav.items(section) }}
+                </div>
+            </details>
+        {% else %}
+            <a href="{{ section.url }}" class="{{ section.active ? 'active' : '' }}"{% if section.active %} aria-current="page"{% endif %}>
+                {{ icons.decorative(icon, 'sfng-doc-nav-icon') }}
+                <span>{{ section.menu }}</span>
+            </a>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}

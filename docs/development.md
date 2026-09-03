@@ -35,6 +35,29 @@ the repository.
 Grav Commander is synchronized through Git subtree; follow the commands in the
 root README rather than copying its directory from a site.
 
+## SPITFIRE theme authority and deployment
+
+`themes/spitfire` is the canonical source for the SPITFIRE child theme. A Grav
+site normally receives a copied installation at `user/themes/spitfire`; the
+installed tree is an integration target, not a second editorial source. Site
+pages, configuration, accounts, and runtime data remain outside the theme.
+
+Before bringing an integration experiment back, compare both trees file by
+file. Preserve source-only work, port only reusable theme behavior, leave
+site-specific content in the site, and exclude generated or installation
+artifacts. Validate the reconciled source and build the installable archive:
+
+```bash
+./scripts/test-spitfire-theme.sh
+./scripts/package-extension.sh theme spitfire
+```
+
+Deploy the reviewed package as a complete replacement of the copied theme only
+after backing up the target site. Clear Grav's cache, rebuild site-owned search
+indexes when relevant, compare the deployed tree with the package, and repeat
+public-route, navigation, responsive, no-JavaScript, accessibility, and log
+checks. Never copy an unreviewed DDEV tree wholesale over canonical source.
+
 ## Admin dashboard conventions
 
 Every custom Admin2 workbench with configurable behavior should expose a

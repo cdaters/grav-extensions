@@ -1,0 +1,42 @@
+{% macro nav_loop(page, pages) %}
+  {% import _self as macros %}
+  {% for p in page.children.visible %}
+    {% set is_legacy_manual_hub = p.route == '/archive/manuals-documentation' %}
+    {% set legacy_manuals = is_legacy_manual_hub ? pages.find('/archive/manuals-documentation/legacy-spitfire-3-7') : null %}
+    {% set historical_index = is_legacy_manual_hub ? pages.find('/archive/manuals-documentation/spitfire-historical-documentation-index') : null %}
+    {% set legacy_faq = is_legacy_manual_hub ? pages.find('/archive/manuals-documentation/spitfire-faq-part-3') : null %}
+    {% set has_curated_manuals = legacy_manuals and legacy_manuals.children.count > 0 %}
+    {% set active_page = (p.active or p.activeChild) ? 'active' : '' %}
+    {% set has_children = is_legacy_manual_hub ? has_curated_manuals : p.children.visible.count > 0 %}
+    <li{% if has_children %} class="has-children"{% endif %}>
+      <a href="{{ p.url }}" class="{{ active_page }}">
+        {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon }}" aria-hidden="true"></i>{% endif %}
+        {{ p.menu }}
+      </a>
+      {% if has_children %}
+      <ul>
+        {% if is_legacy_manual_hub %}
+          {% if historical_index %}
+            <li>
+              <a href="{{ historical_index.url }}" class="{{ historical_index.active ? 'active' : '' }}">{{ historical_index.menu }}</a>
+            </li>
+          {% endif %}
+          {% for manual in legacy_manuals.children %}
+            {% set manual_active = (manual.active or manual.activeChild) ? 'active' : '' %}
+            <li>
+              <a href="{{ manual.url }}" class="{{ manual_active }}">{{ manual.menu }}</a>
+            </li>
+          {% endfor %}
+          {% if legacy_faq %}
+            <li>
+              <a href="{{ legacy_faq.url }}" class="{{ legacy_faq.active ? 'active' : '' }}">{{ legacy_faq.menu }}</a>
+            </li>
+          {% endif %}
+        {% else %}
+          {{ macros.nav_loop(p, pages) }}
+        {% endif %}
+      </ul>
+      {% endif %}
+    </li>
+  {% endfor %}
+{% endmacro %}

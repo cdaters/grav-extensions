@@ -1,0 +1,23 @@
+{% macro decorative(reference, class) %}
+    {% set requested = reference|default('document')|split('/')|last %}
+    {% set icons = {
+        'archive': 'box-archive',
+        'book-open': 'book-open',
+        'check': 'circle-check',
+        'document': 'file-lines',
+        'download': 'download',
+        'home': 'house',
+        'image': 'image',
+        'lifesaver': 'life-ring',
+        'link': 'link',
+        'message': 'message',
+        'rocket': 'rocket',
+        'route': 'route',
+        'server': 'server',
+        'settings': 'gear',
+        'terminal': 'terminal',
+        'toolbox': 'toolbox',
+        'upload': 'upload'
+    } %}
+    <i class="fa-solid fa-{{ icons[requested]|default('file-lines') }} {{ class|default('')|e('html_attr') }}" aria-hidden="true"></i>
+{% endmacro %}

@@ -3,6 +3,25 @@
 This is an append-only chronology of meaningful work, discoveries, tests, and
 checkpoints. `CURRENT-STATE.md` remains authoritative for the active state.
 
+## 2026-09-03 — SPITFIRE theme authority reconciliation
+
+- Compared canonical `themes/spitfire` with the copied DDEV installation file
+  by file before changing either authority. Preserved the existing canonical
+  manual styling and source-only logo while porting the accepted reusable
+  SPITFIRE NG/Archive documentation shells, navigation, breadcrumbs, project
+  presentation, optional account control, and maintained brand assets.
+- Kept page wording, project status, configuration, accounts, and runtime data
+  in the site. Rejected a redundant nested favicon installation artifact and
+  did not copy the DDEV tree wholesale over canonical source.
+- Removed the documentation shell's hard dependency on Site Workshop by using
+  a bounded internal Font Awesome icon map. Replaced JavaScript-controlled
+  hidden sidebar groups with native `details`/`summary` disclosures; JavaScript
+  is now optional progressive enhancement for active-item scrolling.
+- Established Spitfire 1.4.0 as the reconciled source version, documented the
+  copied-deployment relationship, and added a focused source validator. The
+  separate DDEV safeguards, package/deployment proof, route/search/visual/log
+  acceptance, commit, and push complete this checkpoint.
+
 ## 2026-08-22 — Site Safeguard protected-download boundary and continuity checkpoint
 
 - Reproduced the original download failure in DDEV: a browser HEAD request

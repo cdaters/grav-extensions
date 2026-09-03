@@ -1,0 +1,75 @@
+{% macro link(target, current_page, icon, label) %}
+    {% import 'macros/spitfire-icons.html.twig' as icons %}
+    {% if target and target.header.published is not same as(false) and (target.header.access is empty or authorize(target.header.access)) %}
+        {% set active = current_page.route == target.route %}
+        <a href="{{ target.url }}" class="{{ active ? 'active' : '' }}"{% if active %} aria-current="page"{% endif %}>
+            {{ icons.decorative(icon|default(target.header.doc_icon|default('document')), 'sfng-doc-nav-icon') }}
+            <span>{{ label|default(target.menu) }}</span>
+        </a>
+    {% endif %}
+{% endmacro %}
+
+{% macro items(pages, current_page, docs_root) %}
+    {% import _self as archive_nav %}
+    {% import 'macros/spitfire-icons.html.twig' as icons %}
+    {% set legacy_root = pages.find('/archive/manuals-documentation/legacy-spitfire-3-7') %}
+    {% set historical_index = pages.find('/archive/manuals-documentation/spitfire-historical-documentation-index') %}
+    {% set manual = pages.find('/archive/manuals-documentation/legacy-spitfire-3-7/spitfire-3-7-reference-manual') %}
+    {% set faq = pages.find('/archive/manuals-documentation/spitfire-faq-part-3') %}
+    {% set maintenance = pages.find('/archive/manuals-documentation/maintaining-this-section') %}
+    {% set manual_active = manual and (current_page.route == manual.route or current_page.route starts with manual.route ~ '/') %}
+    {% set companion_active = legacy_root and current_page.route starts with legacy_root.route ~ '/' and not manual_active %}
+    {% set support_active = faq and current_page.route == faq.route %}
+    {% set manual_allowed = manual and manual.header.published is not same as(false) and (manual.header.access is empty or authorize(manual.header.access)) %}
+    {% set legacy_root_allowed = legacy_root and legacy_root.header.published is not same as(false) and (legacy_root.header.access is empty or authorize(legacy_root.header.access)) %}
+    {% set faq_allowed = faq and faq.header.published is not same as(false) and (faq.header.access is empty or authorize(faq.header.access)) %}
+
+    {{ archive_nav.link(docs_root, current_page, docs_root.header.doc_icon|default('workshop/archive'), 'Archive Overview') }}
+    {{ archive_nav.link(historical_index, current_page, historical_index.header.doc_icon|default('workshop/book-open'), 'Historical Documentation Index') }}
+
+    {% if manual_allowed %}
+        <details class="sfng-doc-group" data-sfng-doc-group{% if manual_active %} open{% endif %}>
+            <summary class="sfng-doc-group-toggle {{ manual_active ? 'active-parent' : '' }}" aria-controls="archive-reference-manual">
+                {{ icons.decorative(manual.header.doc_icon|default('book-open'), 'sfng-doc-nav-icon') }}
+                <span>Reference Manual</span>
+                <i class="fa-solid fa-chevron-down sfng-doc-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="sfng-doc-subnav" id="archive-reference-manual">
+                {{ archive_nav.link(manual, current_page, 'workshop/book-open', 'Manual Overview') }}
+                {% for chapter in manual.children() if chapter.header.published is not same as(false) %}
+                    {{ archive_nav.link(chapter, current_page, chapter.header.doc_icon|default('workshop/document')) }}
+                {% endfor %}
+            </div>
+        </details>
+    {% endif %}
+
+    {% if legacy_root_allowed %}
+        <details class="sfng-doc-group" data-sfng-doc-group{% if companion_active %} open{% endif %}>
+            <summary class="sfng-doc-group-toggle {{ companion_active ? 'active-parent' : '' }}" aria-controls="archive-companion-documents">
+                {{ icons.decorative('archive', 'sfng-doc-nav-icon') }}
+                <span>Companion Documents</span>
+                <i class="fa-solid fa-chevron-down sfng-doc-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="sfng-doc-subnav" id="archive-companion-documents">
+                {% for document in legacy_root.children() if document.header.published is not same as(false) and (not manual or document.route != manual.route) %}
+                    {{ archive_nav.link(document, current_page, document.header.doc_icon|default('workshop/document')) }}
+                {% endfor %}
+            </div>
+        </details>
+    {% endif %}
+
+    {% if faq_allowed %}
+        <details class="sfng-doc-group" data-sfng-doc-group{% if support_active %} open{% endif %}>
+            <summary class="sfng-doc-group-toggle {{ support_active ? 'active-parent' : '' }}" aria-controls="archive-period-support">
+                {{ icons.decorative('message', 'sfng-doc-nav-icon') }}
+                <span>Period Support Records</span>
+                <i class="fa-solid fa-chevron-down sfng-doc-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="sfng-doc-subnav" id="archive-period-support">
+                {{ archive_nav.link(faq, current_page, faq.header.doc_icon|default('workshop/message')) }}
+            </div>
+        </details>
+    {% endif %}
+
+    {{ archive_nav.link(maintenance, current_page, maintenance.header.doc_icon|default('workshop/toolbox'), 'Maintaining This Archive') }}
+{% endmacro %}

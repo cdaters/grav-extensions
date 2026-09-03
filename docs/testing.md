@@ -133,7 +133,21 @@ produces the expected authenticated request body.
 | Grav Commander | file-operation containment and permissions across its standalone and suite installs; optional Jarvis consumer fallback and unsaved-only proposal application | 0.3.12 Jarvis PHP/component and signed-in present/absent browser contracts implemented; general ordinary-Save concurrency and standalone containment coverage remain |
 | Jarvis | provider normalization/redaction, credential encryption/resolution, authorization, streaming, cache/context isolation, budgets, preview non-mutation, approval exactly once, stale conflicts, truthful batch partial failure, consumer fallback | 0.3.3 Sodium/OpenSSL credential/readiness/package boundaries, 0.3.2 provider setup, 0.3.0 reliability, 0.3.1 Commander consumer proof, and deterministic signed-in regressions implemented; transactional master-key rotation, streaming, and later batch/job boundaries remain |
 | Caxton | exact no-edit source bytes, localized-patch containment, opaque fallback, stale-source denial, extension isolation, Admin2 value/save separation, visual rhythm, optional Jarvis proposals | 0.3.0 PHP/Node/Chrome/signed-in Admin2 authoring, computed-spacing, and deterministic Jarvis present/absent/failure boundary implemented |
-| Spitfire theme | public routes, asset delivery, responsive navigation, light/dark and no-JavaScript rendering | required |
+| Spitfire theme | public routes, asset delivery, responsive navigation, current/Archive separation, accessibility, light/dark and no-JavaScript rendering | source validator implemented; DDEV route/search/responsive/browser acceptance required for releases |
+
+### Spitfire theme source contract
+
+Run the source-level theme checks before packaging or deployment:
+
+```bash
+./scripts/test-spitfire-theme.sh
+```
+
+The runner validates required source files, YAML, JavaScript syntax, CSS brace
+balance, absence of host-specific integration paths, native no-JavaScript
+documentation disclosures, active-page semantics, and independence from Site
+Workshop's optional Twig icon function. It does not replace rendered DDEV route,
+search, visual, accessibility, console, or log acceptance.
 
 New coverage should be added in risk order. A repaired security or delivery bug
 must not wait for the whole inventory before receiving its own regression.

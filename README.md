@@ -46,7 +46,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |
 | Jarvis | Plugin | 0.3.3 encrypted credential-usability and host-readiness release; 0.3.1 public-contract consumer milestone proven through Commander | `user/plugins/grav-jarvis` |
 | Caxton | Plugin | 0.3.0 visual-rhythm, authoring, and optional Jarvis proposal release | `user/plugins/grav-caxton` |
-| Spitfire | Quark 2 child theme | Site theme | `user/themes/spitfire` |
+| Spitfire | Quark 2 child theme | 1.4.0 source release; current and historical documentation shells | `user/themes/spitfire` |
 
 The future suite is deliberately maintained as a roadmap until each extension
 has working code and tests. See [docs/roadmap.md](docs/roadmap.md) and

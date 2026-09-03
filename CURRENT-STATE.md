@@ -637,6 +637,14 @@ release change because its existing public 0.3.x contracts were sufficient.
 The previously recommended Commander 0.3.13 work remains paused—not cancelled—
 because the owner explicitly selected Caxton.
 
+Spitfire theme 1.4.0 reconciles the accepted SPITFIRE NG documentation and
+project presentation from the copied DDEV integration tree into canonical
+`themes/spitfire` source. Current-project and historical Archive navigation
+remain separate; native disclosure elements keep the sidebars usable without
+JavaScript, while the small script only recenters the active entry. Canonical
+source, its installable package, and a copied site deployment have distinct
+roles documented in the theme manual and development workflow.
+
 ## Exact next action
 
 Implement Caxton 0.3.1 as accessibility and proposal hardening. Add complete
@@ -679,9 +687,9 @@ jobs, MCP, or a parallel page store.
   that plugin after the download contract.
 - Other extension contracts remain listed as required in `docs/testing.md` and
   should be implemented in risk order, not all in one broad rewrite.
-- Local Site Workshop/Cache Hearth and Spitfire-theme edits may exist outside
-  this checkpoint. Inspect `git status`; do not assume uncommitted work exists
-  in GitHub or include it in an unrelated commit.
+- Local Site Workshop/Cache Hearth edits may exist outside this checkpoint.
+  Inspect `git status`; do not assume uncommitted work exists in GitHub or
+  include it in an unrelated commit.
 
 ## Resume procedure
 

@@ -1,0 +1,159 @@
+{% extends 'partials/base.html.twig' %}
+{% import 'macros/spitfire-doc-navigation.html.twig' as docs_nav %}
+{% import 'macros/spitfire-archive-doc-navigation.html.twig' as archive_docs_nav %}
+{% import 'macros/spitfire-icons.html.twig' as icons %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% do assets.addJs('theme://js/doc-sidebar.js', {group:'bottom', priority: 90}) %}
+{% endblock %}
+
+{% block body_classes %}
+    {{ parent() }}{% if page.route == '/archive/manuals-documentation' or page.route starts with '/archive/manuals-documentation/' %} archive-documentation{% endif %}
+{% endblock %}
+
+{% block content %}
+    {% set is_sfng_documentation = 'sfng-documentation' in page.header.body_classes|default('') %}
+    {% set is_archive_documentation = page.route == '/archive/manuals-documentation' or page.route starts with '/archive/manuals-documentation/' %}
+    {% set is_newsletter_issue = 'newsletter-issue' in page.header.body_classes|default('') %}
+
+    {% if is_sfng_documentation %}
+        {% set docs_root = pages.find('/spitfire-ng/manuals-documentation') %}
+        <div class="sfng-doc-shell">
+            <aside class="sfng-doc-sidebar" aria-label="SPITFIRE NG documentation">
+                <a class="sfng-doc-brand" href="{{ docs_root.url }}">
+                    <span>Project documentation</span>
+                    <strong>SPITFIRE NG</strong>
+                    <small>Current source documentation</small>
+                </a>
+
+                <nav class="sfng-doc-nav" aria-label="Documentation sections">
+                    <a href="{{ docs_root.url }}" class="{{ page.route == docs_root.route ? 'active' : '' }}"{% if page.route == docs_root.route %} aria-current="page"{% endif %}>
+                        {{ icons.decorative(docs_root.header.doc_icon|default('home'), 'sfng-doc-nav-icon') }}
+                        <span>Overview</span>
+                    </a>
+                    {{ docs_nav.items(docs_root) }}
+                </nav>
+
+                <div class="sfng-doc-milestone">
+                    <span aria-hidden="true">✓</span>
+                    <p><strong>Current source guidance</strong><br>The 0.1.0 downloadable preview is older.</p>
+                </div>
+            </aside>
+
+            <article class="content-item sfng-doc-content">
+                <nav class="sfng-doc-breadcrumbs" aria-label="Breadcrumb">
+                    <a href="{{ url('/spitfire-ng') }}">Project</a>
+                    <span aria-hidden="true">/</span>
+                    <a href="{{ docs_root.url }}">Documentation</a>
+                    {% if page.route != docs_root.route %}
+                        <span aria-hidden="true">/</span>
+                        <span aria-current="page">{{ page.menu }}</span>
+                    {% endif %}
+                </nav>
+                {{ page.content|raw }}
+            </article>
+        </div>
+    {% elseif is_archive_documentation %}
+        {% set docs_root = pages.find('/archive/manuals-documentation') %}
+        <div class="sfng-doc-shell archive-doc-shell">
+            <aside class="sfng-doc-sidebar archive-doc-sidebar" aria-label="SPITFIRE 3.7 archive documentation">
+                <a class="sfng-doc-brand" href="{{ docs_root.url }}">
+                    <span>Archive documentation</span>
+                    <strong>SPITFIRE 3.7</strong>
+                    <small>Historical reading editions</small>
+                </a>
+
+                <nav class="sfng-doc-nav" aria-label="Archive documentation sections">
+                    {{ archive_docs_nav.items(pages, page, docs_root) }}
+                </nav>
+
+                <div class="sfng-doc-milestone archive-doc-provenance">
+                    <span aria-hidden="true">{{ icons.decorative('archive') }}</span>
+                    <p><strong>Preserved source material</strong><br>Historical instructions; not current SPITFIRE NG guidance.</p>
+                </div>
+            </aside>
+
+            <article class="content-item sfng-doc-content archive-doc-content">
+                <nav class="sfng-doc-breadcrumbs" aria-label="Breadcrumb">
+                    <a href="{{ url('/archive') }}">Archive</a>
+                    <span aria-hidden="true">/</span>
+                    <a href="{{ docs_root.url }}">Manuals &amp; Documentation</a>
+                    {% if page.route != docs_root.route %}
+                        <span aria-hidden="true">/</span>
+                        <span aria-current="page">{{ page.menu }}</span>
+                    {% endif %}
+                </nav>
+                {{ page.content|raw }}
+            </article>
+        </div>
+    {% elseif is_newsletter_issue %}
+        {% set newsletters_root = pages.find('/archive/newsletters') %}
+        {% set archive_root = pages.find('/archive') %}
+        {% set year_page = page.parent() %}
+        {% set issue_siblings = year_page.children() %}
+        {% set issue_position = issue_siblings.currentPosition(page.path()) %}
+        {% set year_siblings = newsletters_root.children() %}
+        {% set year_position = year_siblings.currentPosition(year_page.path()) %}
+        {% set previous_issue = false %}
+        {% set next_issue = false %}
+
+        {% if issue_position is not null and issue_position > 0 %}
+            {% set previous_issue = issue_siblings.adjacentSibling(page.path(), 1) %}
+        {% elseif year_position is not null and year_position > 0 %}
+            {% set previous_year = year_siblings.adjacentSibling(year_page.path(), 1) %}
+            {% if previous_year %}
+                {% set previous_issue = previous_year.children()|last %}
+            {% endif %}
+        {% endif %}
+
+        {% if issue_position is not null and issue_position + 1 < issue_siblings|length %}
+            {% set next_issue = issue_siblings.adjacentSibling(page.path(), -1) %}
+        {% elseif year_position is not null and year_position + 1 < year_siblings|length %}
+            {% set next_year = year_siblings.adjacentSibling(year_page.path(), -1) %}
+            {% if next_year %}
+                {% set next_issue = next_year.children()|first %}
+            {% endif %}
+        {% endif %}
+
+        <article class="content-item">
+            <nav class="newsletter-breadcrumbs" aria-label="Breadcrumb">
+                <a href="{{ archive_root.url }}">Archive</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ newsletters_root.url }}">Newsletters</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ year_page.url }}">{{ year_page.menu }}</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{{ page.menu }}</span>
+            </nav>
+
+            {{ page.content|raw }}
+
+            <nav class="newsletter-pagination" aria-label="Newsletter issue navigation">
+                {% if previous_issue %}
+                    <a class="newsletter-pagination-previous" rel="prev" href="{{ previous_issue.url }}">
+                        <span>← Previous issue</span>
+                        <strong>{{ previous_issue.menu }}</strong>
+                    </a>
+                {% else %}
+                    <span class="newsletter-pagination-spacer" aria-hidden="true"></span>
+                {% endif %}
+
+                <a class="newsletter-pagination-up" href="{{ year_page.url }}">All {{ year_page.menu }} issues</a>
+
+                {% if next_issue %}
+                    <a class="newsletter-pagination-next" rel="next" href="{{ next_issue.url }}">
+                        <span>Next issue →</span>
+                        <strong>{{ next_issue.menu }}</strong>
+                    </a>
+                {% else %}
+                    <span class="newsletter-pagination-spacer" aria-hidden="true"></span>
+                {% endif %}
+            </nav>
+        </article>
+    {% else %}
+        <article class="content-item">
+            {{ page.content|raw }}
+        </article>
+    {% endif %}
+{% endblock %}

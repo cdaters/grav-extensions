@@ -1,4 +1,4 @@
-{% import 'macros/macros.html.twig' as macros %}
+{% import 'macros/spitfire-navigation.html.twig' as macros %}
 
 {% set why_page = pages.find('/why-spitfire') %}
 {% set why_active = why_page and (why_page.active or why_page.activeChild) %}
@@ -35,7 +35,7 @@
                     {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon }}" aria-hidden="true"></i>{% endif %}
                     {{ p.menu }}
                 </a>
-                {% if has_children %}<ul>{{ macros.nav_loop(p) }}</ul>{% endif %}
+                {% if has_children %}<ul>{{ macros.nav_loop(p, pages) }}</ul>{% endif %}
             </li>
         {% endif %}
     {% endfor %}
@@ -48,4 +48,40 @@
             </a>
         </li>
     {% endfor %}
+
+    {% if config.plugins.login.enabled %}
+        {% set login_route = grav.login.getRoute('login')|default(config.plugins.login.route|default('/login')) %}
+        {% if grav.user.authenticated %}
+            {% set account_name = grav.user.fullname|default(grav.user.username) %}
+            {% set can_maintain_archive = authorize('api.super') %}
+            {% set account_url = can_maintain_archive ? '/archive/manuals-documentation/maintaining-this-section' : '/' %}
+            <li class="has-children spitfire-account-nav is-authenticated">
+                <a class="spitfire-account-trigger" href="{{ url(account_url) }}" aria-label="Account menu for {{ account_name|e('html_attr') }}" title="Account">
+                    <span class="spitfire-account-icon" aria-hidden="true">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="spitfire-account-dot"></span>
+                    </span>
+                    <span class="spitfire-account-label">Account</span>
+                </a>
+                <ul class="spitfire-account-menu">
+                    <li class="spitfire-account-identity"><span>Signed in as <strong>{{ account_name|e }}</strong></span></li>
+                    {% if can_maintain_archive %}
+                        <li><a href="{{ url('/archive/manuals-documentation/maintaining-this-section') }}"><i class="fa-solid fa-toolbox" aria-hidden="true"></i> Maintainer Guide</a></li>
+                    {% endif %}
+                    <li>
+                        <a href="{{ url(uri.addNonce((uri.path)|trim('/') ~ '/task' ~ config.system.param_sep ~ 'login.logout', 'logout-form', 'logout-nonce'))|e }}">
+                            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Log out
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        {% else %}
+            <li class="spitfire-account-nav">
+                <a class="spitfire-account-trigger {{ page.route == login_route ? 'active' : '' }}" href="{{ url(login_route) }}" aria-label="Sign in" title="Sign in">
+                    <span class="spitfire-account-icon" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                    <span class="spitfire-account-label">Sign in</span>
+                </a>
+            </li>
+        {% endif %}
+    {% endif %}
 </ul>
