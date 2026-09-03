@@ -11,7 +11,7 @@
         {% if is_home %}
             <li class="has-children">
                 <a href="{{ p.url }}" class="{{ active_page }}">
-                    {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon }}" aria-hidden="true"></i>{% endif %}
+                    {% if p.header.menu_icon %}<i class="fa-solid fa-{{ p.header.menu_icon|e('html_attr') }}" aria-hidden="true"></i>{% endif %}
                     {{ p.menu }}
                 </a>
                 <ul>

@@ -19,8 +19,11 @@ checkpoints. `CURRENT-STATE.md` remains authoritative for the active state.
   is now optional progressive enhancement for active-item scrolling.
 - Established Spitfire 1.4.0 as the reconciled source version, documented the
   copied-deployment relationship, and added a focused source validator. The
-  separate DDEV safeguards, package/deployment proof, route/search/visual/log
-  acceptance, commit, and push complete this checkpoint.
+  separate DDEV safeguards, package/deployment proof, route/search/rendered-
+  accessibility/log acceptance, commit, and push complete this checkpoint.
+  The supported browser connection remained blocked by its external stale-
+  loader fault, so fresh viewport screenshots and browser-console inspection
+  remain an explicit external acceptance item rather than a claimed pass.
 
 ## 2026-08-22 — Site Safeguard protected-download boundary and continuity checkpoint
 
