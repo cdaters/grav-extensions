@@ -24,6 +24,26 @@ checkpoints. `CURRENT-STATE.md` remains authoritative for the active state.
   The supported browser connection remained blocked by its external stale-
   loader fault, so fresh viewport screenshots and browser-console inspection
   remain an explicit external acceptance item rather than a claimed pass.
+- Packaged a CRC-clean, single-root `spitfire-1.4.0.zip` (880,330 bytes;
+  SHA-256 `dba7f96c568c8f302139083d317a31bee1e13cbe2b2584013bd88af53e85aa22`),
+  deployed it by a controlled copied-directory swap, forced the supported DDEV
+  Mutagen synchronization, and proved all 27 installed files byte-identical to
+  canonical source.
+- The pre-deployment safeguard
+  `safeguard-localhost-portable_site-20260903-185248-60b032.zip` is valid at
+  41,798,324 bytes with SHA-256
+  `5021f6868d527e5018d4621aef05cb7f4f631cf69b9b98a4d7612b946b330349`.
+  The post-change safeguard
+  `safeguard-localhost-portable_site-20260903-190209-64f8c5.zip` is valid at
+  41,801,172 bytes with SHA-256
+  `5b31c7d222099847e1689d11ae13c62d1556ea9a02c554ab0fbb25fdb227fedf`.
+  Both have retained host-side copies.
+- Final DDEV acceptance passes 22 representative routes, all reconciled asset
+  requests, separate current/Archive shells, native keyboard disclosures,
+  breadcrumbs, active states, heading order, responsive/reduced-motion/focus
+  rules, and recent-log review. Lantern rebuilt 110 public pages (9 excluded),
+  and all 14 required practical queries lead with relevant human-facing
+  guidance. Production was not accessed or changed.
 
 ## 2026-08-22 — Site Safeguard protected-download boundary and continuity checkpoint
 

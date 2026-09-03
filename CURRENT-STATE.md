@@ -645,6 +645,16 @@ JavaScript, while the small script only recenters the active entry. Canonical
 source, its installable package, and a copied site deployment have distinct
 roles documented in the theme manual and development workflow.
 
+The reconciled DDEV deployment is byte-identical to all 27 canonical theme
+files. The final 1.4.0 package is 880,330 bytes with SHA-256
+`dba7f96c568c8f302139083d317a31bee1e13cbe2b2584013bd88af53e85aa22`.
+Twenty-two representative public routes pass, Lantern indexes 110 public pages,
+and the required practical searches lead to relevant current documentation.
+Fresh viewport and browser-console inspection remains external because the
+supported browser controller still attempts to load its removed cached service
+module; server, rendered-HTML, asset, responsive-CSS, accessibility, search,
+and log checks all pass.
+
 ## Exact next action
 
 Implement Caxton 0.3.1 as accessibility and proposal hardening. Add complete
