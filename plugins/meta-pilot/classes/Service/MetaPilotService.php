@@ -9,7 +9,7 @@ use Grav\Common\Utils;
 
 final class MetaPilotService
 {
-    private const VERSION = '0.2.1';
+    private const VERSION = '0.2.2';
 
     private Grav $grav;
     private array $config;
@@ -454,7 +454,9 @@ final class MetaPilotService
         }
 
         $all = $pages->all();
-        return is_array($all) ? array_values($all) : iterator_to_array($all);
+        // Collection iterator keys are folder slugs, not unique routes.
+        // Discard keys so /about and /guides/about both survive.
+        return is_array($all) ? array_values($all) : iterator_to_array($all, false);
     }
 
     private function pageHeader(object $page): array

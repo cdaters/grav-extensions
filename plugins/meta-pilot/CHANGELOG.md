@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 - 2026-09-09
+
+- Preserve every page in reports and sitemaps when folders at different depths
+  share a slug. Grav Collection iterator keys are not unique page identities.
+- Extend real DDEV HTTP regression coverage with top-level and nested pages
+  sharing a slug, including both indexable and noindex sitemap behavior.
+
 ## 0.2.1 - 2026-09-09
 
 - Keep empty Markdown pages empty during metadata reporting instead of trying

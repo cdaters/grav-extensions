@@ -129,6 +129,17 @@ try:
         header = {'title': prefix + name, 'published': True, 'visible': False, **header}
         (folder / 'default.md').write_text('---\n' + json.dumps(header) + '\n---\n' + body)
 
+    # Grav Collection keys repeat for equal folder slugs at different depths.
+    parent = root / 'user/pages' / ('99.' + prefix + 'parent')
+    parent.mkdir()
+    created.append(parent)
+    (parent / 'default.md').write_text('---\n' + json.dumps({'title': prefix + 'parent'}) + '\n---\nParent fixture.')
+    child = parent / (prefix + 'summary')
+    child.mkdir()
+    created.append(child)
+    (child / 'default.md').write_text('---\n' + json.dumps({'title': prefix + 'nested', 'description': summary}) + '\n---\nNested fixture.')
+    duplicate_routes = ['/' + prefix + 'summary', '/' + prefix + 'parent/' + prefix + 'summary']
+
     accounts = []
     for allowed in [True, False]:
         username = prefix + ('reader' if allowed else 'denied')
@@ -162,6 +173,7 @@ try:
         sync()
         report = json_response('/api/v1/meta-pilot/report', tokens[0])
         rows = {row['route']: row for row in report['pages']}
+        assert all(route in rows for route in duplicate_routes), 'Same-slug pages lost from report'
         for name in ['empty', 'summary', 'standard', 'override']:
             route = '/' + prefix + name
             expected = 'index, follow' if name == 'override' else policy
@@ -184,6 +196,8 @@ try:
         assert base + '/' + prefix + 'override' in locations
         assert (base + '/' + prefix + 'summary' in locations) == policy.startswith('index')
         assert base + '/' + prefix + 'protected' not in locations
+        for route in duplicate_routes:
+            assert ((base + route) in locations) == policy.startswith('index'), 'Same-slug sitemap/policy mismatch'
     assert all(hashlib.sha256(path.read_bytes()).hexdigest() == digest for path, digest in hashes.items())
 finally:
     for path, content in backups.items():
@@ -200,4 +214,4 @@ finally:
 
 print('Meta Pilot HTTP regression passed: empty Twig-enabled pages, description precedence/escaping,')
 print('authenticated reports, anonymous/permission denial, unique head output, robots policy,')
-print('sitemap exclusions, cache refresh, unchanged page bytes, and fixture cleanup.')
+print('sitemap exclusions, repeated slugs, cache refresh, unchanged page bytes, and fixture cleanup.')

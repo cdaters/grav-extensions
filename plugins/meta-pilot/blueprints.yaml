@@ -1,7 +1,7 @@
 name: Meta Pilot
 slug: meta-pilot
 type: plugin
-version: 0.2.1
+version: 0.2.2
 description: Canonical, robots, social-card, structured-data, sitemap, and metadata diagnostics for Grav 2.
 icon: compass
 author:

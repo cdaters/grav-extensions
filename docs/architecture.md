@@ -107,7 +107,7 @@ toolbar replacement and may optionally consume Jarvis later.
   WebP/AVIF sets, source/policy invalidation, protected generated storage,
   opaque immutable delivery, Admin2 operations, CLI parity, an opt-in Twig
   `<picture>` helper, and reversible automatic public-HTML replacement.
-- **Meta Pilot 0.2.1:** working development release with normalized canonical,
+- **Meta Pilot 0.2.2:** working development release with normalized canonical,
   description, robots, Open Graph, X/Twitter, and JSON-LD output; XML sitemap
   and robots routes; Admin2 page diagnostics; page-editor overrides; and CLI
   report parity.
@@ -115,7 +115,7 @@ toolbar replacement and may optionally consume Jarvis later.
   integrity-checked page snapshots; automatic and named checkpoints; Admin2
   comparisons; retention controls; guarded rollback; CLI parity; and a public
   checkpoint integration seam for other plugins.
-- **Lantern Search 0.1.4:** working development release with incremental,
+- **Lantern Search 0.1.5:** working development release with incremental,
   ACL-aware indexing, relevance controls, a public command palette, and Admin2
   index management.
 - **Site Workshop 0.1.0:** working development release with Icon Bench: a

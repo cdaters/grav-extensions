@@ -1399,3 +1399,31 @@ suite inventory incremental and risk ordered.
   Caxton 0.3.0 and Revision Ledger 0.2.1 required no plugin changes: Visual and
   Source save, automatic pre-save history, and safe restore were verified on a
   disposable page. Planned Caxton 0.3.1 and other deferred work remain unchanged.
+
+
+## 2026-09-09 — Meta Pilot 0.2.2 / Lantern Search 0.1.5 complete page traversal
+
+- A site metadata audit exposed identical page-enumeration bugs in both plugins:
+  `iterator_to_array()` preserved Grav Collection slug keys and silently dropped
+  earlier routes when a nested folder reused a slug. Discarding iterator keys
+  keeps full-route identities. The actual fixture has 54 pages, not 47.
+- Extended the real authenticated Meta Pilot HTTP gate with same-slug routes in
+  reports and sitemaps under index/noindex policies. Added a DDEV-only Lantern
+  CLI/HTTP runner for both same-slug results, tag filters, unpublished/noindex/
+  protected exclusions and post-cleanup indexing. Both gates pass.
+- Site metadata, six share images and theme title integration remain site-owned.
+  Metadata scoring and eligibility policies are unchanged. All 54 site pages
+  return correct unique metadata; local noindex and an empty sitemap remain.
+- Repository preflight, PHP 8.3 lint of all nine installed PHP files, package
+  integrity and exact installed-source matching pass. Host PHP is unavailable;
+  lint ran in DDEV.
+- The primary SPITFIRE fixture and production are untouched. Existing unrelated
+  Site Workshop/Cache Hearth edits and planned Caxton work remain separate.
+
+- Packages: Meta Pilot 0.2.2 SHA-256
+  `f10574f22779240087259feb71f25dfd9c92a067fc5eb953aa81d76b960d8ab1`;
+  Lantern Search 0.1.5 SHA-256
+  `0a3552d1bc0704fe126efd3a89a19cb41785584a7091f4cafa521f1cc610554d`.
+  Both exact archives are installed in the second DDEV fixture. No tag or
+  GitHub release was created. The authenticated Admin dashboard confirms
+  54 pages, score 100, no errors/warnings, and 54 intentional noindex notices.

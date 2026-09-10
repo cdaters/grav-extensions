@@ -496,3 +496,19 @@ the full result width with routes below, and the document must have no
 horizontal overflow. At desktop widths, titles/routes may share a row. Verify
 result navigation, then reset the browser viewport and appearance preference.
 This presentation-only check complements the public endpoint/index exclusions.
+
+
+### Complete page traversal in Meta Pilot and Lantern Search
+
+Both DDEV-only runners retain same-slug pages at different depths and clean up
+their disposable pages. Meta Pilot also checks authenticated report access and
+public sitemap policy; Lantern checks public query results, taxonomy filters,
+and unpublished/noindex/ACL exclusions after real CLI indexing.
+
+```sh
+python3 scripts/test-meta-pilot-http.py /path/to/ddev-project grav
+python3 scripts/test-lantern-search-http.py /path/to/ddev-project grav
+```
+
+Meta Pilot temporarily snapshots/restores site and plugin config. Do not run it
+concurrently with manual configuration edits. Both runners are local-only.

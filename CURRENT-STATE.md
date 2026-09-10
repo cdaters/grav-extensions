@@ -18,7 +18,24 @@ documentation, tests, decisions, and history. Runtime packages, stages, site
 content/configuration, protected File Vault binaries, credentials, and DDEV
 volumes require their own protected backups.
 
-## Latest maintenance checkpoint — Meta Pilot 0.2.1 / Lantern Search 0.1.4
+## Latest maintenance checkpoint — Meta Pilot 0.2.2 / Lantern Search 0.1.5
+
+Both plugins now retain every page when Grav Collection iterator keys repeat
+for equal folder slugs at different depths. Full routes remain distinct identities;
+no eligibility or scoring rules changed. A second DDEV site's real 54 pages
+previously became 47 in both the metadata report and search index.
+
+The Meta Pilot HTTP runner now exercises repeated slugs in authenticated reports
+and public sitemaps under index/noindex policies. The new Lantern CLI/HTTP runner
+proves same-slug results, tag filtering, unpublished/noindex/ACL exclusions and
+fixture cleanup. Both pass in the second DDEV site. Metadata and share images
+are site-owned and remain outside this repository. PHP lint runs in DDEV because
+host PHP is unavailable. Primary SPITFIRE fixture and production remain untouched.
+
+Existing Site Workshop/Cache Hearth work is excluded. The planned Caxton 0.3.1
+milestone below remains deferred; this checkpoint is only a page-enumeration fix.
+
+## Previous maintenance checkpoint — Meta Pilot 0.2.1 / Lantern Search 0.1.4
 
 Meta Pilot 0.2.1 repairs compatibility found while installing the independent
 extensions into a second Grav 2/Admin2 DDEV site. Empty Markdown no longer

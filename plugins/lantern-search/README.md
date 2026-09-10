@@ -7,6 +7,7 @@ Its first engine deliberately favors shared-host portability: it needs neither S
 ## What the current release includes
 
 - Incremental JSON indexing that reuses unchanged page records.
+- Complete route identities, including matching folder slugs at different depths.
 - Public-content safety: unpublished, non-routable, modular, ACL-protected, excluded, and `noindex` pages are omitted before index storage.
 - Weighted title, taxonomy, description, and body relevance.
 - Exact-phrase bonuses, prefix matching, optional typo tolerance, per-page boosts, excerpts, and facets.

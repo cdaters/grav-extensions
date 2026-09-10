@@ -86,7 +86,9 @@ also honored for portability.
 
 ## Sitemap and robots behavior
 
-The sitemap includes published, routable, non-modular pages. By default it
+The sitemap includes published, routable, non-modular pages. Pages with the
+same folder slug at different depths are kept as distinct routes in both the
+report and sitemap. By default it
 excludes access-protected and `noindex` pages. Existing `sitemap.changefreq`,
 `sitemap.priority`, and `sitemap.ignore` frontmatter values are supported.
 

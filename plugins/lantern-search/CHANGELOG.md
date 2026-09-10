@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5 — 2026-09-09
+
+- Keep pages with matching folder slugs at different depths in the public index.
+  Grav Collection iterator keys are discarded; full routes remain identities.
+- Add an external DDEV CLI/HTTP regression covering both same-slug pages,
+  taxonomy filtering, unpublished/noindex/ACL exclusions and fixture cleanup.
+
 ## 0.1.4 — 2026-09-09
 
 - Stack result routes below titles at phone widths so long paths do not squeeze

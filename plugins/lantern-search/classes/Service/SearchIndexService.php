@@ -24,7 +24,7 @@ final class SearchIndexService
     {
         $index = $this->readIndex();
         return [
-            'version' => '0.1.4',
+            'version' => '0.1.5',
             'indexed_pages' => count((array) ($index['documents'] ?? [])),
             'built_at' => $index['built_at'] ?? null,
             'dirty' => is_file($this->dirtyFile()),
@@ -433,7 +433,8 @@ final class SearchIndexService
         if (method_exists($pages, 'enablePages')) $pages->enablePages();
         if (method_exists($pages, 'init')) $pages->init();
         $all = $pages->all();
-        return is_array($all) ? array_values($all) : iterator_to_array($all);
+        // Slugs can repeat at different depths; the complete route is the identity.
+        return is_array($all) ? array_values($all) : iterator_to_array($all, false);
     }
 
     private function pageRoute(object $page): string
