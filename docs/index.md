@@ -30,7 +30,7 @@ belong in that extension's own README.
 - [Architecture](architecture.md)
 - [Development workflow](development.md)
 - [Security model](security-model.md)
-- [Testing](testing.md)
+- [Testing](testing.md), including the Meta Pilot DDEV HTTP regression
 - [Releasing](releasing.md)
 - [Roadmap](roadmap.md)
 - [Planned extension briefs](planned/README.md)

@@ -82,8 +82,8 @@ html.dark [data-lantern-search] {
 .lantern-results li { margin:0; padding:0; }
 .lantern-results a { display:grid; grid-template-columns:1fr auto; gap:.1rem 1rem; padding:.85rem 1rem; color:var(--lantern-text); border-radius:11px; text-decoration:none; }
 .lantern-results a:hover,.lantern-results a.is-selected { color:var(--lantern-text); background:color-mix(in srgb,var(--lantern-accent) 13%,var(--lantern-surface)); outline:1px solid color-mix(in srgb,var(--lantern-accent) 36%,transparent); }
-.lantern-result-title { font-weight:750; }
-.lantern-result-route { align-self:center; color:var(--lantern-accent); font-size:.78rem; }
+.lantern-result-title { font-weight:750; min-width:0; overflow-wrap:anywhere; }
+.lantern-result-route { min-width:0; overflow-wrap:anywhere; align-self:center; color:var(--lantern-accent); font-size:.78rem; }
 .lantern-result-excerpt { grid-column:1/-1; color:var(--lantern-muted); font-size:.9rem; }
 .lantern-dialog footer { display:flex; gap:.55rem 1.25rem; align-items:center; flex-wrap:wrap; padding:.7rem 1rem; color:var(--lantern-muted); background:var(--lantern-surface); border-top:1px solid var(--lantern-border); font-size:.75rem; }
 .lantern-dialog footer strong { color:var(--lantern-text); font-size:.75rem; }
@@ -91,3 +91,9 @@ html.dark [data-lantern-search] {
 .lantern-dialog kbd { min-width:1.8rem; padding:.12rem .35rem; color:var(--lantern-text); background:var(--lantern-bg); border:1px solid var(--lantern-border); border-radius:4px; box-shadow:0 1px 0 var(--lantern-border); font:650 .68rem/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; text-align:center; }
 @media (max-width:640px) { .lantern-trigger strong,.lantern-trigger kbd,.lantern-dialog footer { display:none; } .lantern-trigger { width:48px; justify-content:center; padding:.5rem; } .lantern-backdrop { padding:1rem; } .lantern-dialog { max-height:calc(100vh - 2rem); } }
 @media (prefers-reduced-motion:no-preference) { .lantern-trigger { transition:transform .15s ease; } }
+
+/* Give titles the full width when the palette is used on a small screen. */
+@media (max-width:640px) {
+  .lantern-results a { grid-template-columns:minmax(0,1fr); gap:.3rem; }
+  .lantern-result-route { grid-column:1; }
+}

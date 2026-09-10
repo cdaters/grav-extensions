@@ -9,7 +9,7 @@ use Grav\Common\Utils;
 
 final class MetaPilotService
 {
-    private const VERSION = '0.2.0';
+    private const VERSION = '0.2.1';
 
     private Grav $grav;
     private array $config;
@@ -228,7 +228,7 @@ final class MetaPilotService
         $standard = $this->metadataMap($header['metadata'] ?? []);
         $title = trim((string) ($pilot['title'] ?? $standard['og:title'] ?? $this->pageTitle($page)));
         $siteName = $this->siteName();
-        $description = trim((string) ($pilot['description'] ?? $standard['description'] ?? $standard['og:description'] ?? ''));
+        $description = trim((string) ($pilot['description'] ?? $standard['description'] ?? $standard['og:description'] ?? $header['description'] ?? ''));
         if ($description === '') {
             $description = $this->generatedDescription($page);
         }
@@ -245,7 +245,7 @@ final class MetaPilotService
             $canonical = $this->absoluteUrl($canonical);
         }
         $image = $this->resolveImage($page, $pilot, $standard, $header);
-        $robots = trim((string) ($pilot['robots'] ?? $standard['robots'] ?? $this->value('metadata.default_robots', 'index, follow, max-image-preview:large')));
+        $robots = trim((string) ($pilot['robots'] ?? $standard['robots'] ?? $this->defaultRobots()));
         $ogType = trim((string) ($pilot['type'] ?? $standard['og:type'] ?? ''));
         if ($ogType === '') {
             $ogType = isset($header['date']) || isset($header['publish_date']) ? 'article' : 'website';
@@ -358,7 +358,7 @@ final class MetaPilotService
             return false;
         }
         if ($this->value('sitemap.exclude_noindex', true)) {
-            $robots = strtolower((string) ($pilot['robots'] ?? $this->metadataMap($header['metadata'] ?? [])['robots'] ?? ''));
+            $robots = strtolower((string) ($pilot['robots'] ?? $this->metadataMap($header['metadata'] ?? [])['robots'] ?? $this->defaultRobots()));
             if (str_contains($robots, 'noindex')) {
                 return false;
             }
@@ -413,10 +413,20 @@ final class MetaPilotService
         return '';
     }
 
+    // Preserve a site's publishing policy when adding Meta Pilot. Explicit page
+    // overrides still take precedence, as they do for other metadata fields.
+    private function defaultRobots(): string
+    {
+        $siteRobots = trim((string) $this->grav['config']->get('site.metadata.robots', ''));
+        return $siteRobots !== '' ? $siteRobots : (string) $this->value('metadata.default_robots', 'index, follow, max-image-preview:large');
+    }
+
     private function generatedDescription(object $page): string
     {
+        // Empty source is valid. Rendering it here can invoke Twig in an API
+        // request before Twig is initialized (or execute page-specific code).
         $markdown = method_exists($page, 'rawMarkdown') ? (string) $page->rawMarkdown() : '';
-        if ($markdown === '' && method_exists($page, 'content')) {
+        if (!method_exists($page, 'rawMarkdown') && method_exists($page, 'content')) {
             $markdown = (string) $page->content();
         }
         $markdown = preg_replace('/\[([^\]]+)\]\([^\)]+\)/u', '$1', $markdown) ?? $markdown;

@@ -125,7 +125,7 @@ produces the expected authenticated request body.
 | File Vault | anonymous/authenticated ACL delivery, range/resume, analytics, external storage | required |
 | Prism Gallery | authorized media enumeration, derivative delivery, missing/corrupt media | required |
 | Image Foundry | source immutability, derivative cache, purge containment, concurrent generation | required |
-| Meta Pilot | canonical/meta output, route overrides, cache invalidation, malformed fields | required |
+| Meta Pilot | authenticated report and denial, empty Twig-enabled source, descriptions, head normalization, robots/sitemap policy, cache refresh | HTTP regression implemented; broader malformed-field coverage remains |
 | Revision Ledger | concurrent revisions, permission boundaries, restore conflict behavior | required |
 | Lantern Search | index visibility, ACL filtering, stale-index repair, malformed queries | required |
 | Site Workshop | tool permissions, cache operations, preview/apply separation | required |
@@ -463,3 +463,36 @@ they do not replace deterministic release tests.
 
 Record package-specific regressions in its changelog and, when the failure
 changes a durable rule, in an architecture decision.
+
+## Meta Pilot HTTP regression
+
+Run against a disposable running DDEV Grav site with Meta Pilot, API and Login
+installed. The optional second argument is the Grav directory beneath the DDEV
+project root (omit it when Grav is the root):
+
+```bash
+python3 scripts/test-meta-pilot-http.py /path/to/ddev-project grav
+```
+
+The runner derives and restricts requests to the project's `.ddev.site` origin.
+It uses disposable least-privilege accounts, enters through real authenticated
+API and public HTTP requests, and never prints passwords or bearer tokens. It
+temporarily changes local site/plugin settings and adds test pages, so do not
+run concurrently with other editing. A `finally` cleanup restores original
+configuration bytes, removes fixture accounts/pages, and clears Grav's cache.
+
+Coverage: empty Twig-enabled pages in authenticated reports; anonymous and
+insufficient-permission denial; description precedence and HTML escaping; unique
+canonical/description/robots output; site-wide robots defaults and explicit
+page overrides; sitemap noindex/protected exclusions; cache refresh after a
+policy change; and unchanged Markdown bytes. This is a rendering/API regression,
+not a claim of exhaustive malformed-frontmatter or every-theme coverage.
+
+### Lantern Search phone layout check
+
+At 390px width, open the visitor search palette and search a phrase returning
+long page titles and routes. In both light and dark themes, titles must receive
+the full result width with routes below, and the document must have no
+horizontal overflow. At desktop widths, titles/routes may share a row. Verify
+result navigation, then reset the browser viewport and appearance preference.
+This presentation-only check complements the public endpoint/index exclusions.

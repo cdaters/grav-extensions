@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1 - 2026-09-09
+
+- Keep empty Markdown pages empty during metadata reporting instead of trying
+  to render Twig inside an API request before the renderer is initialized.
+- Honor top-level page `description` after explicit Meta Pilot and standard
+  metadata descriptions, preserving summaries used by custom themes.
+- Honor `site.metadata.robots` as the site-wide fallback and apply the same
+  effective directive to sitemap exclusion. Explicit page overrides still win.
+- Add repeatable DDEV HTTP coverage for authenticated reports, anonymous and
+  permission denial, head normalization, description precedence, site/page
+  indexing policies, protected-page exclusion, and cache refresh.
+
 ## 0.2.0 - 2026-08-19
 
 - Added complete local report exports in CSV and JSON formats from the Admin2

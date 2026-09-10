@@ -18,6 +18,33 @@ documentation, tests, decisions, and history. Runtime packages, stages, site
 content/configuration, protected File Vault binaries, credentials, and DDEV
 volumes require their own protected backups.
 
+## Latest maintenance checkpoint — Meta Pilot 0.2.1 / Lantern Search 0.1.4
+
+Meta Pilot 0.2.1 repairs compatibility found while installing the independent
+extensions into a second Grav 2/Admin2 DDEV site. Empty Markdown no longer
+falls through to Twig rendering during API reports. Top-level page descriptions
+remain usable by custom themes, after explicit plugin/standard overrides.
+`site.metadata.robots` now supplies the default directive, and sitemap exclusion
+uses the same effective policy, including explicit page overrides.
+
+The repeatable `scripts/test-meta-pilot-http.py` gate covers real authenticated
+reports, anonymous/permission denial, empty Twig-enabled pages, description
+precedence/escaping, unique head output, noindex/index transitions, protected
+sitemap exclusion, unchanged Markdown, and fixture cleanup. Repository
+preflight and installed PHP 8.3 lint pass; host PHP remains unavailable. The
+package is installed in the second DDEV site; the primary SPITFIRE fixture is
+untouched. Site-specific search colors and asset integration stay in that site's
+theme. No credentials, runtime history, or site content enter this repository.
+
+Lantern Search 0.1.4 also stacks result routes below titles on screens up to
+640px, preventing long paths from squeezing titles. Actual browser checks at
+390px in light and dark modes show one result column and no horizontal
+overflow; desktop retains the compact layout. Public search and unpublished,
+noindex and access-protected exclusions pass after installing the ZIP.
+
+Caxton 0.3.0 / Jarvis 0.3.3 and the planned Caxton 0.3.1 milestone below remain
+unchanged. Existing uncommitted Site Workshop/Cache Hearth work is excluded.
+
 ## Last completed checkpoint
 
 Jarvis 0.3.3 is complete as the encrypted credential-usability and host-

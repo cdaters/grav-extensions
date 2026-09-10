@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 — 2026-09-09
+
+- Stack result routes below titles at phone widths so long paths do not squeeze
+  titles into narrow columns. Long words wrap within the palette.
+- Report the current release version in index status.
+
 ## 0.1.3 — 2026-08-30
 
 - Documented the optional content-provider boundary and the File Vault public-metadata adapter, including its visibility, privacy, failure-isolation, and routing contract.

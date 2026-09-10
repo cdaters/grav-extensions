@@ -83,3 +83,6 @@ Feature direction came from public Grav documentation and behavior, including th
 ## License
 
 MIT
+
+On screens up to 640px wide, result titles, routes and excerpts stack vertically.
+Desktop keeps the compact title/route layout; no theme override is required.

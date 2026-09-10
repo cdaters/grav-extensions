@@ -1364,3 +1364,38 @@ suite inventory incremental and risk ordered.
   boundary browser cases; and large-document proposal mapping. Do not start it
   automatically or add provider code, credentials, upload/save, HTML/Twig/
   shortcode editing, collaboration, batch, jobs, or MCP authority.
+
+
+## 2026-09-09 — Meta Pilot 0.2.1 and Lantern Search 0.1.4 compatibility
+
+- Installed Meta Pilot, Lantern Search, Revision Ledger and Caxton into a second
+  local Grav 2/Admin2 DDEV site. Site-specific palette and asset-queue changes
+  remain in that site's theme. No production mutation or other site's changes.
+- Fixed Meta Pilot API reports throwing `__clone method called on non-object`
+  when a page had empty Markdown with Twig processing enabled. Empty source
+  no longer triggers rendering; the public/API metadata path honors top-level
+  page descriptions after explicit overrides. Site robots defaults now feed
+  both head output and sitemap exclusion without making a preview indexable.
+- Added the reusable DDEV HTTP regression runner and traveling operator docs.
+  Real HTTP checks pass for authenticated reports, anonymous/insufficient-role
+  denial, empty Twig-enabled pages, description precedence/escaping, unique head
+  tags, explicit page robots overrides, site noindex/index transitions, sitemap
+  protected-page exclusion, cache refresh, unchanged Markdown, and cleanup.
+- Fixed Lantern's phone layout so long route labels sit beneath titles instead
+  of squeezing them into a narrow grid column. Light/dark browser checks at
+  390px confirm one column and no horizontal overflow. The installed search
+  endpoint returns relevant guides and excludes unpublished/noindex/ACL pages.
+- Repository preflight, whitespace, Python syntax, PHP 8.3 lint, package CRC,
+  one-root/secret/symlink checks, exact installed-file hashes and public/Admin
+  health pass. Host PHP is unavailable; PHP checks ran in DDEV. Two existing
+  Finder `.DS_Store` files were moved outside the repo before the hygiene gate.
+- Built `dist/meta-pilot-0.2.1.zip`, SHA-256
+  `7abaebd15897514f1bd7d3e492aaa15e8311bb5884aaa2eadef0bddc94420b6f`,
+  and `dist/lantern-search-0.1.4.zip`, SHA-256
+  `e1b13f98bcf959e7811d00f334e7c757ce6217ab76e881b074bac9d4b57b59be`.
+  Runtime archives remain ignored; both exact packages are installed in the
+  second DDEV fixture. No release tag or GitHub release was created.
+- Existing Site Workshop/Cache Hearth edits remain outside this checkpoint.
+  Caxton 0.3.0 and Revision Ledger 0.2.1 required no plugin changes: Visual and
+  Source save, automatic pre-save history, and safe restore were verified on a
+  disposable page. Planned Caxton 0.3.1 and other deferred work remain unchanged.

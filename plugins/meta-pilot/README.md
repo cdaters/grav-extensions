@@ -49,7 +49,9 @@ The equivalent frontmatter is documented below for repository and text-editor
 workflows.
 
 Meta Pilot first reads an optional `meta_pilot` block. It then honors Grav's
-ordinary `metadata` values before generating safe fallbacks from the page.
+ordinary `metadata` values, then a top-level page `description`, before
+generating safe fallbacks from the page's Markdown source. Empty Markdown
+does not trigger Twig rendering during an API report.
 
 ```yaml
 ---
@@ -87,6 +89,12 @@ also honored for portability.
 The sitemap includes published, routable, non-modular pages. By default it
 excludes access-protected and `noindex` pages. Existing `sitemap.changefreq`,
 `sitemap.priority`, and `sitemap.ignore` frontmatter values are supported.
+
+Robots precedence is page `meta_pilot.robots`, page `metadata.robots`,
+`site.metadata.robots`, then the plugin's `metadata.default_robots`. The same
+resolved directive controls sitemap exclusion. A site-wide `noindex` therefore
+keeps pages without an explicit override out of the sitemap; it does not prevent
+people from browsing the site or using a separate internal search plugin.
 
 The generated `robots.txt` route appends the absolute sitemap URL by default.
 A physical web-server `robots.txt` may take precedence before Grav receives
