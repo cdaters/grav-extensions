@@ -76,7 +76,7 @@ final class LanternSearchPlugin extends Plugin
             'floating' => (bool) $this->config->get('plugins.lantern-search.ui.show_floating_button', true),
         ];
         $this->grav['assets']->addInlineJs('window.LanternSearchConfig=' . json_encode($config, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) . ';', ['group' => 'bottom']);
-        $this->grav['assets']->addCss('plugin://lantern-search/assets/lantern-search.css');
+        $this->grav['assets']->addCss('plugin://lantern-search/assets/lantern-search.css?v=0.1.6');
         $this->grav['assets']->addJs('plugin://lantern-search/assets/lantern-search.js', ['group' => 'bottom', 'defer' => true]);
     }
 

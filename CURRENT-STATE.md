@@ -18,7 +18,26 @@ documentation, tests, decisions, and history. Runtime packages, stages, site
 content/configuration, protected File Vault binaries, credentials, and DDEV
 volumes require their own protected backups.
 
-## Latest maintenance checkpoint — Meta Pilot 0.2.2 / Lantern Search 0.1.5
+## Latest maintenance checkpoint — Lantern Search 0.1.6
+
+The search plugin now owns generous popup/control/result/help spacing, scoped
+rounded input/focus styles, a 44px close button and a constrained scrolling list.
+Result title/route/excerpt stack on all screen sizes. Empty results leave no strip;
+keyboard help hides on phones/short screens; the launcher hides while open.
+A versioned CSS URL refreshes deployed browser caches. Existing palette variables
+remain the theme integration point. No theme-specific layout code is required.
+
+Browser checks cover a custom-theme DDEV site in light/dark at 1280×720 and
+390×844, plus a disposable plain page with competing global input/footer styles
+at desktop and 320×480. Focus, margins, no overflow, independent scrolling,
+ArrowDown/Enter result navigation, close and Escape were checked. Temporary theme
+experiments were fully reverted; the previous site theme remains 1.1.3.
+
+The scope is standalone Lantern UI maintenance. Meta Pilot 0.2.2, planned Caxton
+0.3.1 and unrelated Site Workshop/Cache Hearth work remain unchanged. Production
+and the primary SPITFIRE fixture are untouched.
+
+## Previous maintenance checkpoint — Meta Pilot 0.2.2 / Lantern Search 0.1.5
 
 Both plugins now retain every page when Grav Collection iterator keys repeat
 for equal folder slugs at different depths. Full routes remain distinct identities;

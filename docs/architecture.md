@@ -115,7 +115,7 @@ toolbar replacement and may optionally consume Jarvis later.
   integrity-checked page snapshots; automatic and named checkpoints; Admin2
   comparisons; retention controls; guarded rollback; CLI parity; and a public
   checkpoint integration seam for other plugins.
-- **Lantern Search 0.1.5:** working development release with incremental,
+- **Lantern Search 0.1.6:** working development release with incremental,
   ACL-aware indexing, relevance controls, a public command palette, and Admin2
   index management.
 - **Site Workshop 0.1.0:** working development release with Icon Bench: a

@@ -11,7 +11,7 @@ can never be mistaken for an installable Grav package.
 | 3 | Image Foundry | Original-preserving optimization and modern derivatives | 0.2.1 development release; automatic public-HTML replacement available |
 | 4 | Meta Pilot | Canonical, robots, social, structured-data, and sitemap controls | 0.2.2 development release; complete same-slug reports/sitemaps, theme summaries, site robots policy, and HTTP regressions |
 | 5 | Revision Ledger | Content snapshots, comparisons, retention, and explicit rollback | 0.2.1 development release; page-editor history drawer, automatic checkpoints, Admin2 comparisons, guarded restore, and CLI parity available |
-| 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | 0.1.5 development release; complete same-slug indexing, incremental index, Admin2 control center, public command palette, facets, fuzzy matching, and CLI parity available |
+| 6 | Lantern Search | Incremental, relevance-ranked, ACL-aware site search | 0.1.6 development release; spacious theme-isolated popup, complete same-slug indexing, incremental index, Admin2 control center, public command palette, facets, fuzzy matching, and CLI parity available |
 | 7 | Site Workshop | Safe icons, reusable frontmatter, bounded cache warming, and automation feeds | 0.1.0 development release; Icon Bench available |
 | 8 | Flexible Markdown Alerts | Configurable Markdown callouts with per-alert titles, editable types, and independent or Icon Bench-backed SVG icons | 1.0.1 development release |
 | 9 | Gatehouse | Admin authentication hardening, CAPTCHA options, throttling, and recovery visibility | Specification queued |

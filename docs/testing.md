@@ -512,3 +512,16 @@ python3 scripts/test-lantern-search-http.py /path/to/ddev-project grav
 
 Meta Pilot temporarily snapshots/restores site and plugin config. Do not run it
 concurrently with manual configuration edits. Both runners are local-only.
+
+
+### Lantern Search popup visual check (0.1.6)
+
+In a disposable DDEV site, open the popup empty and with enough results to scroll.
+Check light/dark at desktop and phone widths, plus a 320×480 short viewport.
+Verify inset focus, a 44px close target, no horizontal overflow, scrollable results,
+visible controls, and ArrowDown/Enter/Escape. The launcher must hide while open.
+Repeat on plain HTML loading the plugin CSS/JS and its local query endpoint,
+with ordinary global input-focus and footer rules after the stylesheet: the
+scoped plugin spacing/focus should win without a theme override. Remove the
+fixture and reset viewport/theme after checking. This is a visual acceptance
+check, not a claim that all third-party CSS can be overridden.

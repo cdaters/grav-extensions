@@ -1427,3 +1427,29 @@ suite inventory incremental and risk ordered.
   Both exact archives are installed in the second DDEV fixture. No tag or
   GitHub release was created. The authenticated Admin dashboard confirms
   54 pages, score 100, no errors/warnings, and 54 intentional noindex notices.
+
+
+## 2026-09-09 — Lantern Search 0.1.6 popup spacing and theme isolation
+
+- Moved popup layout/focus improvements into the independent plugin at the
+  owner's request. Theme-specific layout experiments were reverted byte-for-byte;
+  the consuming site retains only its existing palette-variable integration.
+- Added 24px desktop control margins, roomy status/results/help, rounded scoped
+  focus, 44px close target, stacked result details, empty-list removal and a
+  flex-based scroll region bounded by the dynamic viewport. The launcher hides
+  while open. Existing search behavior and palette variables are retained.
+- Browser evidence: custom-theme light/dark at 1280×720 and 390×844; standalone
+  plugin with competing global input/footer styles, light desktop and dark
+  320×480. Input top inset is 25px on desktop; no horizontal overflow; result
+  lists scroll while controls remain available. At 320×480 the dialog is
+  288×448 with 16px outer margins. ArrowDown/Enter opens a result; Escape closes.
+- A CSS version URL ensures updates reach cached browsers. No site content,
+  accounts, configuration, metadata, mail or private assets enter the package.
+- Unrelated Site Workshop changes and planned Caxton work remain separate.
+- Repository preflight and the existing Lantern CLI/HTTP regression pass. All
+  five installed PHP files pass PHP 8.3 lint in DDEV; host PHP is unavailable.
+  Homepage and versioned CSS return HTTP 200. The exact package is installed;
+  ZIP integrity and file hashes pass. The standalone fixture was removed.
+- `dist/lantern-search-0.1.6.zip` SHA-256:
+  `5ebfcf0e414a32c8350f1ac3294638eac71107ee05b99938e47b588828254153`.
+  No production deployment, release tag or GitHub release was created.

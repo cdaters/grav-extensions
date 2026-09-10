@@ -97,3 +97,106 @@ html.dark [data-lantern-search] {
   .lantern-results a { grid-template-columns:minmax(0,1fr); gap:.3rem; }
   .lantern-result-route { grid-column:1; }
 }
+
+[data-lantern-search], [data-lantern-search] * { box-sizing: border-box; }
+/* Spacious default palette with isolated controls and scrollable results. */
+
+[data-lantern-search] .lantern-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(52rem, 100%);
+  max-height: min(46rem, calc(100dvh - 8rem));
+  border-radius: 20px;
+}
+[data-lantern-search] .lantern-input-row {
+  flex: 0 0 auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  min-height: 0;
+  margin: 24px 24px 18px;
+  padding: 0;
+  border: 0;
+}
+[data-lantern-search] .lantern-input-row input {
+  height: 52px;
+  padding: 12px 16px;
+  border: 1px solid var(--lantern-border);
+  border-radius: 10px;
+  background: var(--lantern-surface);
+  line-height: 1.4;
+}
+[data-lantern-search] .lantern-input-row input:focus-visible {
+  outline: 2px solid var(--lantern-accent);
+  outline-offset: 3px;
+}
+[data-lantern-search] .lantern-close {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+}
+[data-lantern-search] .lantern-close:hover {
+  color: var(--lantern-text);
+  background: var(--lantern-surface);
+}
+[data-lantern-search] .lantern-close:focus-visible {
+  outline: 2px solid var(--lantern-accent);
+  outline-offset: 3px;
+}
+[data-lantern-search] .lantern-status {
+  flex: 0 0 auto;
+  padding: 0 24px 20px;
+  border: 0;
+  background: transparent;
+  font-size: .875rem;
+  line-height: 1.6;
+}
+[data-lantern-search] .lantern-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding: 4px 16px 20px;
+  overscroll-behavior: contain;
+  scroll-padding-block: 8px;
+}
+[data-lantern-search] .lantern-results:empty { display: none; }
+[data-lantern-search] .lantern-results li + li { margin-top: 6px; }
+[data-lantern-search] .lantern-results a {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  padding: 18px 20px;
+  border-radius: 12px;
+}
+[data-lantern-search] .lantern-result-title { line-height: 1.45; }
+[data-lantern-search] .lantern-result-route { grid-column: 1; line-height: 1.5; }
+[data-lantern-search] .lantern-result-excerpt { line-height: 1.65; }
+[data-lantern-search] .lantern-dialog footer {
+  flex: 0 0 auto;
+  gap: 10px 20px;
+  margin: 0;
+  padding: 18px 24px 20px;
+  line-height: 1.6;
+}
+[data-lantern-search] .lantern-dialog footer strong { flex-basis: 100%; }
+[data-lantern-search] .lantern-dialog footer span { gap: 6px; flex-wrap: wrap; }
+[data-lantern-search] .lantern-dialog kbd { padding: 3px 6px; }
+@media (max-width: 640px) {
+  [data-lantern-search] .lantern-backdrop { padding: 16px; }
+  [data-lantern-search] .lantern-dialog {
+    max-height: calc(100dvh - 32px);
+    border-radius: 16px;
+  }
+  [data-lantern-search] .lantern-input-row { margin: 20px 16px 16px; gap: 10px; }
+  [data-lantern-search] .lantern-input-row input { padding-inline: 12px; font-size: 1rem; }
+  [data-lantern-search] .lantern-status { padding: 0 18px 18px; }
+  [data-lantern-search] .lantern-results { padding: 4px 10px 14px; }
+  [data-lantern-search] .lantern-results a { padding: 16px 14px; }
+  [data-lantern-search] .lantern-dialog footer { display: none; }
+}
+@media (max-height: 500px) {
+  [data-lantern-search] .lantern-backdrop { padding: 16px; }
+  [data-lantern-search] .lantern-dialog { max-height: calc(100dvh - 32px); }
+  [data-lantern-search] .lantern-dialog footer { display: none; }
+}
+
+/* The launcher must not cover results while its dialog is open. */
+.lantern-open [data-lantern-search] .lantern-trigger { visibility: hidden; }

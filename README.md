@@ -40,7 +40,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | Image Foundry | Plugin | 0.2.1 development release | `user/plugins/image-foundry` |
 | Meta Pilot | Plugin | 0.2.2 development release | `user/plugins/meta-pilot` |
 | Revision Ledger | Plugin | 0.2.1 development release | `user/plugins/revision-ledger` |
-| Lantern Search | Plugin | 0.1.5 development release | `user/plugins/lantern-search` |
+| Lantern Search | Plugin | 0.1.6 development release | `user/plugins/lantern-search` |
 | Site Workshop | Plugin | 0.2.0 development release; Icon Bench and Frontmatter Annex available | `user/plugins/site-workshop` |
 | Flexible Markdown Alerts | Plugin | 1.0.1 development release; configurable alert types and optional Icon Bench interoperability | `user/plugins/flexible-markdown-alerts` |
 | Grav Commander | Plugin | 0.3.12; optional bounded Jarvis consumer, file tools, and backups | `user/plugins/grav-commander` |

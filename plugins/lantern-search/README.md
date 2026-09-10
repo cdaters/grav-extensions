@@ -26,6 +26,15 @@ Visitors can select the floating **Search** control, press `/` while not typing 
 
 The JSON endpoint defaults to `/lantern-search/query?q=spitfire`. Optional parameters are `category`, `tag`, `language`, `template`, and `limit`; server-side bounds always apply.
 
+## Theme compatibility
+
+The plugin owns popup spacing, rounded input styling, visible keyboard focus,
+44px close target and the scrolling result layout. Themes only need the normal
+Grav asset queues. Colors can be adapted through the existing `--lantern-*`
+variables; no theme-specific spacing override is required. Results stack their
+title, route and excerpt. Keyboard help hides on phones and short windows to
+reserve room for results. The empty popup has no blank results strip.
+
 ## Page controls
 
 The plugin adds **Include in public search** and **Search result boost** to normal page Options. These controls cannot override publication or ACL protections.

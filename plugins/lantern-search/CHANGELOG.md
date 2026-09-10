@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.6 — 2026-09-09
+
+- Give search controls, status, results and keyboard help more breathing room.
+- Isolate rounded input and visible focus styling from ordinary theme resets.
+- Stack result details and let the list scroll within short/mobile viewports.
+- Hide the empty results strip and refresh the CSS asset URL on upgrade.
+
 ## 0.1.5 — 2026-09-09
 
 - Keep pages with matching folder slugs at different depths in the public index.

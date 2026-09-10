@@ -24,7 +24,7 @@ final class SearchIndexService
     {
         $index = $this->readIndex();
         return [
-            'version' => '0.1.5',
+            'version' => '0.1.6',
             'indexed_pages' => count((array) ($index['documents'] ?? [])),
             'built_at' => $index['built_at'] ?? null,
             'dirty' => is_file($this->dirtyFile()),
