@@ -1,7 +1,7 @@
 name: Site Safeguard
 slug: site-safeguard
 type: plugin
-version: 0.3.11
+version: 0.3.12
 description: Verified portable Grav backup packages, isolated staging, and rollback-first full-site restore for Grav 2.
 icon: shield-halved
 author:
@@ -162,7 +162,7 @@ form:
     restore_preserve_paths:
       type: array
       label: Host-local paths preserved during restore
-      help: Relative to the Grav root. These paths remain local and override same-named paths in a transferred package. Keep .ddev here for development sites.
+      help: Relative to the Grav root. These paths remain local and override same-named paths in a transferred package. Keep .ddev here for development sites. Paths excluded from the local portable rollback package are also preserved automatically.
       value_only: true
 
     exclude_paths:

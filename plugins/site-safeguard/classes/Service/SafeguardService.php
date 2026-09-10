@@ -18,7 +18,7 @@ class SafeguardService
     private const MANIFEST_PATH = '_site-safeguard/manifest.json';
     private const CHECKSUMS_PATH = '_site-safeguard/checksums.json';
     private const SCHEMA = 1;
-    private const VERSION = '0.3.11';
+    private const VERSION = '0.3.12';
 
     private Grav $grav;
     private array $config;
@@ -487,6 +487,8 @@ class SafeguardService
         $preserve = $this->restorePreservePaths();
         $rollbackPackage = null;
         $rollbackStage = null;
+        $mutationStarted = false;
+        $maintenanceEntered = false;
         $maintenance = $this->root . '/.upgrading';
         $journal = [
             'schema' => 1,
@@ -511,7 +513,11 @@ class SafeguardService
 
         try {
             $rollbackPackage = $this->createPackage('portable_site', 'Automatic rollback before ' . $operationId);
+            $journal['rollback_package'] = $rollbackPackage['name'];
+            $this->writeJournal($journalPath, $journal);
             $rollbackStage = $this->stagePackage((string) $rollbackPackage['name']);
+            $journal['rollback_stage'] = $rollbackStage['id'];
+            $this->writeJournal($journalPath, $journal);
             $rollbackInspection = $this->inspectPath($this->packagePath((string) $rollbackPackage['name']), true);
             $rollbackChecksums = (array) ($rollbackInspection['checksums']['files'] ?? []);
             $this->verifyGravBoot((string) $rollbackStage['path'], true);
@@ -524,6 +530,7 @@ class SafeguardService
             if (file_put_contents($maintenance, gmdate('c') . ' ' . $operationId . "\n", LOCK_EX) === false) {
                 throw new ValidationException('Unable to enter Grav maintenance mode.');
             }
+            $maintenanceEntered = true;
             $journal['state'] = 'restoring';
             $this->writeJournal($journalPath, $journal);
 
@@ -535,6 +542,7 @@ class SafeguardService
                 'entries_removed' => 0,
                 'entries_preserved' => 0,
             ];
+            $mutationStarted = true;
             $this->mirrorStageToRoot($stage, $preserve, $stats);
             $verified = $this->verifyRestoredFiles($checksums, $preserve);
             $this->clearRuntimeCache();
@@ -559,6 +567,17 @@ class SafeguardService
                 'rollback_stage' => $rollbackStage,
             ];
         } catch (\Throwable $restoreError) {
+            // Preparing a rollback must never cause a restore of that unverified copy.
+            if (!$mutationStarted) {
+                $journal['state'] = 'preflight-failed';
+                $journal['error'] = $restoreError->getMessage();
+                $journal['completed_at'] = gmdate('c');
+                $this->writeJournal($journalPath, $journal);
+                if ($maintenanceEntered) {
+                    @unlink($maintenance);
+                }
+                throw new ValidationException('Restore stopped before site replacement: ' . $restoreError->getMessage());
+            }
             $journal['state'] = 'restore-failed';
             $journal['error'] = $restoreError->getMessage();
             $this->writeJournal($journalPath, $journal);
@@ -1147,6 +1166,12 @@ class SafeguardService
     private function restorePreservePaths(): array
     {
         $configured = $this->normaliseRelativePaths((array) ($this->config['restore_preserve_paths'] ?? []), false);
+        // Files omitted from our rollback package cannot safely be replaced or pruned.
+        $excluded = array_merge(
+            (array) ($this->config['exclude_paths'] ?? []),
+            (array) ($this->config['profiles']['portable_site']['exclude_paths'] ?? [])
+        );
+        $excluded = $this->normaliseRelativePaths($excluded, false);
         return array_values(array_unique(array_merge([
             '.ddev',
             '.git',
@@ -1158,7 +1183,7 @@ class SafeguardService
             'file-vault-files',
             'user/config/security-private.php',
             'user/config/plugins/site-safeguard.yaml',
-        ], $configured)));
+        ], $configured, $excluded)));
     }
 
     private function restoreHistory(): array
@@ -1649,14 +1674,29 @@ class SafeguardService
         }
 
         $runtimePaths = [];
-        if ($temporaryRuntime) {
-            foreach (['cache', 'logs', 'tmp', 'backup'] as $relative) {
-                $path = rtrim($root, '/') . '/' . $relative;
-                if (!file_exists($path)) {
-                    $this->ensureDirectory($path);
+        foreach (['cache', 'logs', 'tmp', 'backup', 'user/accounts', 'user/data', 'images', 'assets'] as $relative) {
+            $path = rtrim($root, '/') . '/' . $relative;
+            if (!file_exists($path)) {
+                $this->ensureDirectory($path);
+                if ($temporaryRuntime) {
                     $runtimePaths[] = $path;
+                } elseif (in_array($relative, ['images', 'assets'], true) && !chmod($path, 0755)) {
+                    throw new ValidationException('Unable to make restored public runtime directory traversable.');
                 }
             }
+        }
+
+        // Grav may create/migrate its nonce key while booting. Supply an isolated
+        // temporary key so the integrity check does not alter archived config.
+        $noncePath = rtrim($root, '/') . '/user/config/security-private.php';
+        if ($temporaryRuntime && !file_exists($noncePath)) {
+            $this->ensureDirectory(dirname($noncePath));
+            if (file_put_contents($noncePath, '<?php return ' . var_export(bin2hex(random_bytes(32)), true) . ';', LOCK_EX) === false) {
+                $this->removeTemporaryRuntime($runtimePaths, $root);
+                throw new ValidationException('Unable to create isolated boot identity.');
+            }
+            @chmod($noncePath, 0600);
+            $runtimePaths[] = $noncePath;
         }
 
         $outputPath = $this->packageDirectory() . '/.boot-output-' . bin2hex(random_bytes(6));
@@ -1696,6 +1736,8 @@ class SafeguardService
         foreach (array_reverse($paths) as $path) {
             if (is_dir($path)) {
                 $this->removeTree($path, $root);
+            } elseif (is_file($path)) {
+                @unlink($path);
             }
         }
     }

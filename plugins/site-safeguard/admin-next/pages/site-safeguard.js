@@ -403,6 +403,7 @@ class SiteSafeguardPage extends HTMLElement {
       restoring: 'Restoring files',
       completed: 'Completed',
       'restore-failed': 'Restore failed; rolling back',
+      'preflight-failed': 'Stopped before replacing site files',
       'rolled-back': 'Automatically rolled back',
       'rollback-failed': 'Rollback failed',
       'launch-failed': 'Launch failed',
@@ -444,7 +445,7 @@ class SiteSafeguardPage extends HTMLElement {
             <h1>Site Safeguard</h1>
             <p>Build portable Grav packages, verify every file, and recover through an automatically verified rollback.</p>
           </div>
-          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.11')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
+          <div class="hero-actions"><button class="quiet" id="settings">Plugin settings</button><div class="hero-state"><span>v${this.escape(status.version || '0.3.12')}</span><strong>${status.restore_enabled ? (status.admin_restore_enabled && status.restore_launcher_available ? 'Restore ready' : 'CLI restore only') : 'Restore disabled'}</strong></div></div>
         </section>
 
         <section class="metrics">
@@ -604,7 +605,7 @@ class SiteSafeguardPage extends HTMLElement {
   }
 
   restoreProgress(state) {
-    return ({ queued: 8, preparing: 22, 'rollback-verified': 45, restoring: 72, 'restore-failed': 82, completed: 100, 'rolled-back': 100, 'rollback-failed': 100, 'launch-failed': 100, 'worker-failed': 100 })[state] || 0;
+    return ({ queued: 8, preparing: 22, 'rollback-verified': 45, restoring: 72, 'restore-failed': 82, completed: 100, 'rolled-back': 100, 'rollback-failed': 100, 'launch-failed': 100, 'preflight-failed': 100, 'worker-failed': 100 })[state] || 0;
   }
 
   requirementCard(item) {

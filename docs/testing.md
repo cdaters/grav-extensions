@@ -525,3 +525,14 @@ with ordinary global input-focus and footer rules after the stylesheet: the
 scoped plugin spacing/focus should win without a theme override. Remove the
 fixture and reset viewport/theme after checking. This is a visual acceptance
 check, not a claim that all third-party CSS can be overridden.
+
+### Site Safeguard restore transaction contract
+
+Run `python3 scripts/test-site-safeguard-restore.py CONTAINER GRAV_ROOT`, where
+CONTAINER is a running DDEV web container and GRAV_ROOT is its Grav directory
+(for example `/var/www/html/grav`). The runner copies that root into an isolated
+container temporary directory; the supplied site is never restored or modified.
+It uses actual create/stage/restore CLI commands, excludes account/nonce/local
+files, proves failed preflight leaves current files intact, rejects a wrong
+confirmation, completes a normal restore, and verifies automatic rollback after
+a candidate fails only at its destination. No credentials are printed.

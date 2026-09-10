@@ -36,7 +36,7 @@ credentials, and DDEV volumes remain outside Git and need separate backups.
 | --- | --- | --- | --- |
 | File Vault | Plugin | Development release | `user/plugins/file-vault` |
 | Prism Gallery | Plugin | Development release | `user/plugins/prism-gallery` |
-| Site Safeguard | Plugin | 0.3.11 development release | `user/plugins/site-safeguard` |
+| Site Safeguard | Plugin | 0.3.12 development release | `user/plugins/site-safeguard` |
 | Image Foundry | Plugin | 0.2.1 development release | `user/plugins/image-foundry` |
 | Meta Pilot | Plugin | 0.2.2 development release | `user/plugins/meta-pilot` |
 | Revision Ledger | Plugin | 0.2.1 development release | `user/plugins/revision-ledger` |

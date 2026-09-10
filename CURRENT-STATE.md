@@ -18,7 +18,27 @@ documentation, tests, decisions, and history. Runtime packages, stages, site
 content/configuration, protected File Vault binaries, credentials, and DDEV
 volumes require their own protected backups.
 
-## Latest maintenance checkpoint — Lantern Search 0.1.6
+## Latest maintenance checkpoint — Site Safeguard 0.3.12
+
+Restore preparation now aborts before replacing site files if its rollback
+candidate fails verification. It retains package/stage journal IDs promptly,
+preserves destination paths excluded from the portable rollback profile, and
+provides missing runtime directories plus a temporary isolated nonce identity
+for stage boot checks. Admin reports preflight failure as a stopped operation.
+
+The actual CLI regression runs in a disposable DDEV container copy: missing
+account/nonce package entries, failed preflight with untouched destination,
+confirmation denial, successful promotion, excluded-file preservation, public
+runtime directory permissions, and post-promotion automatic rollback all pass.
+A user-supplied production snapshot was then restored into the second local
+DDEV site, with 6,866 files verified. Local mail/indexing/server settings were
+preserved. Production and the primary SPITFIRE fixture were untouched.
+
+This maintenance excludes the existing Site Workshop/Cache Hearth dirty work
+and does not start the planned Caxton 0.3.1 milestone. No tag or GitHub release
+was created. Runtime snapshots, account files and site content stay outside Git.
+
+## Previous maintenance checkpoint — Lantern Search 0.1.6
 
 The search plugin now owns generous popup/control/result/help spacing, scoped
 rounded input/focus styles, a 44px close button and a constrained scrolling list.

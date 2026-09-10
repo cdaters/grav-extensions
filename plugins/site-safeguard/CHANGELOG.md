@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.12 — 2026-09-10
+
+- Abort a failed rollback preflight without mirroring an unverified rollback or leaving maintenance mode.
+- Retain rollback package/stage identifiers as soon as they exist.
+- Preserve paths excluded from the destination portable rollback package.
+- Supply missing runtime folders and an isolated temporary nonce identity for stage boot checks.
+- Cover actual CLI create/stage/restore, failed preflight, confirmation denial and post-promotion rollback in a disposable DDEV copy.
+
 ## 0.3.11 — 2026-08-23
 
 - Replace the disclosure controls' separate font-rendered up/down characters

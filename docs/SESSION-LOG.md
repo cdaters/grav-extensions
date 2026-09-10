@@ -1453,3 +1453,36 @@ suite inventory incremental and risk ordered.
 - `dist/lantern-search-0.1.6.zip` SHA-256:
   `5ebfcf0e414a32c8350f1ac3294638eac71107ee05b99938e47b588828254153`.
   No production deployment, release tag or GitHub release was created.
+
+
+## 2026-09-10 — Site Safeguard 0.3.12 restore preparation recovery
+
+- Diagnosed a real production-to-DDEV restore failure: excluded account folders
+  failed the rollback boot check; the old catch block then mirrored that
+  unverified rollback and removed excluded local files. The site was left in
+  maintenance. Recovery used the owner-supplied archive, with credentials never
+  printed or committed; local accounts previously omitted from all backups
+  could not be recovered from those backups.
+- Added a mutation boundary so preparation failures never trigger rollback.
+  Journals retain rollback artifacts as they are created; Admin shows the
+  stopped-before-replacement state. Actual promotion failures still roll back.
+- Destination global and portable-profile excluded paths are automatically
+  preserved because rollback cannot reconstruct them. Stage boots create and
+  clean missing runtime folders, including accounts; a temporary nonce key
+  prevents Grav from creating or migrating archived identity configuration.
+  Newly created public images/assets directories remain traversable.
+- New real CLI create/stage/restore runner operates in a disposable container
+  copy. Fourteen checks pass: failed preflight untouched state/account/marker,
+  journal artifact IDs, confirmation denial, missing-account package success,
+  excluded account/global/profile path retention, maintenance cleanup, public
+  runtime permissions, and rollback after destination-only boot failure.
+- Recovered and restored the second local DDEV site from the supplied live ZIP;
+  restore reports completed with 6,866 verified files. Subsequent comparison
+  covers 6,851 non-preserved/non-plugin files, with only the expected Lantern
+  dirty-marker runtime change. Ten public/Admin routes return HTTP 200 without
+  Grav Problems. Destination mail, noindex and server settings remain local.
+- Repository preflight, whitespace, PHP 8.3 lint of seven plugin files, package
+  integrity/install checks pass. Host PHP is unavailable. Plugin update 0.3.12
+  is installed locally. No remote website, primary fixture, tag, or release
+  publication was changed. Site Workshop/Cache Hearth and planned Caxton work
+  remain separate.

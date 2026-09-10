@@ -105,6 +105,18 @@ destination's package paths and restore safety settings.
 Grav's `user/config/security-private.php` is also always preserved so a restore
 cannot silently copy one host's nonce/HMAC identity onto another installation.
 
+As of 0.3.12, paths excluded by the destination's global `exclude_paths` or
+`profiles.portable_site.exclude_paths` are also preserved during restore. They
+cannot be replaced or pruned safely because the rollback package omits them.
+Remove an exclusion before creating a verified rollback if you intend to import
+that path. A failed rollback preflight stops before site replacement; its journal
+retains any created package/stage IDs. It does not attempt an unverified rollback.
+
+Boot checks create missing runtime directories (including `user/accounts`) and
+use a temporary nonce identity when the staged site omitted one. Temporary
+files/directories are removed before the stage's second integrity check. The
+destination's real nonce identity remains preserved.
+
 After saving either restore switch in Admin2, verify that **Enabled** is the
 purple selected option. An orange circular marker beside the label means the
 value is a saved override of Site Safeguard's disabled-by-default setting; it
